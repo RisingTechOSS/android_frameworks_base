@@ -91,6 +91,8 @@ public class SystemSettings {
         Settings.System.NOTIFICATION_LIGHT_PULSE,
         Settings.System.QS_PANEL_STYLE,
         Settings.System.MEDIA_ARTWORK_BLUR_ENABLED,
-        Settings.System.MEDIA_ARTWORK_BLUR_RADIUS
+        Settings.System.MEDIA_ARTWORK_BLUR_RADIUS,
+        Settings.System.NETWORK_TRAFFIC_STATE,
+        Settings.System.NETWORK_TRAFFIC_AUTOHIDE_THRESHOLD
     };
 }
