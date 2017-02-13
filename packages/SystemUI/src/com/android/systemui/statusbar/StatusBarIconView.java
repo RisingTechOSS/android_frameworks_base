@@ -614,8 +614,7 @@ public class StatusBarIconView extends AnimatedImageView implements StatusIconDi
         final int tooBig = getContext().getResources().getInteger(
                 android.R.integer.status_bar_notification_info_maxnum);
         if (mIcon.number > tooBig) {
-            str = getContext().getResources().getString(
-                        android.R.string.status_bar_notification_info_overflow);
+            str = "\u221E";
         } else {
             NumberFormat f = NumberFormat.getIntegerInstance();
             str = f.format(mIcon.number);
