@@ -87,6 +87,8 @@ import com.android.systemui.util.CarrierConfigTracker.CarrierConfigChangedListen
 import com.android.systemui.util.CarrierConfigTracker.DefaultDataSubscriptionChangedListener;
 import com.android.systemui.util.settings.SecureSettings;
 
+import lineageos.providers.LineageSettings;
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -157,6 +159,8 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
     private Map<Startable, Startable.State> mStartableStates = new ArrayMap<>();
 
     private View mBatteryBar;
+    
+    private View mLeftLogoLayout;
 
     private final OngoingCallListener mOngoingCallListener = new OngoingCallListener() {
         @Override
@@ -323,6 +327,7 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
         mClockView = mStatusBar.findViewById(R.id.clock);
         mCenterClockView = mStatusBar.findViewById(R.id.clock_center);
         mRightClockView = mStatusBar.findViewById(R.id.clock_right);
+        mLeftLogoLayout = mStatusBar.findViewById(R.id.left_logo_icon_area);
         showEndSideContent(false);
         showClock(false);
         initOperatorName();
@@ -684,10 +689,12 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
     }
 
     public void hideNotificationIconArea(boolean animate) {
-        animateHide(mNotificationIconAreaInner, animate);
+    	animateHide(mLeftLogoLayout, animate);
+    	animateHide(mNotificationIconAreaInner, animate);
     }
 
     public void showNotificationIconArea(boolean animate) {
+    	animateShow(mLeftLogoLayout, animate);
         animateShow(mNotificationIconAreaInner, animate);
     }
 

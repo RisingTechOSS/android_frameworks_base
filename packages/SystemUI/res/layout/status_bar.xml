@@ -84,6 +84,26 @@
                         android:layout_height="match_parent"
                         android:layout="@layout/operator_name" />
 
+                    <com.android.systemui.statusbar.AlphaOptimizedFrameLayout
+                        android:id="@+id/left_logo_icon_area"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center_vertical"
+                        android:clipChildren="false">
+
+                    <com.android.systemui.rising.logo.LogoImageView
+                        android:id="@+id/statusbar_logo_left"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center"
+                        android:paddingStart="@dimen/status_bar_left_clock_starting_padding"
+                        android:paddingEnd="@dimen/status_bar_left_clock_end_padding"
+                        android:gravity="center_vertical|start"
+                        android:scaleType="center"
+                        android:visibility="gone" />
+
+		    </com.android.systemui.statusbar.AlphaOptimizedFrameLayout>
+
                     <com.android.systemui.statusbar.policy.Clock
                         android:id="@+id/clock"
                         android:layout_width="wrap_content"

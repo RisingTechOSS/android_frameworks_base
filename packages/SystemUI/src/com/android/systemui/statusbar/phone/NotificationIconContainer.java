@@ -544,8 +544,12 @@ public class NotificationIconContainer extends ViewGroup {
     }
 
     private int getMaxVisibleIcons(int childCount) {
+        boolean isLogoEnabled = Settings.System.getIntForUser(getContext().getContentResolver(),
+                                Settings.System.STATUS_BAR_LOGO, 0, UserHandle.USER_CURRENT) == 1;
+        boolean isLogoLeftEnabled = Settings.System.getIntForUser(getContext().getContentResolver(),
+                                Settings.System.STATUS_BAR_LOGO_POSITION, 0, UserHandle.USER_CURRENT) == 0;
         return mOnLockScreen ? MAX_ICONS_ON_AOD :
-                mIsStaticLayout ? MAX_STATIC_ICONS : childCount;
+                mIsStaticLayout ? (isLogoEnabled && isLogoLeftEnabled ? MAX_STATIC_ICONS - 1 : MAX_STATIC_ICONS) : childCount;
     }
 
     private float getLayoutEnd() {
