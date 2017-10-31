@@ -212,10 +212,18 @@ void android_os_Process_setThreadGroup(JNIEnv* env, jobject clazz, int tid, jint
         return;
     }
 
+    SchedPolicy sp = (SchedPolicy) grp;
     int res = SetTaskProfiles(tid, {get_sched_policy_profile_name((SchedPolicy)grp)}, true) ? 0 : -1;
 
     if (res != NO_ERROR) {
         signalExceptionForGroupError(env, -res, tid);
+    }
+
+    if ((grp == SP_AUDIO_APP) || (grp == SP_AUDIO_SYS)) {
+        res = set_cpuset_policy(tid, sp);
+        if (res != NO_ERROR) {
+            signalExceptionForGroupError(env, -res, tid);
+        }
     }
 }
 
