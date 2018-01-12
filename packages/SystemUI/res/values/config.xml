@@ -914,4 +914,7 @@
     "$packageName" part that will be replaced by the code with the package name of the target app.
     -->
     <string name="config_appStoreAppLinkTemplate" translatable="false"></string>
+
+     <!-- Move status bar and navigation bar to prevent burn in when screen is powered on -->
+    <bool name="config_enableMoveSystemBars">true</bool>
 </resources>
