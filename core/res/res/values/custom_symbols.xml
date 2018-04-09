@@ -36,6 +36,9 @@
     <!-- Lock gesture -->
     <java-symbol type="string" name="gesture_locked_warning" />
 
-  <!-- Location indicator -->
-  <java-symbol type="drawable" name="stat_sys_location" />
+    <!-- Location indicator -->
+    <java-symbol type="drawable" name="stat_sys_location" />
+
+    <!-- Whether the device supports Smart Pixels -->
+    <java-symbol type="bool" name="config_supportSmartPixels" />
 </resources>
