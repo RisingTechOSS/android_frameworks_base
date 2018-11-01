@@ -2084,6 +2084,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             case TORCH:
                 toggleTorch();
                 break;
+            case SCREENSHOT:
+                interceptScreenshotChord(TAKE_SCREENSHOT_FULLSCREEN, SCREENSHOT_KEY_OTHER, 0 /*pressDelay*/);
+                break;
             default:
                 break;
         }
