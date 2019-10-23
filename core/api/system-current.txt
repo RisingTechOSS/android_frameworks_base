@@ -11627,6 +11627,8 @@ package android.provider {
     field public static final String EUICC_UNSUPPORTED_COUNTRIES = "euicc_unsupported_countries";
     field public static final String INSTALL_CARRIER_APP_NOTIFICATION_PERSISTENT = "install_carrier_app_notification_persistent";
     field public static final String INSTALL_CARRIER_APP_NOTIFICATION_SLEEP_MILLIS = "install_carrier_app_notification_sleep_millis";
+    field public static final String LOCK_EDGE_BACK_GESTURE = "lock_edge_back_gesture";
+    field public static final String LOCK_IMMERSIVE_SYSUI = "lock_immersive_system_ui";
     field public static final String OTA_DISABLE_AUTOMATIC_UPDATE = "ota_disable_automatic_update";
     field public static final String REQUIRE_PASSWORD_TO_DECRYPT = "require_password_to_decrypt";
     field public static final String TETHER_OFFLOAD_DISABLED = "tether_offload_disabled";

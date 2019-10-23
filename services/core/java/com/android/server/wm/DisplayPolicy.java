@@ -2121,6 +2121,11 @@ public class DisplayPolicy {
                     + "request");
             return;
         }
+
+        if (Settings.Global.getInt(mContext.getContentResolver(),
+                Settings.Global.LOCK_IMMERSIVE_SYSUI, 0) == 1) return;
+
+
         final InsetsSourceProvider provider = swipeTarget.getControllableInsetProvider();
         final InsetsControlTarget controlTarget = provider != null
                 ? provider.getControlTarget() : null;
