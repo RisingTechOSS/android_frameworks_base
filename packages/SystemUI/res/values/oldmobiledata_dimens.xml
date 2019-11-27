@@ -15,11 +15,10 @@
      limitations under the License.
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <!-- Label for UI element which allows deleting the screenshot [CHAR LIMIT=30] -->
-    <string name="screenshot_delete_label">Delete</string>
-    <!-- Content description indicating that tapping the element will allow deleting the screenshot [CHAR LIMIT=NONE] -->
-    <string name="screenshot_delete_description">Delete screenshot</string>
-
-    <!-- Screenshot Delete Toast -->
-    <string name="delete_screenshot_toast">Screenshot deleted</string>
+    <!-- Old style mobile data indicators -->
+    <dimen name="status_bar_mobile_signal_with_type_width">18dp</dimen>
+    <dimen name="status_bar_mobile_signal_width">16dp</dimen>
+    <dimen name="status_bar_mobile_type_height">8dp</dimen>
+    <dimen name="status_bar_mobile_type_padding">2dp</dimen>
+    <dimen name="status_bar_mobile_type_padding_limit">10dp</dimen>
 </resources>
