@@ -760,4 +760,11 @@ interface IActivityManager {
      * </p>
      */
     int getBackgroundRestrictionExemptionReason(int uid);
+
+    /**
+     * @hide
+     *
+     *  Should disable touch if three fingers to screen shot is active?
+     */
+    boolean isSwipeToScreenshotGestureActive();
 }
