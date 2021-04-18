@@ -13325,6 +13325,12 @@ public final class Settings {
          * @hide
          */
         public static final String VISUALIZER_CENTER_MIRRORED = "visualizer_center_mirrored";
+        
+        /**
+         * Pulse vertical mirror
+         * @hide
+         */
+        public static final String PULSE_VERTICAL_MIRROR = "pulse_vertical_mirror";    
 
         /**
          * Volume styles
