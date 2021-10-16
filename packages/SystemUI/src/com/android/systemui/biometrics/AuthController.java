@@ -730,7 +730,12 @@ public class AuthController extends CoreStartable implements CommandQueue.Callba
 
         mDisplay = mContext.getDisplay();
         mDisplay.getDisplayInfo(mCachedDisplayInfo);
-        int xFpLocation = mCachedDisplayInfo.getNaturalWidth() / 2;
+        int xFpLocation;
+        if (mFingerprintManager != null && mFingerprintManager.isPowerbuttonFps()) {
+            xFpLocation = mCachedDisplayInfo.getNaturalWidth();
+        } else {
+            xFpLocation = mCachedDisplayInfo.getNaturalWidth() / 2;
+        }
         try {
             xFpLocation = mContext.getResources().getDimensionPixelSize(
                     com.android.systemui.R.dimen
