@@ -5944,6 +5944,11 @@ public final class Settings {
         /**
          * @hide
          */
+        public static final String LOCKSCREEN_WEATHER_ENABLED = "lockscreen_weather_enabled";
+
+        /**
+         * @hide
+         */
         public static final String QS_TILE_LABEL_HIDE = "qs_tile_label_hide";
 
         /**
