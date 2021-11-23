@@ -153,8 +153,13 @@ public class RuntimeInit {
                 }
 
                 // Bring up crash dialog, wait for it to be dismissed
-                ActivityManager.getService().handleApplicationCrash(
-                        mApplicationObject, new ApplicationErrorReport.ParcelableCrashInfo(e));
+                final IActivityManager am = ActivityManager.getService();
+                if (am != null) {
+                    am.handleApplicationCrash(
+                            mApplicationObject, new ApplicationErrorReport.ParcelableCrashInfo(e));
+                } else {
+                    Slog.e(TAG, "Can't uncaughtException.");
+                }
             } catch (Throwable t2) {
                 if (t2 instanceof DeadObjectException) {
                     // System process is dead; ignore
