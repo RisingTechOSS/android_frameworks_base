@@ -9165,6 +9165,16 @@ public class NotificationManagerService extends SystemService {
     void updateUriPermissions(@Nullable NotificationRecord newRecord,
             @Nullable NotificationRecord oldRecord, String targetPkg, int targetUserId,
             boolean onlyRevokeCurrentTarget) {
+        synchronized (mNotificationLock) {
+            updateUriPermissionsLocked(newRecord, oldRecord, targetPkg, targetUserId,
+            onlyRevokeCurrentTarget);
+        }
+    }
+
+    @VisibleForTesting
+    void updateUriPermissionsLocked(@Nullable NotificationRecord newRecord,
+            @Nullable NotificationRecord oldRecord, String targetPkg, int targetUserId,
+            boolean onlyRevokeCurrentTarget) {
         final String key = (newRecord != null) ? newRecord.getKey() : oldRecord.getKey();
         if (DBG) Slog.d(TAG, key + ": updating permissions");
 
