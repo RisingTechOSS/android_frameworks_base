@@ -5965,6 +5965,21 @@ public final class Settings {
          * @hide
          */
         public static final String QS_UI_STYLE = "qs_ui_style";
+        
+        /**
+         * @hide
+         */
+        public static final String UDFPS_ANIM = "udfps_anim";
+
+        /**
+         * @hide
+         */
+        public static final String UDFPS_ANIM_STYLE = "udfps_anim_style";
+
+        /**
+         * @hide
+         */
+        public static final String UDFPS_ICON = "udfps_icon";
 
         /**
          * Keys we no longer back up under the current schema, but want to continue to
