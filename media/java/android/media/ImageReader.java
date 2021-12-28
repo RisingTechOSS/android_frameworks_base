@@ -693,6 +693,10 @@ public class ImageReader implements AutoCloseable {
                     mListenerExecutor = new HandlerExecutor(mListenerHandler);
                 }
             } else {
+                if (mListenerHandler != null) {
+                    mListenerHandler.removeMessages(0);
+                }
+
                 mListenerHandler = null;
                 mListenerExecutor = null;
             }
@@ -900,22 +904,23 @@ public class ImageReader implements AutoCloseable {
         synchronized (ir.mListenerLock) {
             executor = ir.mListenerExecutor;
             listener = ir.mListener;
-        }
-        final boolean isReaderValid;
-        synchronized (ir.mCloseLock) {
-            isReaderValid = ir.mIsReaderValid;
-        }
 
-        // It's dangerous to fire onImageAvailable() callback when the ImageReader
-        // is being closed, as application could acquire next image in the
-        // onImageAvailable() callback.
-        if (executor != null && listener != null && isReaderValid) {
-            executor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    listener.onImageAvailable(ir);
-                }
-            });
+            final boolean isReaderValid;
+            synchronized (ir.mCloseLock) {
+                isReaderValid = ir.mIsReaderValid;
+            }
+
+            // It's dangerous to fire onImageAvailable() callback when the ImageReader
+            // is being closed, as application could acquire next image in the
+            // onImageAvailable() callback.
+            if (executor != null && listener != null && isReaderValid) {
+                executor.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        listener.onImageAvailable(ir);
+                    }
+                });
+            }
         }
     }
 
