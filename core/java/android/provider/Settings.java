@@ -6337,6 +6337,13 @@ public final class Settings {
         public static final String LOCK_GESTURE_STATUS = "lock_gesture_status";
 
         /**
+         * Scarlet Idle Assistant Manager
+         * @hide
+         */
+        @Readable
+        public static final String SCARLET_IDLE_ASSISTANT_MANAGER = "scarlet_idle_assistant_manager";
+
+        /**
          * @hide
          */
         public static final String QS_PANEL_STYLE = "qs_panel_style";

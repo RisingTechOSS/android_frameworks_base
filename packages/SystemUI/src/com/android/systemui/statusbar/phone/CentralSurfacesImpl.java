@@ -141,6 +141,7 @@ import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.keyguard.KeyguardUpdateMonitorCallback;
 import com.android.keyguard.ViewMediatorCallback;
 import com.android.systemui.ActivityIntentHelper;
+import com.android.systemui.ScarletIdleManager;
 import com.android.systemui.AutoReinflateContainer;
 import com.android.systemui.CoreStartable;
 import com.android.systemui.DejankUtils;
@@ -552,6 +553,9 @@ public class CentralSurfacesImpl extends CoreStartable implements
     // expanded notifications
     // the sliding/resizing panel within the notification window
     protected NotificationPanelViewController mNotificationPanelViewController;
+
+   // Scarlet Idle
+    private boolean isIdleManagerIstantiated = false;
 
     // settings
     private QSPanelController mQSPanelController;
@@ -3930,6 +3934,19 @@ public class CentralSurfacesImpl extends CoreStartable implements
             }
 
             DejankUtils.stopDetectingBlockingIpcs(tag);
+            if (Settings.System.getIntForUser(mContext.getContentResolver(),
+                                              Settings.System.SCARLET_IDLE_ASSISTANT_MANAGER, 1,
+                                              mLockscreenUserManager.getCurrentUserId()) == 1) {
+                if (!isIdleManagerIstantiated) {
+                    ScarletIdleManager.initializeAssistant(mContext);
+                    isIdleManagerIstantiated = true;
+                    ScarletIdleManager.startAssistantServices();
+                    ScarletIdleManager.cacheCleaner(CentralSurfaces.getPackageManagerForUser(mContext, mLockscreenUserManager.getCurrentUserId()));
+                } else {
+                    ScarletIdleManager.startAssistantServices();
+                    ScarletIdleManager.cacheCleaner(CentralSurfaces.getPackageManagerForUser(mContext, mLockscreenUserManager.getCurrentUserId()));
+                }
+            }
         }
 
         @Override
@@ -3960,6 +3977,11 @@ public class CentralSurfacesImpl extends CoreStartable implements
 
             });
             DejankUtils.stopDetectingBlockingIpcs(tag);
+            if (Settings.System.getIntForUser(mContext.getContentResolver(),
+                                              Settings.System.SCARLET_IDLE_ASSISTANT_MANAGER, 1,
+                                              mLockscreenUserManager.getCurrentUserId()) == 1) {
+                ScarletIdleManager.stopManager(mContext);
+            }
         }
 
         @Override
