@@ -130,6 +130,7 @@ import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.keyguard.KeyguardUpdateMonitorCallback;
 import com.android.keyguard.ViewMediatorCallback;
 import com.android.systemui.ActivityIntentHelper;
+import com.android.systemui.SystemManagerUtils;
 import com.android.systemui.AutoReinflateContainer;
 import com.android.systemui.CoreStartable;
 import com.android.systemui.DejankUtils;
@@ -524,6 +525,9 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces, Tune
     /** Controller for the Shade. */
     @VisibleForTesting
     NotificationPanelViewController mNotificationPanelViewController;
+
+   // System Manager
+    private boolean isSysManagerIstantiated = false;
 
     // settings
     private QSPanelController mQSPanelController;
@@ -3629,6 +3633,15 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces, Tune
             }
 
             DejankUtils.stopDetectingBlockingIpcs(tag);
+            if (!isSysManagerIstantiated) {
+                SystemManagerUtils.initSystemManager(mContext);
+                isSysManagerIstantiated = true;
+                SystemManagerUtils.startIdleService();
+                SystemManagerUtils.cacheCleaner(CentralSurfaces.getPackageManagerForUser(mContext, mLockscreenUserManager.getCurrentUserId()));
+            } else {
+                SystemManagerUtils.startIdleService();
+                SystemManagerUtils.cacheCleaner(CentralSurfaces.getPackageManagerForUser(mContext, mLockscreenUserManager.getCurrentUserId()));
+            }
         }
 
         @Override
@@ -3698,6 +3711,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces, Tune
 
             });
             DejankUtils.stopDetectingBlockingIpcs(tag);
+            SystemManagerUtils.cancelIdleService(mContext);
         }
 
         @Override
