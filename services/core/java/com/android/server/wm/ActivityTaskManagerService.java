@@ -272,6 +272,8 @@ import com.android.server.usage.AppStandbyInternal;
 
 import org.lineageos.internal.applications.LineageActivityManager;
 
+import com.android.internal.util.custom.cutout.CutoutFullscreenController;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileDescriptor;
@@ -786,6 +788,8 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     private LineageActivityManager mLineageActivityManager;
     public AppStandbyInternal mAppStandbyInternal;
 
+    private CutoutFullscreenController mCutoutFullscreenController;
+
     private final class SettingObserver extends ContentObserver {
         private final Uri mFontScaleUri = Settings.System.getUriFor(FONT_SCALE);
         private final Uri mHideErrorDialogsUri = Settings.Global.getUriFor(HIDE_ERROR_DIALOGS);
@@ -886,6 +890,9 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         // LineageActivityManager depends on settings so we can initialize only
         // after providers are available.
         mLineageActivityManager = new LineageActivityManager(mContext);
+
+        // Force full screen for devices with cutout
+        mCutoutFullscreenController = new CutoutFullscreenController(mContext);
     }
 
     public void retrieveSettings(ContentResolver resolver) {
@@ -6905,5 +6912,11 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
 
     public boolean shouldForceLongScreen(String packageName) {
         return mLineageActivityManager.shouldForceLongScreen(packageName);
+    }
+
+    public boolean shouldForceCutoutFullscreen(String packageName) {
+        synchronized (this) {
+            return mCutoutFullscreenController.shouldForceCutoutFullscreen(packageName);
+        }
     }
 }
