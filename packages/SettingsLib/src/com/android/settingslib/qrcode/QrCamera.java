@@ -64,12 +64,13 @@ public class QrCamera extends Handler {
 
     private static final long AUTOFOCUS_INTERVAL_MS = 1500L;
 
-    private static Map<DecodeHintType, List<BarcodeFormat>> HINTS = new ArrayMap<>();
+    private static Map<DecodeHintType, Object> HINTS = new ArrayMap<>();
     private static List<BarcodeFormat> FORMATS = new ArrayList<>();
 
     static {
         FORMATS.add(BarcodeFormat.QR_CODE);
         HINTS.put(DecodeHintType.POSSIBLE_FORMATS, FORMATS);
+        HINTS.put(DecodeHintType.ALSO_INVERTED, Boolean.TRUE);
     }
 
     @VisibleForTesting
