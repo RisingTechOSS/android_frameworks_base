@@ -21,6 +21,9 @@
     <string name="bluetooth_is_off">Bluetooth is off</string>
     <string name="tap_a_device_to_connect">Tap a device to connect</string>
 
+    <!-- Google Lens Screenshot string -->
+    <string name="lensss">Lens</string>
+
     <!-- Sound QS Tile -->
     <string name="quick_settings_sound_label">Sound</string>
     <string name="quick_settings_sound_ring">Ring</string>
