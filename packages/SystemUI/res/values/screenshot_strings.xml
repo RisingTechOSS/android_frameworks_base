@@ -22,4 +22,7 @@
 
     <!-- Screenshot Delete Toast -->
     <string name="delete_screenshot_toast">Screenshot deleted</string>
+    
+    <!-- Google lens screenshot notification -->
+    <string name="lens">Lens</string>
 </resources>
