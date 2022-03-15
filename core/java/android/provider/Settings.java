@@ -8655,6 +8655,17 @@ public final class Settings {
                 "global_actions_panel_debug_enabled";
 
         /**
+         * Int value specifying the power menu type (default is 0)
+         * 0 - Lite
+         * 1 - Full
+         * 2 - Classic
+         * 3 - Grid
+         * 4 - Legacy
+         * @hide
+         */
+        public static final String POWER_MENU_TYPE = "power_menu_type";
+
+        /**
          * Whether the hush gesture has ever been used
          * @hide
          */
