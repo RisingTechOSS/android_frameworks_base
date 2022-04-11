@@ -28,9 +28,11 @@ import android.util.AttributeSet;
 import android.view.ContextThemeWrapper;
 import android.view.View;
 
+import android.os.Handler;
 import com.android.settingslib.Utils;
 import com.android.systemui.R;
 import com.android.systemui.navigationbar.buttons.ButtonInterface;
+import com.android.systemui.statusbar.phone.BarBackgroundUpdater;
 
 public class NavigationHandle extends View implements ButtonInterface {
 
@@ -40,6 +42,8 @@ public class NavigationHandle extends View implements ButtonInterface {
     protected float mRadius;
     protected final float mBottom;
     private boolean mRequiresInvalidate;
+    private int mOverrideIconColor;
+    public Handler mHandler = new Handler();
 
     public NavigationHandle(Context context) {
         this(context, null);
@@ -57,6 +61,13 @@ public class NavigationHandle extends View implements ButtonInterface {
         mDarkColor = Utils.getColorAttrDefaultColor(darkContext, R.attr.homeHandleColor);
         mPaint.setAntiAlias(true);
         setFocusable(false);
+        BarBackgroundUpdater.addListener(new BarBackgroundUpdater.UpdateListener(this) {
+        @Override
+        public void onUpdateNavigationBarIconColor(int previousColor, int color) {
+            mOverrideIconColor = color;
+            updateNavigationHandle();
+            }
+	    });
     }
 
     @Override
@@ -117,7 +128,7 @@ public class NavigationHandle extends View implements ButtonInterface {
 
     @Override
     public void setDarkIntensity(float intensity) {
-        int color = (int) ArgbEvaluator.getInstance().evaluate(intensity, mLightColor, mDarkColor);
+        int color = !BarBackgroundUpdater.mNavigationEnabled ? (int) ArgbEvaluator.getInstance().evaluate(intensity, mLightColor, mDarkColor) : mOverrideIconColor;
         if (mPaint.getColor() != color) {
             mPaint.setColor(color);
             if (getVisibility() == VISIBLE && getAlpha() > 0) {
@@ -127,6 +138,14 @@ public class NavigationHandle extends View implements ButtonInterface {
                 mRequiresInvalidate = true;
             }
         }
+    }
+
+    public void updateNavigationHandle() {
+        mHandler.post(() -> { 
+            if (BarBackgroundUpdater.mNavigationEnabled) {
+                mPaint.setColor(mOverrideIconColor);
+            }
+        });
     }
 
     @Override
