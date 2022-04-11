@@ -59,6 +59,7 @@ import com.android.systemui.qs.tiles.NightDisplayTile;
 import com.android.systemui.qs.tiles.OnTheGoTile;
 import com.android.systemui.qs.tiles.OneHandedModeTile;
 import com.android.systemui.qs.tiles.PowerShareTile;
+import com.android.systemui.qs.tiles.PreferredNetworkTile;
 import com.android.systemui.qs.tiles.ProfilesTile;
 import com.android.systemui.qs.tiles.QRCodeScannerTile;
 import com.android.systemui.qs.tiles.QuickAccessWalletTile;
@@ -143,6 +144,7 @@ public class QSFactoryImpl implements QSFactory {
     private final Provider<RefreshRateTile> mRefreshRateTileProvider;
     private final Provider<ScreenshotTile> mScreenshotTileProvider;
     private final Provider<SoundSearchTile> mSoundSearchTileProvider;
+    private final Provider<PreferredNetworkTile> mPreferredNetworkTileProvider;
 
     private final Lazy<QSHost> mQsHostLazy;
     private final Provider<CustomTile.Builder> mCustomTileBuilderProvider;
@@ -202,7 +204,8 @@ public class QSFactoryImpl implements QSFactory {
             Provider<WeatherTile> weatherTileProvider,
             Provider<RefreshRateTile> refreshRateTileProvider,
             Provider<ScreenshotTile> screenshotTileProvider,
-            Provider<SoundSearchTile> soundSearchTileProvider) {
+            Provider<SoundSearchTile> soundSearchTileProvider,
+            Provider<PreferredNetworkTile> preferredNetworkTileProvider) {
         mQsHostLazy = qsHostLazy;
         mCustomTileBuilderProvider = customTileBuilderProvider;
 
@@ -258,6 +261,7 @@ public class QSFactoryImpl implements QSFactory {
         mRefreshRateTileProvider = refreshRateTileProvider;
         mScreenshotTileProvider = screenshotTileProvider;
         mSoundSearchTileProvider = soundSearchTileProvider;
+        mPreferredNetworkTileProvider = preferredNetworkTileProvider;
     }
 
     /** Creates a tile with a type based on {@code tileSpec} */
@@ -378,6 +382,8 @@ public class QSFactoryImpl implements QSFactory {
                 return mScreenshotTileProvider.get();
             case "soundsearch":
                 return mSoundSearchTileProvider.get();
+            case "preferred_network":
+                return mPreferredNetworkTileProvider.get();
         }
 
         // Custom tiles
