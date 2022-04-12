@@ -265,14 +265,15 @@ public abstract class WMShellModule {
             ShellInit shellInit,
             ShellTaskOrganizer shellTaskOrganizer,
             Optional<DesktopModeTaskRepository> desktopModeTaskRepository,
-            WindowDecorViewModel windowDecorViewModel) {
+            WindowDecorViewModel windowDecorViewModel,
+            Optional<RecentTasksController> recentTasksOptional) {
         // TODO(b/238217847): Temporarily add this check here until we can remove the dynamic
         //                    override for this controller from the base module
         ShellInit init = FreeformComponents.isFreeformEnabled(context)
                 ? shellInit
                 : null;
         return new FreeformTaskListener(init, shellTaskOrganizer, desktopModeTaskRepository,
-                windowDecorViewModel);
+                windowDecorViewModel, recentTasksOptional);
     }
 
     @WMSingleton

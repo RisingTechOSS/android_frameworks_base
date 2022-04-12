@@ -33,6 +33,7 @@ import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.windowdecor.WindowDecorViewModel;
+import com.android.wm.shell.recents.RecentTasksController;
 
 import java.io.PrintWriter;
 import java.util.Optional;
@@ -48,6 +49,7 @@ public class FreeformTaskListener implements ShellTaskOrganizer.TaskListener,
     private final ShellTaskOrganizer mShellTaskOrganizer;
     private final Optional<DesktopModeTaskRepository> mDesktopModeTaskRepository;
     private final WindowDecorViewModel mWindowDecorationViewModel;
+    private final Optional<RecentTasksController> mRecentTasksOptional;
 
     private final SparseArray<State> mTasks = new SparseArray<>();
 
@@ -60,10 +62,12 @@ public class FreeformTaskListener implements ShellTaskOrganizer.TaskListener,
             ShellInit shellInit,
             ShellTaskOrganizer shellTaskOrganizer,
             Optional<DesktopModeTaskRepository> desktopModeTaskRepository,
-            WindowDecorViewModel windowDecorationViewModel) {
+            WindowDecorViewModel windowDecorationViewModel,
+            Optional<RecentTasksController> recentTasks) {
         mShellTaskOrganizer = shellTaskOrganizer;
         mWindowDecorationViewModel = windowDecorationViewModel;
         mDesktopModeTaskRepository = desktopModeTaskRepository;
+        mRecentTasksOptional = recentTasks;
         if (shellInit != null) {
             shellInit.addInitCallback(this::onInit, this);
         }
@@ -107,6 +111,7 @@ public class FreeformTaskListener implements ShellTaskOrganizer.TaskListener,
             });
         }
         onTaskEnteredFreeform(taskInfo);
+        updateRecentsForVisibleFreeformTask(taskInfo);
     }
 
     @Override
@@ -208,5 +213,12 @@ public class FreeformTaskListener implements ShellTaskOrganizer.TaskListener,
     @Override
     public String toString() {
         return TAG;
+    }
+
+    private void updateRecentsForVisibleFreeformTask(RunningTaskInfo taskInfo) {
+        mRecentTasksOptional.ifPresent(recentTasks -> {
+            // Remove any persisted splits if either tasks are now made freeform.
+            recentTasks.removeSplitPair(taskInfo.taskId);
+        });
     }
 }
