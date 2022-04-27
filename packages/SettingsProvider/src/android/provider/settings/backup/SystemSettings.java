@@ -102,6 +102,10 @@ public class SystemSettings {
         Settings.System.SCREEN_FLASH_NOTIFICATION_COLOR,
         Settings.System.NETWORK_TRAFFIC_STATE,
         Settings.System.NETWORK_TRAFFIC_AUTOHIDE_THRESHOLD,
-        Settings.System.QS_PANEL_STYLE
+        Settings.System.QS_PANEL_STYLE,
+        Settings.System.QS_TILE_LABEL_HIDE,
+        Settings.System.QS_TILE_VERTICAL_LAYOUT,
+        Settings.System.QS_LAYOUT,
+        Settings.System.QQS_LAYOUT
     };
 }
