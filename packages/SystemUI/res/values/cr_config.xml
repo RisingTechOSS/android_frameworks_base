@@ -86,4 +86,7 @@
     
     <!-- Disable/Enable Ambient display qs tile -->
     <bool name="config_enable_ambientQSTile">true</bool>
+    
+    <!-- Screen off delay -->
+    <integer name="config_screen_off_delay">0</integer>
 </resources>

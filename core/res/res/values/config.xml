@@ -707,6 +707,9 @@
          This defaults to true to be consistent with historical behavior. -->
     <bool name="config_startDreamImmediatelyOnDock">true</bool>
 
+    <!-- Screen off delay -->
+    <integer name="config_screen_off_delay">0</integer>
+
     <!-- Desk dock behavior -->
 
     <!-- The number of degrees to rotate the display when the device is in a desk dock.

@@ -124,8 +124,6 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
     private static final int COLOR_FADE_ON_ANIMATION_DURATION_MILLIS = 250;
     private static final int COLOR_FADE_OFF_ANIMATION_DURATION_MILLIS = 400;
 
-    private static final int SCREEN_OFF_DELAY_MILLIS = 1000;
-
     private static final int MSG_UPDATE_POWER_STATE = 1;
     private static final int MSG_PROXIMITY_SENSOR_DEBOUNCED = 2;
     private static final int MSG_SCREEN_ON_UNBLOCKED = 3;
@@ -213,6 +211,9 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
 
     // The proximity sensor, or null if not available or needed.
     private Sensor mProximitySensor;
+
+    // The screen off delay
+    private final int mScreenOffDelayConfig;
 
     // The doze screen brightness.
     private final float mScreenBrightnessDozeConfig;
@@ -557,6 +558,9 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         PowerManager pm = context.getSystemService(PowerManager.class);
 
         final Resources resources = context.getResources();
+
+        mScreenOffDelayConfig = resources.getInteger(
+                com.android.internal.R.integer.config_screen_off_delay);
 
         // DOZE AND DIM SETTINGS
         mScreenBrightnessDozeConfig = clampAbsoluteBrightness(
@@ -2099,7 +2103,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
 
     private void setScreenOffDelayed() {
         cancelDelayedScreenOff();
-        mHandler.postDelayed(mScreenOffTask, SCREEN_OFF_DELAY_MILLIS);
+        mHandler.postDelayed(mScreenOffTask, mScreenOffDelayConfig);
     }
 
     private void cancelDelayedScreenOff() {

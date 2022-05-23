@@ -1735,6 +1735,7 @@
   <java-symbol type="bool" name="config_allowAllRotations" />
   <java-symbol type="bool" name="config_annoy_dianne" />
   <java-symbol type="bool" name="config_startDreamImmediatelyOnDock" />
+  <java-symbol type="integer" name="config_screen_off_delay" />
   <java-symbol type="bool" name="config_carDockEnablesAccelerometer" />
   <java-symbol type="bool" name="config_customUserSwitchUi" />
   <java-symbol type="bool" name="config_deskDockEnablesAccelerometer" />
