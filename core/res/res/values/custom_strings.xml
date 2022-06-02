@@ -22,4 +22,7 @@
     <!-- System Reboot -->
     <string name="system_restart_title">System restart required</string>
     <string name="system_restart_message">For all the changes to take effect, a system restart is required. Perform system restart now?</string>
+
+    <!-- Lock gesture -->
+    <string name="gesture_locked_warning">Swipe again to unlock gestures</string>
 </resources>
