@@ -128,4 +128,7 @@
 
     <!-- Parallel space max count. -->
     <java-symbol type="integer" name="config_parallelSpaceMaxCount" />
+    
+  <!-- Lock gesture -->
+  <java-symbol type="string" name="gesture_locked_warning" />
 </resources>

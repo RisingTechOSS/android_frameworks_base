@@ -51,4 +51,7 @@
 
     <!-- Parallel space badge -->
     <string name="parallel_space_badge_label" translatable="false">%1$s</string>
+    
+    <!-- Lock gesture -->
+    <string name="gesture_locked_warning">Swipe again to unlock gestures</string>
 </resources>
