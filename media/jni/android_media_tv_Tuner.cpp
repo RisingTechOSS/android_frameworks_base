@@ -561,10 +561,11 @@ jobject MediaEvent::getLinearBlock() {
         }
         pC2Buffer->registerOnDestroyNotify(&DestroyCallback, this);
         incStrong(pC2Buffer.get());
+        jclass lbc = env->FindClass("android/media/MediaCodec$LinearBlock");
         jobject linearBlock =
-                env->NewObject(
-                        env->FindClass("android/media/MediaCodec$LinearBlock"),
-                        gFields.linearBlockInitID);
+            env->CallStaticObjectMethod(
+                    lbc,
+                    env->GetStaticMethodID(lbc, "obtain2","()Landroid/media/MediaCodec$LinearBlock;"));
         env->CallVoidMethod(
                 linearBlock,
                 gFields.linearBlockSetInternalStateID,

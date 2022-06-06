@@ -3069,11 +3069,6 @@ final public class MediaCodec {
 
         private native void native_obtain(int capacity, String[] codecNames);
 
-        @Override
-        protected void finalize() {
-            native_recycle();
-        }
-
         /**
          * Returns true if it is possible to allocate a linear block that can be
          * passed to all listed codecs as input buffers without copying the
@@ -3117,6 +3112,15 @@ final public class MediaCodec {
             }
             synchronized (buffer.mLock) {
                 buffer.native_obtain(capacity, codecNames);
+            }
+            return buffer;
+        }
+
+        // Called from native
+        public static @Nullable LinearBlock obtain2() {
+            LinearBlock buffer = sPool.poll();
+            if (buffer == null) {
+                buffer = new LinearBlock();
             }
             return buffer;
         }

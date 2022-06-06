@@ -21340,11 +21340,11 @@ package android.media {
   }
 
   public static final class MediaCodec.LinearBlock {
-    method protected void finalize();
     method public static boolean isCodecCopyFreeCompatible(@NonNull String[]);
     method public boolean isMappable();
     method @NonNull public java.nio.ByteBuffer map();
     method @Nullable public static android.media.MediaCodec.LinearBlock obtain(int, @NonNull String[]);
+    method @Nullable public static android.media.MediaCodec.LinearBlock obtain2();
     method public void recycle();
   }
 
