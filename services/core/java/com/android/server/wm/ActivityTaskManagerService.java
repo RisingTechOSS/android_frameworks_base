@@ -271,6 +271,7 @@ import com.android.server.sdksandbox.SdkSandboxManagerLocal;
 import com.android.server.statusbar.StatusBarManagerInternal;
 import com.android.server.uri.NeededUriGrants;
 import com.android.server.uri.UriGrantsManagerInternal;
+import com.android.server.usage.AppStandbyInternal;
 
 import org.lineageos.internal.applications.LineageActivityManager;
 
@@ -787,6 +788,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     private LineageActivityManager mLineageActivityManager;
 
     private CutoutFullscreenController mCutoutFullscreenController;
+    public AppStandbyInternal mAppStandbyInternal;
 
     private SystemSensorManager mSystemSensorManager;
 
@@ -871,6 +873,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
             mTaskSupervisor.onSystemReady();
             mActivityClientController.onSystemReady();
         }
+        mAppStandbyInternal = LocalServices.getService(AppStandbyInternal.class);
     }
 
     public void onInitPowerManagement() {
