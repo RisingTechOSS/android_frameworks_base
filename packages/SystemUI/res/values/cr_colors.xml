@@ -29,4 +29,6 @@
     <color name="edge_light_yellow">#fffbbc06</color>
     
     <color name="volume_row_bg">@android:color/system_accent2_200</color>
+    
+    <color name="qs_ripple_color">@android:color/system_accent1_400</color>
 </resources>
