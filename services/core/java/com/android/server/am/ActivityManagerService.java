@@ -256,6 +256,8 @@ import android.content.res.Resources;
 import android.database.ContentObserver;
 import android.graphics.Rect;
 import android.hardware.display.DisplayManagerInternal;
+import android.hardware.power.Boost;
+import android.hardware.power.Mode;
 import android.media.audiofx.AudioEffect;
 import android.net.ConnectivityManager;
 import android.net.Proxy;
@@ -418,6 +420,7 @@ import com.android.server.utils.TimingsTraceAndSlog;
 import com.android.server.vr.VrManagerInternal;
 import com.android.server.wm.ActivityMetricsLaunchObserver;
 import com.android.server.wm.ActivityServiceConnectionsHolder;
+import com.android.server.wm.ActivityTaskSupervisor;
 import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.ActivityTaskManagerService;
 import com.android.server.wm.WindowManagerInternal;
@@ -590,6 +593,9 @@ public class ActivityManagerService extends IActivityManager.Stub
 
     private Installer mInstaller;
 
+    /** Run all ActivityStacks through this */
+    ActivityTaskSupervisor mTaskSupervisor;
+    
     final InstrumentationReporter mInstrumentationReporter = new InstrumentationReporter();
 
     @CompositeRWLock({"this", "mProcLock"})
@@ -2455,6 +2461,7 @@ public class ActivityManagerService extends IActivityManager.Stub
         mActivityTaskManager.initialize(mIntentFirewall, mPendingIntentController,
                 DisplayThread.get().getLooper());
         mAtmInternal = LocalServices.getService(ActivityTaskManagerInternal.class);
+        mTaskSupervisor = mActivityTaskManager.mTaskSupervisor;
 
         mHiddenApiBlacklist = new HiddenApiSettings(mHandler, mContext);
         mSdkSandboxSettings = new SdkSandboxSettings(mContext);
@@ -2471,7 +2478,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                     Process.THREAD_GROUP_SYSTEM);
             Process.setThreadGroupAndCpuset(
                     mOomAdjuster.mCachedAppOptimizer.mCachedAppOptimizerThread.getThreadId(),
-                    Process.THREAD_GROUP_SYSTEM);
+                    mOomAdjuster.mCachedAppOptimizer.mCompactionPriority);
         } catch (Exception e) {
             Slog.w(TAG, "Setting background thread cpuset failed");
         }
@@ -3334,6 +3341,14 @@ public class ActivityManagerService extends IActivityManager.Stub
                 mAppProfiler.setAllowLowerMemLevelLocked(false);
                 doLowMem = false;
             }
+            
+            if (mLocalPowerManager != null) {
+              // either the task will trigger the back animation or gets swipes from overview
+              if (!app.mErrorState.isNotResponding() && !app.mErrorState.isCrashing()) {
+                  mLocalPowerManager.setPowerBoost(Boost.INTERACTION, 2000);
+              }
+            }
+
             EventLogTags.writeAmProcDied(app.userId, pid, app.processName, setAdj, setProcState);
             if (DEBUG_CLEANUP) Slog.v(TAG_CLEANUP,
                 "Dying app: " + app + ", pid: " + pid + ", thread: " + thread.asBinder());
@@ -4740,6 +4755,14 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         EventLogTags.writeAmProcBound(app.userId, pid, app.processName);
 
+        if (mLocalPowerManager != null) {
+          if (app.getHostingRecord() != null && app.getHostingRecord().isTopApp()) {
+              mLocalPowerManager.setPowerMode(Mode.LAUNCH, true);
+          } else {
+              mLocalPowerManager.setPowerMode(Mode.LAUNCH, false);
+          }
+        }
+
         synchronized (mProcLock) {
             app.mState.setCurAdj(ProcessList.INVALID_ADJ);
             app.mState.setSetAdj(ProcessList.INVALID_ADJ);
@@ -5162,6 +5185,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                                 String data, Bundle extras, boolean ordered,
                                 boolean sticky, int sendingUser) {
                             synchronized (mProcLock) {
+                            	mOomAdjuster.mCachedAppOptimizer.compactAllSystem();
                                 mAppProfiler.requestPssAllProcsLPr(
                                         SystemClock.uptimeMillis(), true, false);
                             }

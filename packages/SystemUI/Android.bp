@@ -127,6 +127,8 @@ android_library {
         "LowLightDreamLib",
         "vendor.lineage.powershare-V1.0-java",
         "faceunlock_framework",
+        "android.hardware.power.stats-V1-java",
+        "android.hardware.power-V3-java",
     ],
     manifest: "AndroidManifest.xml",
     additional_manifests: ["LineageManifest.xml"],
@@ -237,6 +239,8 @@ android_library {
         "WindowManager-Shell",
         "LowLightDreamLib",
         "vendor.lineage.powershare-V1.0-java",
+        "android.hardware.power.stats-V1-java",
+        "android.hardware.power-V3-java",
     ],
     libs: [
         "android.test.runner",

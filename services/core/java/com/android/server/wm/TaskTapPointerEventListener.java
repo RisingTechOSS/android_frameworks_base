@@ -29,7 +29,14 @@ import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.WindowManagerPolicyConstants.PointerEventListener;
 
+import android.hardware.power.Boost;
+import android.os.PowerManagerInternal;
+import com.android.server.LocalServices;
+
 import com.android.server.wm.WindowManagerService.H;
+import com.android.server.am.ActivityManagerService;
+import com.android.server.wm.ActivityTaskSupervisor;
+import com.android.server.wm.DisplayContent;
 
 /**
  * 1. Adjust the top most focus display if touch down on some display.
@@ -42,11 +49,13 @@ public class TaskTapPointerEventListener implements PointerEventListener {
     private final DisplayContent mDisplayContent;
     private final Rect mTmpRect = new Rect();
     private int mPointerIconType = TYPE_NOT_SPECIFIED;
+    public PowerManagerInternal mLocalPowerManager;
 
     public TaskTapPointerEventListener(WindowManagerService service,
             DisplayContent displayContent) {
         mService = service;
         mDisplayContent = displayContent;
+        mLocalPowerManager = LocalServices.getService(PowerManagerInternal.class);
     }
 
     private void restorePointerIcon(int x, int y) {
@@ -128,6 +137,9 @@ public class TaskTapPointerEventListener implements PointerEventListener {
                 restorePointerIcon(x, y);
             }
             break;
+        }
+        if (mLocalPowerManager != null) {
+           mLocalPowerManager.setPowerBoost(Boost.INTERACTION, 2000);
         }
     }
 

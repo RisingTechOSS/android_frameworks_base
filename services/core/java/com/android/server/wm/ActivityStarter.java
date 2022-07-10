@@ -110,12 +110,15 @@ import android.content.pm.PackageManagerInternal;
 import android.content.pm.ResolveInfo;
 import android.content.pm.UserInfo;
 import android.content.res.Configuration;
+import android.hardware.power.Boost;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Process;
+import android.os.PowerManagerInternal;
 import android.os.RemoteException;
+import android.os.SystemProperties;
 import android.os.Trace;
 import android.os.UserHandle;
 import android.os.UserManager;
@@ -132,6 +135,7 @@ import com.android.internal.app.HeavyWeightSwitcherActivity;
 import com.android.internal.app.IVoiceInteractor;
 import com.android.internal.protolog.common.ProtoLog;
 import com.android.internal.util.FrameworkStatsLog;
+import com.android.server.LocalServices;
 import com.android.server.am.PendingIntentRecord;
 import com.android.server.pm.InstantAppResolver;
 import com.android.server.power.ShutdownCheckPoints;
@@ -236,6 +240,8 @@ class ActivityStarter {
 
     private IVoiceInteractionSession mVoiceSession;
     private IVoiceInteractor mVoiceInteractor;
+
+    private PowerManagerInternal mLocalPowerManager;
 
     // Last activity record we attempted to start
     private ActivityRecord mLastStartActivityRecord;
@@ -591,6 +597,7 @@ class ActivityStarter {
         mSupervisor = supervisor;
         mInterceptor = interceptor;
         reset(true);
+        mLocalPowerManager = LocalServices.getService(PowerManagerInternal.class);
     }
 
     /**
@@ -3016,6 +3023,11 @@ class ActivityStarter {
 
     /** Places {@link #mStartActivity} in {@code task} or an embedded {@link TaskFragment}. */
     private void addOrReparentStartingActivity(@NonNull Task task, String reason) {
+        final int POWER_BOOST_TIMEOUT_MS = Integer.parseInt(
+            SystemProperties.get("persist.sys.powerhal.interaction.max", "200"));
+    	if (mLocalPowerManager != null) {
+    	   mLocalPowerManager.setPowerBoost(Boost.INTERACTION, POWER_BOOST_TIMEOUT_MS);
+    	}
         TaskFragment newParent = task;
         if (mInTaskFragment != null) {
             int embeddingCheckResult = canEmbedActivity(mInTaskFragment, mStartActivity, task);

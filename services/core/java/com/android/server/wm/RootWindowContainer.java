@@ -49,6 +49,7 @@ import static com.android.internal.protolog.ProtoLogGroup.WM_SHOW_TRANSACTIONS;
 import static com.android.server.policy.PhoneWindowManager.SYSTEM_DIALOG_REASON_ASSIST;
 import static com.android.server.policy.WindowManagerPolicy.FINISH_LAYOUT_REDO_LAYOUT;
 import static com.android.server.policy.WindowManagerPolicy.FINISH_LAYOUT_REDO_WALLPAPER;
+import static com.android.server.wm.ActivityRecord.State.DESTROYED;
 import static com.android.server.wm.ActivityRecord.State.FINISHING;
 import static com.android.server.wm.ActivityRecord.State.PAUSED;
 import static com.android.server.wm.ActivityRecord.State.RESUMED;
@@ -120,6 +121,7 @@ import android.os.Message;
 import android.os.PowerManager;
 import android.os.RemoteException;
 import android.os.SystemClock;
+import android.os.SystemProperties;
 import android.os.Trace;
 import android.os.UserHandle;
 import android.os.storage.StorageManager;
@@ -139,6 +141,8 @@ import android.view.DisplayInfo;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.window.WindowContainerToken;
+
+import android.hardware.power.Boost;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.ResolverActivity;
@@ -232,6 +236,9 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
     static final int MATCH_ATTACHED_TASK_OR_RECENT_TASKS = 1;
     // Match either attached tasks, or in the recent tasks, restoring it to the provided task id
     static final int MATCH_ATTACHED_TASK_OR_RECENT_TASKS_AND_RESTORE = 2;
+
+    private static final int POWER_BOOST_TIMEOUT_MS = Integer.parseInt(
+            SystemProperties.get("persist.sys.powerhal.interaction.max", "200"));
 
     ActivityTaskManagerService mService;
     ActivityTaskSupervisor mTaskSupervisor;
@@ -1799,7 +1806,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
     }
 
     @Nullable
-    Task getTopDisplayFocusedRootTask() {
+    public Task getTopDisplayFocusedRootTask() {
         for (int i = getChildCount() - 1; i >= 0; --i) {
             final Task focusedRootTask = getChildAt(i).getFocusedRootTask();
             if (focusedRootTask != null) {
@@ -2207,9 +2214,30 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         if (preferredTaskDisplayArea != null) {
             mTmpFindTaskResult.process(preferredTaskDisplayArea);
             if (mTmpFindTaskResult.mIdealRecord != null) {
+                if(mTmpFindTaskResult.mIdealRecord.getState() == DESTROYED) {
+                    /*It's a new app launch */
+                    if (mWmService.mPowerManagerInternal != null) {
+            	      mWmService.mPowerManagerInternal.setPowerBoost(Boost.INTERACTION, POWER_BOOST_TIMEOUT_MS);
+            	    }
+                }
+
+                if(mTmpFindTaskResult.mIdealRecord.getState() == STOPPED) {
+                     /*Warm launch */
+                    if (mWmService.mPowerManagerInternal != null) {
+            	      mWmService.mPowerManagerInternal.setPowerBoost(Boost.INTERACTION, POWER_BOOST_TIMEOUT_MS);
+            	    }
+                }
                 return mTmpFindTaskResult.mIdealRecord;
             } else if (mTmpFindTaskResult.mCandidateRecord != null) {
                 candidateActivity = mTmpFindTaskResult.mCandidateRecord;
+            }
+        }
+
+        /* Acquire perf lock *only* during new app launch */
+        if ((mTmpFindTaskResult.mIdealRecord == null) ||
+            (mTmpFindTaskResult.mIdealRecord.getState() == DESTROYED)) {
+            if (mWmService.mPowerManagerInternal != null) {
+            	mWmService.mPowerManagerInternal.setPowerBoost(Boost.INTERACTION, POWER_BOOST_TIMEOUT_MS);
             }
         }
 

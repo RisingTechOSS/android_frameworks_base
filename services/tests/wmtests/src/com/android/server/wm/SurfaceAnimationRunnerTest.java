@@ -36,6 +36,7 @@ import android.graphics.Point;
 import android.hardware.power.Boost;
 import android.os.Handler;
 import android.os.PowerManagerInternal;
+import android.os.SystemProperties;
 import android.platform.test.annotations.Presubmit;
 import android.view.Choreographer;
 import android.view.Choreographer.FrameCallback;
@@ -78,6 +79,9 @@ public class SurfaceAnimationRunnerTest {
 
     private final Handler mAnimationThreadHandler = AnimationThread.getHandler();
     private final Handler mSurfaceAnimationHandler = SurfaceAnimationThread.getHandler();
+
+    private final int POWER_BOOST_TIMEOUT_MS = Integer.parseInt(
+            SystemProperties.get("persist.sys.powerhal.interaction.max", "200"));
 
     @Before
     public void setUp() throws Exception {
@@ -202,7 +206,7 @@ public class SurfaceAnimationRunnerTest {
                 mMockTransaction, this::finishedCallback);
         waitUntilNextFrame();
 
-        verify(mMockPowerManager).setPowerBoost(eq(Boost.INTERACTION), eq(0));
+        verify(mMockPowerManager).setPowerBoost(eq(Boost.INTERACTION), eq(POWER_BOOST_TIMEOUT_MS));
     }
 
     private void waitUntilNextFrame() throws Exception {

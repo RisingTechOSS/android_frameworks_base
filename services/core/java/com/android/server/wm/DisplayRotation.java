@@ -1533,7 +1533,9 @@ public class DisplayRotation {
         public void onProposedRotationChanged(int rotation) {
             ProtoLog.v(WM_DEBUG_ORIENTATION, "onProposedRotationChanged, rotation=%d", rotation);
             // Send interaction power boost to improve redraw performance.
-            mService.mPowerManagerInternal.setPowerBoost(Boost.INTERACTION, 0);
+            final int POWER_BOOST_TIMEOUT_MS = Integer.parseInt(
+            SystemProperties.get("persist.sys.powerhal.interaction.max", "200"));
+            mService.mPowerManagerInternal.setPowerBoost(Boost.INTERACTION, POWER_BOOST_TIMEOUT_MS);
             if (isRotationChoicePossible(mCurrentAppOrientation)) {
                 final boolean isValid = isValidRotationChoice(rotation);
                 sendProposedRotationChangeToStatusBarInternal(rotation, isValid);

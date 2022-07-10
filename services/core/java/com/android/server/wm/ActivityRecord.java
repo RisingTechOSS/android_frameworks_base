@@ -380,7 +380,7 @@ import java.util.function.Predicate;
 /**
  * An entry in the history task, representing an activity.
  */
-final class ActivityRecord extends WindowToken implements WindowManagerService.AppFreezeListener {
+public final class ActivityRecord extends WindowToken implements WindowManagerService.AppFreezeListener {
     private static final String TAG = TAG_WITH_CLASS_NAME ? "ActivityRecord" : TAG_ATM;
     private static final String TAG_ADD_REMOVE = TAG + POSTFIX_ADD_REMOVE;
     private static final String TAG_APP = TAG + POSTFIX_APP;
@@ -444,7 +444,7 @@ final class ActivityRecord extends WindowToken implements WindowManagerService.A
     final int mUserId;
     // The package implementing intent's component
     // TODO: rename to mPackageName
-    final String packageName;
+    public final String packageName;
     // the intent component, or target of an alias.
     final ComponentName mActivityComponent;
     // Input application handle used by the input dispatcher.
@@ -533,6 +533,8 @@ final class ActivityRecord extends WindowToken implements WindowManagerService.A
     private boolean mLastDeferHidingClient; // If true we will defer setting mClientVisible to false
                                            // and reporting to the client that it is hidden.
     boolean nowVisible;     // is this activity's window visible?
+    public boolean launching;      // is activity launch in progress?
+    public boolean translucentWindowLaunch; // a translucent window launch?
     boolean mClientVisibilityDeferred;// was the visibility change message to client deferred?
     boolean idle;           // has the activity gone idle?
     boolean hasBeenLaunched;// has this activity ever been launched?
@@ -2054,6 +2056,8 @@ final class ActivityRecord extends WindowToken implements WindowManagerService.A
         super.setClientVisible(true);
         idle = false;
         hasBeenLaunched = false;
+        launching = false;
+        translucentWindowLaunch = false;
         mTaskSupervisor = supervisor;
 
         info.taskAffinity = computeTaskAffinity(info.taskAffinity, info.applicationInfo.uid,
@@ -2307,6 +2311,7 @@ final class ActivityRecord extends WindowToken implements WindowManagerService.A
                 windowDisableStarting);
         // If this activity is launched from system surface, ignore windowDisableStarting
         if (windowIsTranslucent || windowIsFloating) {
+            translucentWindowLaunch = true;
             return false;
         }
         if (windowShowWallpaper
@@ -6202,6 +6207,7 @@ final class ActivityRecord extends WindowToken implements WindowManagerService.A
 
     void stopIfPossible() {
         if (DEBUG_SWITCH) Slog.d(TAG_SWITCH, "Stopping: " + this);
+        launching = false;
         final Task rootTask = getRootTask();
         if (isNoHistory()) {
             if (!finishing) {
@@ -6598,6 +6604,7 @@ final class ActivityRecord extends WindowToken implements WindowManagerService.A
         if (DEBUG_SWITCH) Log.v(TAG_SWITCH, "windowsVisibleLocked(): " + this);
         if (!nowVisible) {
             nowVisible = true;
+            launching = false;
             lastVisibleTime = SystemClock.uptimeMillis();
             mAtmService.scheduleAppGcsLocked();
             // The nowVisible may be false in onAnimationFinished because the transition animation
@@ -6622,6 +6629,7 @@ final class ActivityRecord extends WindowToken implements WindowManagerService.A
         if (DEBUG_VISIBILITY) Slog.v(TAG_WM, "Reporting gone in " + token);
         if (DEBUG_SWITCH) Log.v(TAG_SWITCH, "windowsGone(): " + this);
         nowVisible = false;
+        launching = false;
     }
 
     @Override

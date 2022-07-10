@@ -40,10 +40,13 @@ import android.hardware.fingerprint.FingerprintManager;
 import android.hardware.fingerprint.IUdfpsOverlayController;
 import android.hardware.fingerprint.IUdfpsOverlayControllerCallback;
 import android.hardware.fingerprint.FingerprintSensorPropertiesInternal;
+import android.hardware.power.Boost;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.PowerManager;
+import android.os.PowerManagerInternal;
 import android.os.Process;
+import android.os.SystemProperties;
 import android.os.Trace;
 import android.os.UserHandle;
 import android.os.VibrationAttributes;
@@ -62,6 +65,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.LatencyTracker;
 import com.android.keyguard.FaceAuthApiRequestReason;
 import com.android.keyguard.KeyguardUpdateMonitor;
+import com.android.server.LocalServices;
 import com.android.systemui.R;
 import com.android.systemui.animation.ActivityLaunchAnimator;
 import com.android.systemui.biometrics.dagger.BiometricsBackground;
@@ -120,6 +124,7 @@ public class UdfpsController implements DozeReceiver {
 
     private final Context mContext;
     private final Execution mExecution;
+    private final PowerManagerInternal mLocalPowerManager;
     private final FingerprintManager mFingerprintManager;
     @NonNull private final LayoutInflater mInflater;
     private final WindowManager mWindowManager;
@@ -730,6 +735,7 @@ public class UdfpsController implements DozeReceiver {
         if (com.android.internal.util.crdroid.Utils.isPackageInstalled(mContext, "com.crdroid.udfps.animations")) {
             mUdfpsAnimation = new UdfpsAnimation(mContext, mWindowManager, mSensorProps);
         }
+        mLocalPowerManager = LocalServices.getService(PowerManagerInternal.class);
     }
 
     private void updateScreenOffFodState() {
@@ -844,6 +850,8 @@ public class UdfpsController implements DozeReceiver {
 
         mOverlay = overlay;
         final int requestReason = overlay.getRequestReason();
+        final int POWER_BOOST_TIMEOUT_MS = Integer.parseInt(
+            SystemProperties.get("persist.sys.powerhal.interaction.max", "200"));
 
         if (mUdfpsAnimation != null) {
             mUdfpsAnimation.setIsKeyguard(requestReason ==
@@ -863,6 +871,10 @@ public class UdfpsController implements DozeReceiver {
             mOrientationListener.enable();
         } else {
             Log.v(TAG, "showUdfpsOverlay | the overlay is already showing");
+        }
+        
+        if (mLocalPowerManager != null) {
+            mLocalPowerManager.setPowerBoost(Boost.INTERACTION, POWER_BOOST_TIMEOUT_MS);
         }
     }
 

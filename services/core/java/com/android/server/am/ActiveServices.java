@@ -175,6 +175,7 @@ import com.android.server.SystemService;
 import com.android.server.am.ActivityManagerService.ItemMatcher;
 import com.android.server.am.LowMemDetector.MemFactor;
 import com.android.server.uri.NeededUriGrants;
+import com.android.server.wm.ActivityRecord;
 import com.android.server.wm.ActivityServiceConnectionsHolder;
 
 import java.io.FileDescriptor;
@@ -249,6 +250,9 @@ public final class ActiveServices {
     // Maximum number of services that we allow to start in the background
     // at the same time.
     final int mMaxStartingBackground;
+
+    // Flag to reschedule the services during app launch. Disable by default.
+    private static boolean SERVICE_RESCHEDULE = false;
 
     /**
      * Master service bookkeeping, keyed by user number.
@@ -568,6 +572,8 @@ public final class ActiveServices {
                 ? maxBg : ActivityManager.isLowRamDeviceStatic() ? 1 : 8;
 
         final IBinder b = ServiceManager.getService(Context.PLATFORM_COMPAT_SERVICE);
+        
+	SERVICE_RESCHEDULE = Boolean.parseBoolean(SystemProperties.get("persist.sys.am.reschedule_service", "false"));
     }
 
     void systemServicesReady() {
@@ -4055,8 +4061,27 @@ public final class ActiveServices {
             return;
         }
         try {
-            bringUpServiceLocked(r, r.intent.getIntent().getFlags(), r.createdFromFg, true, false,
-                    false, true);
+            if(SERVICE_RESCHEDULE) {
+                boolean shouldDelay = false;
+                ActivityRecord top_rc = mAm.mTaskSupervisor.getTopResumedActivity();
+
+                boolean isPersistent
+                        = !((r.serviceInfo.applicationInfo.flags&ApplicationInfo.FLAG_PERSISTENT) == 0);
+                if(top_rc != null) {
+                    if(top_rc.launching && !r.shortInstanceName.contains(top_rc.packageName)
+                            && !isPersistent && r.isForeground == false) {
+                        shouldDelay = true;
+                    }
+                }
+                if(!shouldDelay) {
+                    bringUpServiceLocked(r, r.intent.getIntent().getFlags(), r.createdFromFg, true, false, false, true);
+                } else {
+                    r.resetRestartCounter();
+                    scheduleServiceRestartLocked(r, true);
+                }
+            } else {
+                bringUpServiceLocked(r, r.intent.getIntent().getFlags(), r.createdFromFg, true, false, false, true);
+            }
         } catch (TransactionTooLargeException e) {
             // Ignore, it's been logged and nothing upstack cares.
         } finally {
