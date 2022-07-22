@@ -1236,7 +1236,8 @@ public final class CachedAppOptimizer {
                 && (newAdj == ProcessList.PREVIOUS_APP_ADJ || newAdj == ProcessList.HOME_APP_ADJ)) {
             // Perform a minor compaction when a perceptible app becomes the prev/home app
             compactAppSome(app, false);
-        } else if (oldAdj < ProcessList.CACHED_APP_MIN_ADJ
+        } else if ((oldAdj < ProcessList.CACHED_APP_MIN_ADJ
+                || oldAdj > ProcessList.CACHED_APP_MAX_ADJ)
                 && newAdj >= ProcessList.CACHED_APP_MIN_ADJ
                 && newAdj <= ProcessList.CACHED_APP_MAX_ADJ) {
             // Perform a major compaction when any app enters cached
@@ -1304,7 +1305,7 @@ public final class CachedAppOptimizer {
 
             // don't compact if the process has returned to perceptible
             // and this is only a cached/home/prev compaction
-            if ((action == COMPACT_ACTION_FILE || action == COMPACT_ACTION_FULL)
+            if ((action == COMPACT_PROCESS_SOME || action == COMPACT_PROCESS_FULL)
                     && (proc.mState.getSetAdj() <= ProcessList.PERCEPTIBLE_APP_ADJ)) {
                 if (DEBUG_COMPACTION) {
                     Slog.d(TAG_AM,
