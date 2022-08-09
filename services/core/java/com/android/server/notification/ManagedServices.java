@@ -132,6 +132,7 @@ abstract public class ManagedServices {
 
     // contains connections to all connected services, including app services
     // and system services
+    @GuardedBy("mMutex")
     private final ArrayList<ManagedServiceInfo> mServices = new ArrayList<>();
     /**
      * The services that have been bound by us. If the service is also connected, it will also
@@ -1010,18 +1011,22 @@ abstract public class ManagedServices {
         if (service == null) {
             return false;
         }
-        ManagedServiceInfo info = getServiceFromTokenLocked(service);
-        if (info != null) {
-            return true;
+        synchronized (mMutex) {
+            ManagedServiceInfo info = getServiceFromTokenLocked(service);
+            if (info != null) {
+                return true;
+            }
+            return false;
         }
-        return false;
     }
 
     protected ManagedServiceInfo checkServiceTokenLocked(IInterface service) {
         checkNotNull(service);
-        ManagedServiceInfo info = getServiceFromTokenLocked(service);
-        if (info != null) {
-            return info;
+        synchronized (mMutex) {
+            ManagedServiceInfo info = getServiceFromTokenLocked(service);
+            if (info != null) {
+                return info;
+            }
         }
         throw new SecurityException("Disallowed call from unknown " + getCaption() + ": "
                 + service + " " + service.getClass());
