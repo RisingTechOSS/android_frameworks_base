@@ -206,5 +206,7 @@
 
     <!-- keyboard backlight indicator-->
     <item type="id" name="backlight_icon" />
+    <item type="id" name="tag_original_padding_start"/>
+    <item type="id" name="tag_original_padding_end"/>
 </resources>
 
