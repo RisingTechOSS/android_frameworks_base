@@ -54,6 +54,7 @@ import java.lang.IllegalArgumentException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -2636,7 +2637,7 @@ public final class ShortcutInfo implements Parcelable {
         addIndentOrComma(sb, indent);
 
         sb.append("persons=");
-        sb.append(mPersons);
+        sb.append(Arrays.toString(mPersons));
 
         addIndentOrComma(sb, indent);
 
