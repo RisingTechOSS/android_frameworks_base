@@ -92,5 +92,6 @@
         <permission name="android.permission.POWER_SAVER" />
         <permission name="android.permission.WRITE_APN_SETTINGS" />
         <permission name="android.permission.CHANGE_APP_IDLE_STATE" />
+        <permission name="android.permission.MANAGE_PARALLEL_SPACES" />
     </privapp-permissions>
 </permissions>

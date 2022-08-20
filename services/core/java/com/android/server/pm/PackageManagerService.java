@@ -244,6 +244,9 @@ import com.nvidia.NvAppProfileService;
 
 import dalvik.system.VMRuntime;
 
+import ink.kaleidoscope.server.GmsManagerService;
+import ink.kaleidoscope.server.ParallelSpaceManagerService;
+
 import libcore.util.HexEncoding;
 
 import java.io.ByteArrayInputStream;
@@ -3248,6 +3251,22 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             final IPackageDeleteObserver2 observer, final int userId, final int deleteFlags) {
         mDeletePackageHelper.deletePackageVersionedInternal(
                 versionedPackage, observer, userId, deleteFlags, false);
+
+        // Delete for parallel users if the package is deleted in their owner.
+        if (!ParallelSpaceManagerService.isCurrentParallelOwner(userId))
+            return;
+        final long token = Binder.clearCallingIdentity();
+        try {
+            for (int parallelUserId : ParallelSpaceManagerService.getCurrentParallelUserIds()) {
+                    mDeletePackageHelper.deletePackageVersionedInternal(versionedPackage,
+                    new PackageInstallerService.PackageDeleteObserverAdapter(
+                            mContext, null, versionedPackage.getPackageName(),
+                            false, parallelUserId)
+                    .getBinder(), parallelUserId, 0, true);
+            }
+        } finally {
+            Binder.restoreCallingIdentity(token);
+        }
     }
 
     boolean isCallerVerifier(@NonNull Computer snapshot, int callingUid) {
@@ -3818,7 +3837,8 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                                         : ", component=" + setting.getComponentName()));
                     }
                     // Don't allow changing protected packages.
-                    if (mProtectedPackages.isPackageStateProtected(userId, packageName)) {
+                    if (mProtectedPackages.isPackageStateProtected(userId, packageName) &&
+                            !Arrays.asList(GmsManagerService.GMS_PACKAGES).contains(packageName)) {
                         throw new SecurityException(
                                 "Cannot disable a protected package: " + packageName);
                     }
