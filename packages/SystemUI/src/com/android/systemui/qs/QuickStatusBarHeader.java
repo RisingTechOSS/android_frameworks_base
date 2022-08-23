@@ -100,8 +100,6 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
     private TouchAnimator mIconsAlphaAnimator;
     private TouchAnimator mIconsAlphaAnimatorFixed;
 
-    private final ActivityStarter mActivityStarter;
-
     protected QuickQSPanel mHeaderQsPanel;
     private View mDatePrivacyView;
     private View mDateView;
@@ -194,8 +192,10 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
         mPrivacyChip = findViewById(R.id.privacy_chip);
         mDateView = findViewById(R.id.date);
         mDateView.setOnClickListener(this);
+        mDateView.setOnLongClickListener(this);
         mClockDateView = findViewById(R.id.date_clock);
         mClockDateView.setOnClickListener(this);
+        mClockDateView.setOnLongClickListener(this);
         mQsWeatherView = findViewById(R.id.qs_weather_view);
         mQsWeatherHeaderView = findViewById(R.id.weather_view_header);
         mClockIconsSeparator = findViewById(R.id.separator);
@@ -211,6 +211,8 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
         mDatePrivacySeparator = findViewById(R.id.space);
         // Tint for the battery icons are handled in setupHost()
         mBatteryRemainingIcon = findViewById(R.id.batteryRemainingIcon);
+        mBatteryRemainingIcon.setOnClickListener(this);
+        mBatteryRemainingIcon.setOnLongClickListener(this);
 
         mBatteryIcon = findViewById(R.id.batteryIcon);
 
@@ -305,6 +307,9 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
             builder.appendPath(Long.toString(System.currentTimeMillis()));
             Intent todayIntent = new Intent(Intent.ACTION_VIEW, builder.build());
             mActivityStarter.postStartActivityDismissingKeyguard(todayIntent, 0);
+        } else if (v == mBatteryRemainingIcon) {
+            mActivityStarter.postStartActivityDismissingKeyguard(new Intent(
+                    Intent.ACTION_POWER_USAGE_SUMMARY), 0);
         }
     }
 
@@ -316,6 +321,10 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
                     "com.android.settings.Settings$DateTimeSettingsActivity");
             mActivityStarter.startActivity(nIntent, true /* dismissShade */);
             mVibrator.vibrate(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE));
+            return true;
+        } else if (v == mBatteryRemainingIcon) {
+            mActivityStarter.postStartActivityDismissingKeyguard(new Intent(
+                    Intent.ACTION_POWER_USAGE_SUMMARY), 0);
             return true;
         }
         return false;
