@@ -3883,7 +3883,9 @@ public class Notification implements Parcelable
 
                 if (mN.extras.containsKey(EXTRA_PEOPLE_LIST)) {
                     ArrayList<Person> people = mN.extras.getParcelableArrayList(EXTRA_PEOPLE_LIST);
-                    mPersonList.addAll(people);
+                    if (people != null && !people.isEmpty()) {
+                        mPersonList.addAll(people);
+                    }
                 }
 
                 if (mN.getSmallIcon() == null && mN.icon != 0) {
