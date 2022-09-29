@@ -15595,6 +15595,7 @@ package android.graphics {
     method public boolean isReleased();
     method public void release();
     method public void releaseTexImage();
+    method public void setConsumerCanWait(boolean);
     method public void setDefaultBufferSize(int, int);
     method public void setOnFrameAvailableListener(@Nullable android.graphics.SurfaceTexture.OnFrameAvailableListener);
     method public void setOnFrameAvailableListener(@Nullable android.graphics.SurfaceTexture.OnFrameAvailableListener, @Nullable android.os.Handler);

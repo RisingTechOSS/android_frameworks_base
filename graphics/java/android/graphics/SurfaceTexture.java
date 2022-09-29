@@ -388,6 +388,15 @@ public class SurfaceTexture {
         return nativeIsReleased();
     }
 
+    /**
+     * Determines whether {@link #updateTexImage} can issue a server-side wait on
+     * a fence associated with the new buffer. If set to false, a new buffer will
+     * be acquired only if it's ready (the fence has signaled).
+     */
+    public void setConsumerCanWait(boolean canWait) {
+        nativeSetConsumerCanWait(canWait);
+    }
+
     @Override
     protected void finalize() throws Throwable {
         try {
@@ -427,6 +436,7 @@ public class SurfaceTexture {
     private native void nativeGetTransformMatrix(float[] mtx);
     private native long nativeGetTimestamp();
     private native int nativeGetDataSpace();
+    private native void nativeSetConsumerCanWait(boolean canWait);
     private native void nativeSetDefaultBufferSize(int width, int height);
     private native void nativeUpdateTexImage();
     private native void nativeReleaseTexImage();

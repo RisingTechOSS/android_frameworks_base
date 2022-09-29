@@ -351,6 +351,11 @@ static jint SurfaceTexture_getDataSpace(JNIEnv* env, jobject thiz) {
     return surfaceTexture->getCurrentDataSpace();
 }
 
+static void SurfaceTexture_setConsumerCanWait(JNIEnv* env, jobject thiz, jboolean canWait) {
+    sp<SurfaceTexture> surfaceTexture(SurfaceTexture_getSurfaceTexture(env, thiz));
+    surfaceTexture->setConsumerCanWait(canWait);
+}
+
 static void SurfaceTexture_release(JNIEnv* env, jobject thiz)
 {
     sp<SurfaceTexture> surfaceTexture(SurfaceTexture_getSurfaceTexture(env, thiz));
@@ -376,6 +381,7 @@ static const JNINativeMethod gSurfaceTextureMethods[] = {
         {"nativeGetTransformMatrix", "([F)V", (void*)SurfaceTexture_getTransformMatrix},
         {"nativeGetTimestamp", "()J", (void*)SurfaceTexture_getTimestamp},
         {"nativeGetDataSpace", "()I", (void*)SurfaceTexture_getDataSpace},
+        {"nativeSetConsumerCanWait", "(Z)V", (void*)SurfaceTexture_setConsumerCanWait},
         {"nativeRelease", "()V", (void*)SurfaceTexture_release},
         {"nativeIsReleased", "()Z", (void*)SurfaceTexture_isReleased},
 };
