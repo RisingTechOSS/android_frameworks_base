@@ -24,7 +24,7 @@ import static android.os.Process.SCHED_RESET_ON_FORK;
 import static android.os.Process.setThreadPriority;
 import static android.os.Process.setThreadScheduler;
 
-import static com.android.server.LockGuard.INDEX_WINDOW;;
+import static com.android.server.LockGuard.INDEX_WINDOW;
 
 import android.os.SystemProperties;
 
