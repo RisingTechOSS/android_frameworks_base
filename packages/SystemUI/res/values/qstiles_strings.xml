@@ -20,4 +20,9 @@
     <string name="quick_settings_sound_ring">Ring</string>
     <string name="quick_settings_sound_vibrate">Vibrate</string>
     <string name="quick_settings_sound_dnd">Do not disturb</string>
+    
+    <!-- Weather Tile -->
+    <string name="omnijaws_service_error">Error loading weather data</string>
+    <string name="omnijaws_service_unknown">No weather data</string>
+    <string name="omnijaws_label_default">Weather</string>
 </resources>
