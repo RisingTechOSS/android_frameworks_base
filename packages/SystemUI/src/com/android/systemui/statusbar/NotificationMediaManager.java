@@ -438,9 +438,12 @@ public class NotificationMediaManager implements Dumpable {
         mMediaListeners.add(callback);
         callback.onPrimaryMetadataOrStateChanged(mMediaMetadata,
                 getMediaControllerPlaybackState(mMediaController));
+        callback.setMediaNotificationColor(mColorExtractor.getMediaBackgroundColor());
     }
 
     public void removeCallback(MediaListener callback) {
+        mColorExtractor.setMediaBackgroundColor(0);
+        callback.setMediaNotificationColor(0);
         mMediaListeners.remove(callback);
     }
 
@@ -543,6 +546,7 @@ public class NotificationMediaManager implements Dumpable {
         ArrayList<MediaListener> callbacks = new ArrayList<>(mMediaListeners);
         for (int i = 0; i < callbacks.size(); i++) {
             callbacks.get(i).onPrimaryMetadataOrStateChanged(mMediaMetadata, state);
+            callbacks.get(i).setMediaNotificationColor(mColorExtractor.getMediaBackgroundColor());
         }
     }
 
@@ -980,5 +984,7 @@ public class NotificationMediaManager implements Dumpable {
          */
         default void onPrimaryMetadataOrStateChanged(MediaMetadata metadata,
                 @PlaybackState.State int state) {}
+
+        default void setMediaNotificationColor(int color) {};
     }
 }
