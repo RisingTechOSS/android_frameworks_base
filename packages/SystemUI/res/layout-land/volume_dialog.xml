@@ -37,13 +37,12 @@
         android:clipToPadding="false"
         android:clipChildren="false">
 
-
         <LinearLayout
             android:id="@+id/volume_dialog_top_container"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
             android:clipChildren="false"
+            android:orientation="vertical"
             android:gravity="right">
 
                <include layout="@layout/volume_ringer_drawer" />
@@ -61,8 +60,8 @@
                 android:gravity="right"
                 android:layout_gravity="right"
                 android:translationZ="@dimen/volume_dialog_elevation"
-                android:clipToPadding="false"
-                android:background="@drawable/rounded_bg_full">
+                android:background="@drawable/rounded_bg_full"
+                android:clipToPadding="false">
                 <com.android.keyguard.AlphaOptimizedImageButton
                     android:id="@+id/ringer_icon"
                     style="@style/VolumeButtons"
@@ -76,10 +75,10 @@
                     android:soundEffectsEnabled="false" />
 
                 <include layout="@layout/volume_dnd_icon"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="@dimen/volume_dialog_stream_padding"
-                    android:layout_marginTop="6dp"/>
+                         android:layout_width="match_parent"
+                         android:layout_height="wrap_content"
+                         android:layout_marginRight="@dimen/volume_dialog_stream_padding"
+                         android:layout_marginTop="6dp"/>
             </FrameLayout>
 
             <LinearLayout
@@ -97,7 +96,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:orientation="horizontal">
-                    <!-- volume rows added and removed here! :-) -->
+                        <!-- volume rows added and removed here! :-) -->
                 </LinearLayout>
 
                 <View
@@ -120,8 +119,8 @@
                         android:layout_height="@dimen/volume_dialog_tap_target_size"
                         android:layout_gravity="center"
                         android:contentDescription="@string/accessibility_volume_settings"
-                        android:background="@drawable/volume_drawer_selection_bg"
-                        android:tint="?androidprv:attr/textColorPrimaryInverse"
+                        android:background="@drawable/ripple_drawable_20dp"
+                        android:tint="?androidprv:attr/colorAccent"
                         android:soundEffectsEnabled="false" />
                 </FrameLayout>
 
@@ -146,11 +145,11 @@
                         android:layout_height="@dimen/volume_dialog_tap_target_size"
                         android:layout_gravity="center"
                         android:contentDescription="@string/accessibility_volume_settings"
-                        android:background="@drawable/volume_drawer_selection_bg"
-                        android:tint="?androidprv:attr/textColorPrimaryInverse"
+                        android:background="@drawable/ripple_drawable_20dp"
+                        android:tint="?androidprv:attr/colorAccent"
                         android:soundEffectsEnabled="false" />
                 </FrameLayout>
-
+                
                 <View
                     android:id="@+id/settings_container_spacer"
                     android:layout_height="3dp"
@@ -172,8 +171,8 @@
                         android:layout_height="@dimen/volume_dialog_tap_target_size"
                         android:layout_gravity="center"
                         android:contentDescription="@string/accessibility_volume_settings"
-                        android:background="@drawable/volume_drawer_selection_bg"
-                        android:tint="?androidprv:attr/textColorPrimaryInverse"
+                        android:background="@drawable/ripple_drawable_20dp"
+                        android:tint="?androidprv:attr/colorAccent"
                         android:soundEffectsEnabled="false" />
                 </FrameLayout>
             </LinearLayout>
@@ -200,10 +199,10 @@
                 style="@style/VolumeButtons"
                 android:layout_width="@dimen/volume_dialog_tap_target_size"
                 android:layout_height="@dimen/volume_dialog_tap_target_size"
-                android:background="@drawable/volume_drawer_selection_bg"
-                android:tint="?android:attr/textColorPrimaryInverse"
+                android:background="@drawable/ripple_drawable_20dp"
+                android:tint="?android:attr/colorAccent"
                 android:layout_gravity="center"
-                android:soundEffectsEnabled="false" />
+                android:soundEffectsEnabled="false"/>
         </FrameLayout>
     </LinearLayout>
 

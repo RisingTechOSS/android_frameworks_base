@@ -2,7 +2,7 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
        xmlns:androidprv="http://schemas.android.com/apk/prv/res/android"
        android:shape="rectangle">
-    <solid android:color="?androidprv:attr/colorSurface" />
+    <solid android:color="@color/surface_aqua" />
     <corners
         android:bottomLeftRadius="@dimen/volume_dialog_panel_width_half"
         android:topLeftRadius="@dimen/volume_dialog_panel_width_half"

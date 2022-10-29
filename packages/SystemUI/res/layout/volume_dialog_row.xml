@@ -13,8 +13,10 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-<FrameLayout
+<com.zhenxiang.blur.WindowBlurFrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:androidprv="http://schemas.android.com/apk/prv/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:tag="row"
     android:layout_height="wrap_content"
     android:layout_width="@dimen/volume_dialog_panel_width"
@@ -23,8 +25,11 @@
     android:gravity="center"
     android:paddingTop="@dimen/volume_dialog_ringer_rows_padding"
     android:paddingBottom="@dimen/volume_dialog_ringer_rows_padding"
-    android:background="@drawable/volume_row_rounded_background"
-    android:theme="@style/volume_dialog_theme">
+    android:theme="@style/volume_dialog_theme"
+    app:backgroundColour="@color/surface_aqua"
+    app:cornerRadius="@dimen/volume_dialog_panel_width_half"
+    app:blurRadius="@integer/background_blur_radius"
+    app:blurBackgroundColourOpacity="@dimen/background_blur_colour_opacity">
 
     <LinearLayout
         android:layout_height="wrap_content"
@@ -41,8 +46,9 @@
             android:maxLength="10"
             android:maxLines="1"
             android:textColor="?android:attr/colorAccent"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="12dp"
             android:layout_marginBottom="8dp"
+            android:visibility="gone"
             android:textAppearance="@style/TextAppearance.Volume.Header" />
         <FrameLayout
             android:id="@+id/volume_row_slider_frame"
@@ -55,7 +61,7 @@
                 android:paddingStart="0dp"
                 android:paddingEnd="0dp"
                 android:clickable="true"
-                android:layout_width="@dimen/volume_row_slider_height"
+                android:layout_width="@dimen/volume_row_slider_progress_height"
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
                 android:thumb="@null"
@@ -68,15 +74,14 @@
         </FrameLayout>
 
         <com.android.keyguard.AlphaOptimizedImageButton
-            android:visibility="gone"
             android:id="@+id/volume_row_icon"
             style="@style/VolumeButtons"
             android:layout_width="@dimen/volume_dialog_tap_target_size"
             android:layout_height="@dimen/volume_dialog_tap_target_size"
             android:background="@drawable/ripple_drawable_20dp"
             android:layout_marginBottom="@dimen/volume_dialog_row_margin_bottom"
-            android:tint="@color/accent_tint_color_selector"
+            android:tint="?androidprv:attr/colorAccentPrimaryVariant"
             android:soundEffectsEnabled="false" />
     </LinearLayout>
 
-</FrameLayout>
+</com.zhenxiang.blur.WindowBlurFrameLayout>

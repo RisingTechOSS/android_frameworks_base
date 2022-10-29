@@ -774,4 +774,7 @@
         <item>@color/dream_overlay_aqi_very_unhealthy</item>
         <item>@color/dream_overlay_aqi_hazardous</item>
     </integer-array>
+    
+    <integer name="background_blur_radius">225</integer>
+    <item name="background_blur_colour_opacity" format="float" type="dimen">0.88</item>
 </resources>
