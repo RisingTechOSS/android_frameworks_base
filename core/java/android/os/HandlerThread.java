@@ -32,7 +32,11 @@ public class HandlerThread extends Thread {
     private @Nullable Handler mHandler;
 
     public HandlerThread(String name) {
-        super(name);
+        this(null, name);
+    }
+
+    public HandlerThread(@Nullable ThreadGroup group, @NonNull String name) {
+        super(group, name);
         mPriority = Process.THREAD_PRIORITY_DEFAULT;
     }
     
