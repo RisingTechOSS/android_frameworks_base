@@ -5714,6 +5714,13 @@ public final class Settings {
          */
         public static final String VOLUME_MEDIA_OUTPUT_TOGGLE = "volume_media_output_toggle";
 
+
+        /**
+         * Volume styles
+         * @hide
+         */
+        public static final String CUSTOM_VOLUME_STYLES = "custom_volume_styles";
+
         /**
          * Whether to show edge light for all pulse events and not just for notifications.
          * Default 0

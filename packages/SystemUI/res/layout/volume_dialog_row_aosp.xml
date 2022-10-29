@@ -15,6 +15,7 @@
 -->
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:tag="row"
     android:layout_height="wrap_content"
     android:layout_width="@dimen/volume_dialog_panel_width"
@@ -23,7 +24,6 @@
     android:gravity="center"
     android:paddingTop="@dimen/volume_dialog_ringer_rows_padding"
     android:paddingBottom="@dimen/volume_dialog_ringer_rows_padding"
-    android:background="@drawable/volume_row_rounded_background"
     android:theme="@style/volume_dialog_theme">
 
     <LinearLayout
@@ -41,13 +41,13 @@
             android:maxLength="10"
             android:maxLines="1"
             android:textColor="?android:attr/colorAccent"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="12dp"
             android:layout_marginBottom="8dp"
             android:textAppearance="@style/TextAppearance.Volume.Header" />
         <FrameLayout
             android:id="@+id/volume_row_slider_frame"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/volume_row_slider_height">
+            android:layout_height="@dimen/volume_row_slider_height_aosp">
             <SeekBar
                 android:id="@+id/volume_row_slider"
                 android:paddingLeft="0dp"
@@ -55,12 +55,12 @@
                 android:paddingStart="0dp"
                 android:paddingEnd="0dp"
                 android:clickable="true"
-                android:layout_width="@dimen/volume_row_slider_height"
+                android:layout_width="@dimen/volume_row_slider_height_aosp"
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
                 android:thumb="@null"
                 android:splitTrack="false"
-                android:progressDrawable="@drawable/volume_row_seekbar"
+                android:progressDrawable="@drawable/volume_row_seekbar_aosp"
                 android:background="@null"
                 android:layoutDirection="ltr"
                 android:rotation="270" />
