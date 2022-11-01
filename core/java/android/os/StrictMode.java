@@ -1452,24 +1452,17 @@ public final class StrictMode {
             builder.penaltyDeathOnNetwork();
         }
 
-        if (Build.IS_USER || DISABLE || SystemProperties.getBoolean(DISABLE_PROPERTY, false)) {
+        if (!Build.IS_ENG || DISABLE || SystemProperties.getBoolean(DISABLE_PROPERTY, false)) {
             // Detect nothing extra
-        } else if (Build.IS_USERDEBUG) {
-            // Detect everything in bundled apps
-            if (isBundledSystemApp(ai)) {
-                builder.detectAll();
-                builder.penaltyDropBox();
-                if (SystemProperties.getBoolean(VISUAL_PROPERTY, false)) {
-                    builder.penaltyFlashScreen();
-                }
-            }
-        } else if (Build.IS_ENG) {
+        } else {
             // Detect everything in bundled apps
             if (isBundledSystemApp(ai)) {
                 builder.detectAll();
                 builder.penaltyDropBox();
                 builder.penaltyLog();
-                builder.penaltyFlashScreen();
+                if (SystemProperties.getBoolean(VISUAL_PROPERTY, true)) {
+                    builder.penaltyFlashScreen();
+                }
             }
         }
 
