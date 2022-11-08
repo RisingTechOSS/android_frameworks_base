@@ -6376,22 +6376,25 @@ public final class ActivityThread extends ClientTransactionHandler
 
         // The system package doesn't have real data directories, so don't set up cache paths.
         if (!"android".equals(context.getPackageName())) {
+            UserManager um = (UserManager) context.getSystemService(Context.USER_SERVICE);
             // This cache location probably points at credential-encrypted
             // storage which may not be accessible yet; assign it anyway instead
             // of pointing at device-encrypted storage.
-            final File cacheDir = context.getCacheDir();
-            if (cacheDir != null) {
-                // Provide a usable directory for temporary files
-                String tmpdir = cacheDir.getAbsolutePath();
-                System.setProperty("java.io.tmpdir", tmpdir);
-                try {
-                    android.system.Os.setenv("TMPDIR", tmpdir, true);
-                } catch (ErrnoException ex) {
-                    Log.w(TAG, "Unable to initialize $TMPDIR", ex);
+            if (!context.isCredentialProtectedStorage() || um.isUserUnlocked()) {
+                final File cacheDir = context.getCacheDir();
+                if (cacheDir != null) {
+                    // Provide a usable directory for temporary files
+                    String tmpdir = cacheDir.getAbsolutePath();
+                    System.setProperty("java.io.tmpdir", tmpdir);
+                    try {
+                        android.system.Os.setenv("TMPDIR", tmpdir, true);
+                    } catch (ErrnoException ex) {
+                        Log.w(TAG, "Unable to initialize $TMPDIR", ex);
+                    }
+                } else {
+                    Log.v(TAG, "Unable to initialize \"java.io.tmpdir\" property "
+                            + "due to missing cache directory");
                 }
-            } else {
-                Log.v(TAG, "Unable to initialize \"java.io.tmpdir\" property "
-                        + "due to missing cache directory");
             }
 
             // Setup a location to store generated/compiled graphics code.
