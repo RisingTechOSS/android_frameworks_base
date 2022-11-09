@@ -41,6 +41,7 @@ cc_defaults {
     lto: {
         thin: true,
     },
+    whole_program_vtables: true, // Requires LTO
 }
 
 cc_library_shared {
