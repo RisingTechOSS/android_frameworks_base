@@ -6515,6 +6515,12 @@ public final class Settings {
         };
 
         /**
+         * Whether to settings custom transitions PageTileLayout
+         * @hide
+         */
+        public static final String CUSTOM_TRANSITIONS_KEY = "custom_transitions_page_tile";
+
+        /**
          * These are all public system settings
          *
          * @hide

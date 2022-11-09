@@ -10,6 +10,7 @@ import android.animation.PropertyValuesHolder;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -27,10 +28,13 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.android.internal.jank.InteractionJankMonitor;
 import com.android.internal.logging.UiEventLogger;
+import com.android.systemui.Dependency;
 import com.android.systemui.R;
 import com.android.systemui.plugins.qs.QSTile;
 import com.android.systemui.qs.QSPanel.QSTileLayout;
 import com.android.systemui.qs.QSPanelControllerBase.TileRecord;
+import com.android.systemui.nad.transformer.*;
+import com.android.systemui.tuner.TunerService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,6 +58,10 @@ public class PagedTileLayout extends ViewPager implements QSTileLayout {
 
     private final ArrayList<TileRecord> mTiles = new ArrayList<>();
     private final ArrayList<TileLayout> mPages = new ArrayList<>();
+
+    private int mTransformer;
+    private static final String CUSTOM_TRANSITIONS =
+        "system:" + Settings.System.CUSTOM_TRANSITIONS_KEY;
 
     @Nullable
     private PageIndicator mPageIndicator;
@@ -86,6 +94,13 @@ public class PagedTileLayout extends ViewPager implements QSTileLayout {
         setCurrentItem(0, false);
         mLayoutOrientation = getResources().getConfiguration().orientation;
         mLayoutDirection = getLayoutDirection();
+        TunerService tunerService = Dependency.get(TunerService.class);
+        tunerService.addTunable((key, newValue) -> {
+            if (key.equals(CUSTOM_TRANSITIONS)) {
+            	int transform = mTransformer = TunerService.parseInteger(newValue, 0);
+            	setCustomTransitions(transform);
+            }
+        },  CUSTOM_TRANSITIONS);
     }
     private int mLastMaxHeight = -1;
 
@@ -154,6 +169,7 @@ public class PagedTileLayout extends ViewPager implements QSTileLayout {
             setCurrentItem(0, false);
             mPageToRestore = 0;
         }
+        setCustomTransitions(mTransformer);
     }
 
     @Override
@@ -176,6 +192,58 @@ public class PagedTileLayout extends ViewPager implements QSTileLayout {
             item = mPages.size() - 1 - item;
         }
         super.setCurrentItem(item, smoothScroll);
+    }
+	
+    private void setCustomTransitions(int transformer) {
+    	ABaseTransformer transition = null;
+    	switch(transformer) {
+        	case 0:
+        	    transition = new DefaultTransformer();
+        	    break;
+        	case 1:
+        	    transition = new CubeInTransformer();
+        	    break;
+        	case 2:
+        	    transition = new CubeOutTransformer();
+        	    break;
+        	case 3:
+        	    transition = new AccordionTransformer();
+        	    break;
+        	case 4:
+        	    transition = new BackgroundToForegroundTransformer();
+        	    break;
+        	case 5:
+        	    transition = new DepthPageTransformer();
+        	    break;
+        	case 6:
+        	    transition = new FadeTransformer();
+        	    break;
+        	case 7:
+        	    transition = new ForegroundToBackgroundTransformer();
+        	    break;
+        	case 8:
+        	    transition = new RotateDownTransformer();
+        	    break;
+        	case 9:
+        	    transition = new RotateUpTransformer();
+        	    break;
+        	case 10:
+        	    transition = new StackTransformer();
+        	    break;
+        	case 11:
+        	    transition = new TabletTransformer();
+        	    break;
+        	case 12:
+        	    transition = new ZoomInTransformer();
+        	    break;
+        	case 13:
+        	    transition = new ZoomOutTransformer();
+        	    break;
+        	case 14:
+        	    transition = new ZoomOutSlideTransformer();
+        	    break;
+        }
+    	setPageTransformer(true, transition);
     }
 
     /**
@@ -281,6 +349,7 @@ public class PagedTileLayout extends ViewPager implements QSTileLayout {
         super.onFinishInflate();
         mPages.add(createTileLayout());
         mAdapter.notifyDataSetChanged();
+        setCustomTransitions(mTransformer);
     }
 
     private TileLayout createTileLayout() {
