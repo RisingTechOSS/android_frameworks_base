@@ -348,6 +348,7 @@ public class ViewConfiguration {
     private final int mSmartSelectionInitializedTimeout;
     private final int mSmartSelectionInitializingTimeout;
     private final boolean mPreferKeepClearForFocusEnabled;
+    private static final Object sLock = new Object();
 
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 123768915)
     private boolean sHasPermanentMenuKey;
@@ -527,11 +528,15 @@ public class ViewConfiguration {
 
         final DisplayMetrics metrics = context.getResources().getDisplayMetrics();
         final int density = (int) (100.0f * metrics.density);
+	
+	ViewConfiguration configuration;
 
-        ViewConfiguration configuration = sConfigurations.get(density);
-        if (configuration == null) {
-            configuration = new ViewConfiguration(context);
-            sConfigurations.put(density, configuration);
+	synchronized (sLock) {
+           configuration = sConfigurations.get(density);
+           if (configuration == null) {
+              configuration = new ViewConfiguration(context);
+              sConfigurations.put(density, configuration);
+          }
         }
 
         return configuration;
