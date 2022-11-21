@@ -217,8 +217,10 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
             new ConfigurationListener() {
                 @Override
                 public void onUiModeChanged() {
-                    Log.i(TAG, "Re-applying theme on UI change");
-                    reevaluateSystemTheme(true /* forceReload */);
+                    if (isBlackThemeEnabled()) {
+                        Log.i(TAG, "Re-applying theme on UI change");
+                        reevaluateSystemTheme(true /* forceReload */);
+                    }
                 }
             };
 
@@ -932,7 +934,7 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
                 mContext.getContentResolver(), "black_theme_style",
                 0, currentUser);
         if (categoryToPackage.containsKey(OVERLAY_CATEGORY_SYSTEM_PALETTE) && isNightMode() 
-            && blackModeStyle > 0 && blackModeStyle < BLACK_MODE_THEMES.length) {
+            && isBlackThemeEnabled() && blackModeStyle < BLACK_MODE_THEMES.length) {
             String blackThemeStyle = BLACK_MODE_THEMES[blackModeStyle];
             OverlayIdentifier blackTheme = new OverlayIdentifier(blackThemeStyle);
             categoryToPackage.put(OVERLAY_CATEGORY_SYSTEM_PALETTE, blackTheme);
@@ -998,6 +1000,11 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
             }
         }
         return style;
+    }
+
+    private boolean isBlackThemeEnabled() {
+        return Settings.Secure.getIntForUser(mContext.getContentResolver(), 
+            "black_theme_style", 0, mUserTracker.getUserId()) > 0;
     }
 
     @Override
