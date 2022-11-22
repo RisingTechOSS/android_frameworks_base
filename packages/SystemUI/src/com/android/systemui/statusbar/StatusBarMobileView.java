@@ -414,6 +414,8 @@ public class StatusBarMobileView extends FrameLayout implements DarkReceiver,
         mMobileTypeSmall.setContentDescription(state.typeContentDescription);
         mMobileTypeSmall.setImageResource(state.typeId);
         mMobileTypeSmall.setVisibility(View.VISIBLE);
+        mMobileTypeSmall.setScaleX(getContext().getResources().getConfiguration().fontScale);
+        mMobileTypeSmall.setScaleY(getContext().getResources().getConfiguration().fontScale);
         setMobileSignalWidth(false);
     }
 
@@ -421,6 +423,8 @@ public class StatusBarMobileView extends FrameLayout implements DarkReceiver,
         mMobileType.setVisibility(View.VISIBLE);
         mMobileType.setContentDescription(state.typeContentDescription);
         mMobileType.setImageResource(state.typeId);
+        mMobileType.setScaleX(getContext().getResources().getConfiguration().fontScale);
+        mMobileType.setScaleY(getContext().getResources().getConfiguration().fontScale);
         mMobileTypeSmall.setVisibility(View.GONE);
         setMobileSignalWidth(true);
     }
