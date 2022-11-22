@@ -423,6 +423,8 @@ public class StatusBarMobileView extends BaseStatusBarFrameLayout implements Dar
 
     private void showNewStyle(MobileIconState state) {
         mMobileType.setVisibility(View.VISIBLE);
+        mMobileType.setScaleX(getContext().getResources().getConfiguration().fontScale);
+        mMobileType.setScaleY(getContext().getResources().getConfiguration().fontScale);
         mMobileType.setContentDescription(state.typeContentDescription);
         mMobileType.setImageResource(state.typeId);
         mMobileTypeSmall.setVisibility(View.GONE);
