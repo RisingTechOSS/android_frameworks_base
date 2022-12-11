@@ -21,6 +21,7 @@ import static com.android.internal.logging.MetricsLogger.VIEW_UNKNOWN;
 
 import android.app.ActivityManager;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -55,6 +56,7 @@ public class AmbientDisplayTile extends QSTileImpl<BooleanState> {
 
     private final Icon mIcon = ResourceIcon.get(R.drawable.ic_qs_ambient_display);
     private final SettingObserver mSetting;
+    private final boolean isEnabled;
 
     @Inject
     public AmbientDisplayTile(
@@ -73,12 +75,14 @@ public class AmbientDisplayTile extends QSTileImpl<BooleanState> {
                 statusBarStateController, activityStarter, qsLogger);
 
         mSetting = new SettingObserver(secureSettings, mHandler, Secure.DOZE_ENABLED,
-                userTracker.getUserId(), 1) {
+                userTracker.getUserId(), 0) {
             @Override
             protected void handleValueChanged(int value, boolean observedChange) {
                 handleRefreshState(value);
             }
         };
+        final Resources resources = mContext.getResources();
+        isEnabled = resources.getBoolean(R.bool.config_enable_ambientQSTile);
     }
 
     @Override
@@ -93,7 +97,7 @@ public class AmbientDisplayTile extends QSTileImpl<BooleanState> {
         if (TextUtils.isEmpty(name)) {
             name = mContext.getString(com.android.internal.R.string.config_dozeComponent);
         }
-        return !TextUtils.isEmpty(name);
+        return isEnabled && !TextUtils.isEmpty(name);
     }
 
     @Override
