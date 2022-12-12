@@ -130,6 +130,7 @@ android_library {
         "android.hardware.power.stats-V1-java",
         "android.hardware.power-V3-java",
         "AndroidSystemBlur-platform",
+	"googlebattery-lib",
     ],
     manifest: "AndroidManifest.xml",
     additional_manifests: ["LineageManifest.xml"],

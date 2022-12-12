@@ -5,6 +5,8 @@
 -keep class com.android.systemui.statusbar.car.CarStatusBar
 -keep class com.android.systemui.statusbar.phone.CentralSurfaces
 -keep class com.android.systemui.statusbar.tv.TvStatusBar
+-keep class com.google.** { *; }
+-keep class vendor.google.** { *; }
 -keep class ** extends com.android.systemui.SystemUIInitializer {
     *;
 }
