@@ -102,7 +102,7 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
 
     protected QuickQSPanel mHeaderQsPanel;
     private View mDatePrivacyView;
-    private View mDateView;
+    private Clock mClockCustomView;
     // DateView next to clock. Visible on QQS
     private VariableDateView mClockDateView;
     private View mStatusIconsView;
@@ -136,7 +136,6 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
 
     private int mRoundedCornerPadding = 0;
     private int mStatusBarPaddingTop;
-    private int mStatusBarPaddingStart;
     private int mStatusBarPaddingEnd;
     private int mHeaderPaddingLeft;
     private int mHeaderPaddingRight;
@@ -156,6 +155,8 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
 
     private boolean mUseCombinedQSHeader;
     private boolean mShowDate;
+
+    private boolean mAnimationAtEndReached;
 
     private int mStatusBarBatteryStyle, mQSBatteryStyle, mQSBatteryLocation;
     private final ActivityStarter mActivityStarter;
@@ -190,9 +191,10 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
         mContainer = findViewById(R.id.qs_container);
         mIconContainer = findViewById(R.id.statusIcons);
         mPrivacyChip = findViewById(R.id.privacy_chip);
-        mDateView = findViewById(R.id.date);
-        mDateView.setOnClickListener(this);
-        mDateView.setOnLongClickListener(this);
+        mClockCustomView = findViewById(R.id.custom_clock);
+        mClockCustomView.setQsHeader();
+        mClockCustomView.setOnClickListener(this);
+        mClockCustomView.setOnLongClickListener(this);
         mClockDateView = findViewById(R.id.date_clock);
         mClockDateView.setOnClickListener(this);
         mClockDateView.setOnLongClickListener(this);
@@ -207,7 +209,6 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
 
         mClockContainer = findViewById(R.id.clock_container);
         mClockView = findViewById(R.id.clock);
-        mClockView.setQsHeader();
         mClockView.setOnClickListener(this);
         mClockView.setOnLongClickListener(this);
         mDatePrivacySeparator = findViewById(R.id.space);
@@ -253,6 +254,7 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
         mInsetsProvider = insetsProvider;
         int fillColor = Utils.getColorAttrDefaultColor(getContext(),
                 android.R.attr.textColorPrimary);
+        mAnimationAtEndReached = false;
 
         // Set the correct tint for the status icons so they contrast
         iconManager.setTint(fillColor);
@@ -300,10 +302,10 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
         // Clock view is still there when the panel is not expanded
         // Making sure we get the date action when the user clicks on it
         // but actually is seeing the date
-        if (v == mClockView) {
+        if (v == mClockView || v == mClockCustomView) {
             mActivityStarter.postStartActivityDismissingKeyguard(new Intent(
                     AlarmClock.ACTION_SHOW_ALARMS), 0);
-        } else if (v == mDateView || v == mClockDateView) {
+        } else if (v == mClockDateView) {
             Uri.Builder builder = CalendarContract.CONTENT_URI.buildUpon();
             builder.appendPath("time");
             builder.appendPath(Long.toString(System.currentTimeMillis()));
@@ -317,7 +319,7 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
 
     @Override
     public boolean onLongClick(View v) {
-        if (v == mClockView || v == mDateView || v == mClockDateView) {
+        if (v == mClockView || v == mClockCustomView || v == mClockDateView) {
             Intent nIntent = new Intent(Intent.ACTION_MAIN);
             nIntent.setClassName("com.android.settings",
                     "com.android.settings.Settings$DateTimeSettingsActivity");
@@ -365,10 +367,8 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
 
         int statusBarHeight = SystemBarUtils.getStatusBarHeight(mContext);
 
-        mStatusBarPaddingStart = resources.getDimensionPixelSize(
-                R.dimen.status_bar_padding_start);
         mStatusBarPaddingEnd = resources.getDimensionPixelSize(
-                R.dimen.status_bar_padding_end);
+                R.dimen.status_bar_left_clock_end_padding);
 
         int qsOffsetHeight = SystemBarUtils.getQuickQsOffsetHeight(mContext);
 
@@ -396,7 +396,12 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
                     (isCircleBattery == 1 || isCircleBattery == 2 || isCircleBattery == 3)
                     ? android.R.attr.textColorHint : android.R.attr.textColorSecondary);
             mTextColorPrimary = textColor;
-            mClockView.setTextColor(textColor);
+            if (mClockCustomView != null) {
+              mClockCustomView.setTextColor(textColor);
+            }
+            if (mClockView != null) {
+              mClockView.setTextColor(textColor);
+            }
             if (mTintedIconManager != null) {
                 mTintedIconManager.setTint(textColor);
             }
@@ -459,17 +464,19 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
         }
         TouchAnimator.Builder builder = new TouchAnimator.Builder()
                 // These views appear on expanding down
-                .addFloat(mDateView, "alpha", 0, 0, 1)
-                .addFloat(mClockDateView, "alpha", 1, 0, 0)
-                .addFloat(mQsWeatherHeaderView, "alpha", 0, 0, 1)
-                .addFloat(mQsWeatherView, "alpha", 1, 0, 0)
+                .addFloat(mQsWeatherHeaderView, "alpha", 0, 1)
+                .addFloat(mQsWeatherView, "alpha", 1, 0)
                 .addFloat(mQSCarriers, "alpha", 0, 1)
+                .addFloat(mClockContainer, "alpha", 1, 0, 1)
+                .addFloat(mDateContainer, "alpha", 0, 1)
                 // Use statusbar paddings when collapsed,
                 // align with QS when expanded, and animate translation
                 .addFloat(mClockContainer, "translationX",
-                    mHeaderPaddingLeft + mStatusBarPaddingStart, 0)
+                    mHeaderPaddingLeft + mStatusBarPaddingEnd, mHeaderPaddingLeft + mStatusBarPaddingEnd)
                 .addFloat(mRightLayout, "translationX",
                     -(mHeaderPaddingRight + mStatusBarPaddingEnd), 0)
+                .addFloat(mDateContainer, "translationX",
+                    mHeaderPaddingLeft + mStatusBarPaddingEnd, 0)
                 .setListener(new TouchAnimator.ListenerAdapter() {
                     @Override
                     public void onAnimationAtEnd() {
@@ -477,8 +484,8 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
                         if (!mIsSingleCarrier) {
                             mIconContainer.addIgnoredSlots(mRssiIgnoredSlots);
                         }
-                        // Make it gone so there's enough room for carrier names
-                        mClockDateView.setVisibility(View.GONE);
+                        mClockView.setVisibility(View.GONE);
+                        mAnimationAtEndReached = true;
                     }
 
                     @Override
@@ -487,10 +494,13 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
                             mClockDateView.setVisibility(View.VISIBLE);
                             mClockDateView.setFreezeSwitching(true);
                         }
+                        mClockView.setVisibility(mAnimationAtEndReached ? View.VISIBLE : View.GONE);
+                        mClockCustomView.setVisibility(View.VISIBLE);
                         setSeparatorVisibility(false);
                         if (!mIsSingleCarrier) {
                             mIconContainer.addIgnoredSlots(mRssiIgnoredSlots);
                         }
+                        mAnimationAtEndReached = false;
                     }
 
                     @Override
@@ -500,9 +510,12 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
                             mClockDateView.setFreezeSwitching(false);
                             mClockDateView.setVisibility(View.VISIBLE);
                         }
+                        mClockView.setVisibility(View.VISIBLE);
+                        mClockCustomView.setVisibility(View.VISIBLE);
                         setSeparatorVisibility(mShowClockIconsSeparator);
                         // In QQS we never ignore RSSI.
                         mIconContainer.removeIgnoredSlots(mRssiIgnoredSlots);
+                        mAnimationAtEndReached = false;
                     }
                 });
         mAlphaAnimator = builder.build();
@@ -681,7 +694,7 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
         if (headerPaddingUpdated) {
             updateAnimators();
         }
-        mDatePrivacyView.setPadding(mHeaderPaddingLeft + mStatusBarPaddingStart,
+        mDatePrivacyView.setPadding(mHeaderPaddingLeft + mStatusBarPaddingEnd,
                 mStatusBarPaddingTop,
                 mHeaderPaddingRight + mStatusBarPaddingEnd,
                 0);
