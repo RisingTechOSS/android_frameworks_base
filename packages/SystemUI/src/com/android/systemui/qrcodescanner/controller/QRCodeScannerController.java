@@ -373,8 +373,6 @@ public class QRCodeScannerController implements
 
         // Reset cached values to default as we are no longer listening
         mQRCodeScannerPreferenceObserver = new HashMap<>();
-        mSecureSettings.putStringForUser(Settings.Secure.SHOW_QR_CODE_SCANNER_SETTING, null,
-                mUserTracker.getUserId());
     }
 
     private void unregisterDefaultQRCodeScannerObserver() {
@@ -386,6 +384,8 @@ public class QRCodeScannerController implements
         mQRCodeScannerActivity = null;
         mIntent = null;
         mComponentName = null;
+        mSecureSettings.putStringForUser(Settings.Secure.SHOW_QR_CODE_SCANNER_SETTING, null,
+                mUserTracker.getUserId());
     }
 
     private void notifyQRCodeScannerActivityChanged() {
@@ -413,7 +413,10 @@ public class QRCodeScannerController implements
 
         // While registering the observers for the first time update the default values in the
         // background
-        mExecutor.execute(() -> updateQRCodeScannerActivityDetails());
+        mExecutor.execute(() -> {
+                updateQRCodeScannerActivityDetails();
+                updateQRCodeScannerPreferenceDetails(/* updateSettings = */true);
+                });
         mOnDefaultQRCodeScannerChangedListener =
                 properties -> {
                     if (DeviceConfig.NAMESPACE_SYSTEMUI.equals(properties.getNamespace())
