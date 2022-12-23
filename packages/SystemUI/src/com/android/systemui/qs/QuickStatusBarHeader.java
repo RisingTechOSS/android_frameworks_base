@@ -197,7 +197,9 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
         mClockDateView.setOnClickListener(this);
         mClockDateView.setOnLongClickListener(this);
         mQsWeatherView = findViewById(R.id.qs_weather_view);
+        mQsWeatherView.setOnLongClickListener(this);
         mQsWeatherHeaderView = findViewById(R.id.weather_view_header);
+        mQsWeatherHeaderView.setOnLongClickListener(this);
         mClockIconsSeparator = findViewById(R.id.separator);
         mRightLayout = findViewById(R.id.rightLayout);
         mDateContainer = findViewById(R.id.date_container);
@@ -325,6 +327,13 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
         } else if (v == mBatteryRemainingIcon) {
             mActivityStarter.postStartActivityDismissingKeyguard(new Intent(
                     Intent.ACTION_POWER_USAGE_SUMMARY), 0);
+            return true;
+        } else if (v == mQsWeatherHeaderView || v == mQsWeatherView) {
+            Intent wIntent = new Intent(Intent.ACTION_MAIN);
+            wIntent.setClassName("org.omnirom.omnijaws",
+                    "org.omnirom.omnijaws.SettingsActivity");
+            mActivityStarter.startActivity(wIntent, true /* dismissShade */);
+            mVibrator.vibrate(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE));
             return true;
         }
         return false;
