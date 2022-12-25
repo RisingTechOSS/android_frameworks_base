@@ -5709,6 +5709,11 @@ public final class Settings {
          */
         public static final String EDGE_LIGHT_ENABLED = "edge_light_enabled";
 
+	/**
+         * @hide
+         */
+        public static final String VOLUME_MEDIA_OUTPUT_TOGGLE = "volume_media_output_toggle";
+
         /**
          * Whether to show edge light for all pulse events and not just for notifications.
          * Default 0
