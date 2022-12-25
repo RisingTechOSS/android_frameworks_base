@@ -15,7 +15,7 @@
 * along with this program. If not, see <http://www.gnu.org/licenses/>.
 *
 */
-package com.android.internal.util.crdroid;
+package com.android.systemui.omni;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -41,8 +41,10 @@ import android.os.UserHandle;
 import android.provider.Settings;
 import android.util.Log;
 
+import com.android.systemui.R;
+
 public class OmniJawsClient {
-    private static final String TAG = "OmniJawsClient";
+    private static final String TAG = "SystemUI:OmniJawsClient";
     private static final boolean DEBUG = false;
     public static final String SERVICE_PACKAGE = "org.omnirom.omnijaws";
     public static final Uri WEATHER_URI
@@ -81,8 +83,8 @@ public class OmniJawsClient {
             "setup"
     };
 
-    private static final String WEATHER_UPDATE = SERVICE_PACKAGE + ".WEATHER_UPDATE";
-    private static final String WEATHER_ERROR = SERVICE_PACKAGE + ".WEATHER_ERROR";
+    private static final String WEATHER_UPDATE = "org.omnirom.omnijaws.WEATHER_UPDATE";
+    private static final String WEATHER_ERROR = "org.omnirom.omnijaws.WEATHER_ERROR";
 
     private static final DecimalFormat sNoDigitsFormat = new DecimalFormat("0");
 
