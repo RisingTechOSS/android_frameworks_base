@@ -138,7 +138,7 @@ class DefaultClock(
         override fun onFontSettingChanged() {
             smallClock.setTypeface(
                 Typeface.create(
-                resources.getString(com.android.internal.R.string.config_headlineFontFamily), Typeface.NORMAL)
+                resources.getString(com.android.internal.R.string.config_clockFontFamily), Typeface.NORMAL)
             )
             smallClock.setTextSize(
                 TypedValue.COMPLEX_UNIT_PX,
@@ -146,7 +146,7 @@ class DefaultClock(
             )
             largeClock.setTypeface(
                 Typeface.create(
-                resources.getString(com.android.internal.R.string.config_headlineFontFamily), Typeface.NORMAL)
+                resources.getString(com.android.internal.R.string.config_clockFontFamily), Typeface.NORMAL)
             )
             largeClock.setTextSize(
                 TypedValue.COMPLEX_UNIT_PX,
