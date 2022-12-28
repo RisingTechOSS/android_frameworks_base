@@ -450,6 +450,7 @@
 
     <dimen name="volume_dialog_slider_width">12dp</dimen>
     <dimen name="volume_dialog_slider_width_bg">2dp</dimen>
+    <dimen name="volume_dialog_slider_width_aosp">42dp</dimen>
 
     <dimen name="volume_dialog_slider_corner_radius">21dp</dimen>
 
@@ -821,6 +822,7 @@
 
     <dimen name="volume_row_slider_height">184dp</dimen>
     <dimen name="volume_row_slider_progress_height">158dp</dimen>
+     <dimen name="volume_row_slider_height_aosp">192dp</dimen>
 
     <!-- Thickness of the assist disclosure beams -->
     <dimen name="assist_disclosure_thickness">2.5dp</dimen>
