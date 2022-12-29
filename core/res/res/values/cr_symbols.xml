@@ -182,4 +182,8 @@
   <java-symbol type="string" name="config_batterymeterLandBoltPathStyleB" />
   <java-symbol type="string" name="config_batterymeterLandPowersavePathStyleB" />
   <java-symbol type="string" name="config_batterymeterLandErrorPerimeterPathStyleB" />
+
+   <!-- Settings Restart -->
+   <java-symbol type="string" name="settings_restart_title" />
+   <java-symbol type="string" name="settings_restart_message" />
 </resources>
