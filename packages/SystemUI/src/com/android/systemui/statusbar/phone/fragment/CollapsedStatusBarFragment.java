@@ -655,13 +655,15 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
 
     public void hideOperatorName(boolean animate) {
         if (mOperatorNameViewController != null) {
-            animateHide(mOperatorNameViewController.getView(), animate);
+            View frame = mStatusBar.findViewById(R.id.operator_name_frame);
+            animateHide(frame, animate);
         }
     }
 
     public void showOperatorName(boolean animate) {
         if (mOperatorNameViewController != null) {
-            animateShow(mOperatorNameViewController.getView(), animate);
+            View frame = mStatusBar.findViewById(R.id.operator_name_frame);
+            animateShow(frame, animate);
         }
     }
 
