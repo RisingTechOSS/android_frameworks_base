@@ -86,6 +86,8 @@ class DefaultClock(
     private val burmeseLineSpacing =
         resources.getFloat(R.dimen.keyguard_clock_line_spacing_scale_burmese)
     private val defaultLineSpacing = resources.getFloat(R.dimen.keyguard_clock_line_spacing_scale)
+    
+    private var currFont = ctx.getString(com.android.internal.R.string.config_clockFontFamily);
 
     override val events: ClockEvents
     override lateinit var animations: ClockAnimations
@@ -152,6 +154,11 @@ class DefaultClock(
                 TypedValue.COMPLEX_UNIT_PX,
                 resources.getDimensionPixelSize(R.dimen.large_clock_text_size).toFloat()
             )
+            currFont = resources.getString(com.android.internal.R.string.config_clockFontFamily)
+            if (!currFont.toString().toLowerCase().contains("sans")) {
+            smallClock.setLineSpacingScale(0.9f)
+            largeClock.setLineSpacingScale(0.9f)
+            }
             recomputePadding()
         }
 
@@ -172,8 +179,11 @@ class DefaultClock(
 
         override fun onLocaleChanged(locale: Locale) {
             val nf = NumberFormat.getInstance(locale)
+            currFont = resources.getString(com.android.internal.R.string.config_clockFontFamily)
             if (nf.format(FORMAT_NUMBER.toLong()) == burmeseNumerals) {
                 clocks.forEach { it.setLineSpacingScale(burmeseLineSpacing) }
+            } else if (!currFont.toString().toLowerCase().contains("sans")) {
+                clocks.forEach { it.setLineSpacingScale(0.9f) }
             } else {
                 clocks.forEach { it.setLineSpacingScale(defaultLineSpacing) }
             }
