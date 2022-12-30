@@ -7441,9 +7441,6 @@ message MetricsEvent {
     // crDroid Settings
     CRDROID_SETTINGS = 4000;
 
-    // Panel for Bluetooth
-    PANEL_BLUETOOTH = 4001;
-
     // Panel for Mobile Data
     PANEL_MOBILE_DATA = 4002;
   }
