@@ -24,6 +24,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.provider.Settings;
@@ -191,8 +192,7 @@ public class UdfpsKeyguardView extends UdfpsAnimationView {
             return;
         }
 
-        mTextColorPrimary = Utils.getColorAttrDefaultColor(mContext,
-            android.R.attr.textColorPrimary);
+        mTextColorPrimary = Color.parseColor("#FFFFFF");
         mLockScreenFp.invalidate(); // updated with a valueCallback
     }
 
@@ -205,10 +205,11 @@ public class UdfpsKeyguardView extends UdfpsAnimationView {
             return;
         }
 
+
         final int defaultPaddingPx =
                 getResources().getDimensionPixelSize(R.dimen.lock_icon_padding);
         final int padding = (int) (defaultPaddingPx * mScaleFactor);
-        mLockScreenFp.setPadding(padding, padding, padding, padding);
+        mLockScreenFp.setPadding(0, 0, 0, 0);
         mAodFp.setPadding(padding, padding, padding, padding);
     }
 
