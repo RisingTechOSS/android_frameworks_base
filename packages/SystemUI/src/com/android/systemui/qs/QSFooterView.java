@@ -59,7 +59,6 @@ public class QSFooterView extends FrameLayout {
     private TextView mUsageText;
     private View mEditLayout;
     private View mEditButton;
-    private View mSpace;
 
     @Nullable
     protected TouchAnimator mFooterAnimator;
@@ -93,7 +92,6 @@ public class QSFooterView extends FrameLayout {
         mUsageText = findViewById(R.id.build);
         mEditButton = findViewById(android.R.id.edit);
         mEditLayout = findViewById(R.id.edit_layout);
-        mSpace = findViewById(R.id.spacer);
 
         updateResources();
         setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_YES);
@@ -105,17 +103,21 @@ public class QSFooterView extends FrameLayout {
         DataUsageController.DataUsageInfo info;
         String suffix;
         if (isWifiConnected()) {
-            info = mDataController.getWifiDailyDataUsageInfo();
-            suffix = getWifiSsid();
+             info = mDataController.getWifiDailyDataUsageInfo();
+            suffix = mContext.getResources().getString(R.string.usage_wifi_default_suffix);
         } else {
             mDataController.setSubscriptionId(
                     SubscriptionManager.getDefaultDataSubscriptionId());
             info = mDataController.getDailyDataUsageInfo();
-            suffix = getSlotCarrierName();
+            suffix = mContext.getResources().getString(R.string.usage_data_default_suffix);
         }
-        mUsageText.setText(formatDataUsage(info.usageLevel) + " " +
-                mContext.getResources().getString(R.string.usage_data) +
-                " (" + suffix + ")");
+        if (info != null) {
+          mUsageText.setText(formatDataUsage(info.usageLevel) + " " +
+                  mContext.getResources().getString(R.string.usage_data) +
+                  " (" + suffix + ")");
+        } else {
+           mUsageText.setText(" ");
+	}
     }
 
     private CharSequence formatDataUsage(long byteValue) {
@@ -133,31 +135,6 @@ public class QSFooterView extends FrameLayout {
                     capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI);
         } else {
             return false;
-        }
-    }
-
-    private String getSlotCarrierName() {
-        CharSequence result = mContext.getResources().getString(R.string.usage_data_default_suffix);
-        int subId = mSubManager.getDefaultDataSubscriptionId();
-        final List<SubscriptionInfo> subInfoList =
-                mSubManager.getActiveSubscriptionInfoList(true);
-        if (subInfoList != null) {
-            for (SubscriptionInfo subInfo : subInfoList) {
-                if (subId == subInfo.getSubscriptionId()) {
-                    result = subInfo.getDisplayName();
-                    break;
-                }
-            }
-        }
-        return result.toString();
-    }
-
-    private String getWifiSsid() {
-        final WifiInfo wifiInfo = mWifiManager.getConnectionInfo();
-        if (wifiInfo.getHiddenSSID() || wifiInfo.getSSID() == WifiManager.UNKNOWN_SSID) {
-            return mContext.getResources().getString(R.string.usage_wifi_default_suffix);
-        } else {
-            return wifiInfo.getSSID().replace("\"", "");
         }
     }
 
@@ -247,13 +224,11 @@ public class QSFooterView extends FrameLayout {
 
         if (mExpanded && mShouldShowDataUsage) {
             mUsageText.setVisibility(View.VISIBLE);
-            mSpace.setVisibility(View.GONE);
-            mEditButton.setVisibility(mShowEditIcon ? View.VISIBLE : View.GONE);
-            mEditLayout.setVisibility(mShowEditIcon ? View.VISIBLE : View.GONE);
+            mEditButton.setVisibility(mShowEditIcon ? View.VISIBLE : View.INVISIBLE);
+            mEditLayout.setVisibility(mShowEditIcon ? View.VISIBLE : View.INVISIBLE);
             setUsageText();
         } else {
-            mUsageText.setVisibility(View.GONE);
-            mSpace.setVisibility(View.INVISIBLE);
+            mUsageText.setVisibility(View.INVISIBLE);
             mEditButton.setVisibility(mShowEditIcon ? View.VISIBLE : View.INVISIBLE);
             mEditLayout.setVisibility(mShowEditIcon ? View.VISIBLE : View.INVISIBLE);
         }
