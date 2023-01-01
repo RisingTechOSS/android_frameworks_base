@@ -56,6 +56,8 @@ import com.android.systemui.tuner.TunerService;
 
 import lineageos.providers.LineageSettings;
 
+import com.android.internal.util.crdroid.ThemeUtils;
+
 import java.io.PrintWriter;
 import java.lang.ref.WeakReference;
 import java.util.Objects;
@@ -112,6 +114,8 @@ public class NavigationBarInflaterView extends FrameLayout implements TunerServi
             "lineagesystem:" + LineageSettings.System.ENABLE_TASKBAR;
     private static final String KEY_NAVIGATION_SPACE =
             "system:" + Settings.System.NAVIGATION_BAR_IME_SPACE;
+    private static final String HIDE_IME_SPACE_ENABLE =
+            "system:" + Settings.System.HIDE_IME_SPACE_ENABLE;
 
     private static class Listener implements NavigationModeController.ModeChangedListener {
         private final WeakReference<NavigationBarInflaterView> mSelf;
@@ -156,6 +160,9 @@ public class NavigationBarInflaterView extends FrameLayout implements TunerServi
     private int mHomeHandleWidthMode = 0;
     private boolean mIsTaskbarEnabled;
     private boolean mShowImeSpace;
+    private boolean mHideImeSpace;
+    
+    private ThemeUtils mThemeUtils;
 
     public NavigationBarInflaterView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -163,6 +170,7 @@ public class NavigationBarInflaterView extends FrameLayout implements TunerServi
         mOverviewProxyService = Dependency.get(OverviewProxyService.class);
         mListener = new Listener(this);
         mNavBarMode = Dependency.get(NavigationModeController.class).addListener(mListener);
+        mThemeUtils = new ThemeUtils(context);
     }
 
     @VisibleForTesting
@@ -223,6 +231,7 @@ public class NavigationBarInflaterView extends FrameLayout implements TunerServi
         Dependency.get(TunerService.class).addTunable(this, GESTURE_NAVBAR_RADIUS);
         Dependency.get(TunerService.class).addTunable(this, ENABLE_TASKBAR);
         Dependency.get(TunerService.class).addTunable(this, KEY_NAVIGATION_SPACE);
+        Dependency.get(TunerService.class).addTunable(this, HIDE_IME_SPACE_ENABLE);
     }
 
     @Override
@@ -255,6 +264,10 @@ public class NavigationBarInflaterView extends FrameLayout implements TunerServi
             updateHint();
         } else if (KEY_NAVIGATION_SPACE.equals(key)) {
             mShowImeSpace =
+                TunerService.parseIntegerSwitch(newValue, false);
+            updateHint();
+        } else if (HIDE_IME_SPACE_ENABLE.equals(key)) {
+            mHideImeSpace =
                 TunerService.parseIntegerSwitch(newValue, false);
             updateHint();
         }
@@ -348,6 +361,12 @@ public class NavigationBarInflaterView extends FrameLayout implements TunerServi
             Log.e(TAG, "Failed to " + (state ? "enable" : "disable")
                     + " overlay " + overlay + " for user " + userId);
         }
+        mThemeUtils.setOverlayEnabled(
+                "android.theme.customization.hide_ime_space",
+                mHideImeSpace
+                        ? "com.custom.overlay.systemui.gestural.hide_ime_space"
+                        : "android",
+                "android");
     }
 
     private void initiallyFill(ButtonDispatcher buttonDispatcher) {
