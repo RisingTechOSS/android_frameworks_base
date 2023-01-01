@@ -468,7 +468,12 @@ final class KeyButtonDrawable extends Drawable {
             Color ovalBackgroundColor) {
         final Resources res = context.getResources();
         boolean isRtl = res.getConfiguration().getLayoutDirection() == View.LAYOUT_DIRECTION_RTL;
-        Drawable d = context.getDrawable(iconResId);
+        Drawable d = null;
+        try {
+            d = context.getDrawable(iconResId);
+        } catch (Resources.NotFoundException e) {
+            return null;
+        }
         final KeyButtonDrawable drawable = new KeyButtonDrawable(d, lightColor, darkColor,
                 isRtl && d.isAutoMirrored(), ovalBackgroundColor);
         if (hasShadow) {
