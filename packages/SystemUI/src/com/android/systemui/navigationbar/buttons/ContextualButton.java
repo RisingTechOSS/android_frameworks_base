@@ -59,7 +59,9 @@ public class ContextualButton extends ButtonDispatcher {
         if (currentDrawable != null) {
             drawable.setDarkIntensity(currentDrawable.getDarkIntensity());
         }
-        setImageDrawable(drawable);
+        if (drawable != null) {
+            setImageDrawable(drawable);
+        }
     }
 
     @Override
