@@ -271,8 +271,10 @@ class DefaultClock(
     }
 
     private fun recomputePadding() {
+        val customTopMargin = Secure.getIntForUser(ctx.getContentResolver(),
+                Secure.KG_CUSTOM_CLOCK_TOP_MARGIN, 280, UserHandle.USER_CURRENT)
         val lp = largeClock.getLayoutParams() as FrameLayout.LayoutParams
-        lp.topMargin = (-0.5f * largeClock.bottom).toInt()
+        lp.topMargin = (-1f * customTopMargin).toInt()
         largeClock.setLayoutParams(lp)
     }
 
