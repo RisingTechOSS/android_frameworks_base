@@ -11966,6 +11966,11 @@ public final class Settings {
          * @hide
          */
         public static final String KG_CUSTOM_CLOCK_TOP_MARGIN = "kg_custom_clock_top_margin";
+        
+        /**
+         * @hide
+         */
+        public static final String KG_BIG_CLOCK_TEXT_SIZE = "kg_big_clock_text_size";
 
         /**
          * Keys we no longer back up under the current schema, but want to continue to
