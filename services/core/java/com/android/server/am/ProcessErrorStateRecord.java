@@ -93,6 +93,12 @@ class ProcessErrorStateRecord {
     private boolean mNotResponding;
 
     /**
+     * Does the input dispatching of the app become resumed?
+     */
+    @CompositeRWLock({"mService", "mProcLock"})
+    private boolean mInputResumed;
+
+    /**
      * The report about crash of the app, generated &amp; stored when an app gets into a crash.
      * Will be "null" when all is OK.
      */
@@ -177,6 +183,16 @@ class ProcessErrorStateRecord {
     void setNotResponding(boolean notResponding) {
         mNotResponding = notResponding;
         mApp.getWindowProcessController().setNotResponding(notResponding);
+    }
+
+    @GuardedBy(anyOf = {"mService", "mProcLock"})
+    boolean isInputResumed() {
+        return mInputResumed;
+    }
+
+    @GuardedBy({"mService", "mProcLock"})
+    void setInputResumed(boolean inputResumed) {
+        mInputResumed = inputResumed;
     }
 
     @GuardedBy(anyOf = {"mService", "mProcLock"})
