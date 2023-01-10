@@ -141,7 +141,7 @@ import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.keyguard.KeyguardUpdateMonitorCallback;
 import com.android.keyguard.ViewMediatorCallback;
 import com.android.systemui.ActivityIntentHelper;
-import com.android.systemui.ScarletIdleManager;
+import com.android.systemui.ScarletSystemManager;
 import com.android.systemui.AutoReinflateContainer;
 import com.android.systemui.CoreStartable;
 import com.android.systemui.DejankUtils;
@@ -555,8 +555,8 @@ public class CentralSurfacesImpl extends CoreStartable implements
     // the sliding/resizing panel within the notification window
     protected NotificationPanelViewController mNotificationPanelViewController;
 
-   // Scarlet Idle
-    private boolean isIdleManagerIstantiated = false;
+   // Scarlet Manager
+    private boolean isSystemManagerIstantiated = false;
 
     // settings
     private QSPanelController mQSPanelController;
@@ -3922,6 +3922,7 @@ public class CentralSurfacesImpl extends CoreStartable implements
         @Override
         public void onStartedGoingToSleep() {
             String tag = "CentralSurfaces#onStartedGoingToSleep";
+
             DejankUtils.startDetectingBlockingIpcs(tag);
 
             //  cancel stale runnables that could put the device in the wrong state
@@ -3943,23 +3944,26 @@ public class CentralSurfacesImpl extends CoreStartable implements
 
             DejankUtils.stopDetectingBlockingIpcs(tag);
             if (Settings.System.getIntForUser(mContext.getContentResolver(),
-                                              Settings.System.SCARLET_IDLE_ASSISTANT_MANAGER, 1,
-                                              mLockscreenUserManager.getCurrentUserId()) == 1) {
-                if (!isIdleManagerIstantiated) {
-                    ScarletIdleManager.initializeAssistant(mContext);
-                    isIdleManagerIstantiated = true;
-                    ScarletIdleManager.startAssistantServices();
-                    ScarletIdleManager.cacheCleaner(CentralSurfaces.getPackageManagerForUser(mContext, mLockscreenUserManager.getCurrentUserId()));
-                } else {
-                    ScarletIdleManager.startAssistantServices();
-                    ScarletIdleManager.cacheCleaner(CentralSurfaces.getPackageManagerForUser(mContext, mLockscreenUserManager.getCurrentUserId()));
+                                    Settings.System.SCARLET_SYSTEM_MANAGER, 0, mLockscreenUserManager.getCurrentUserId()) == 1) {
+                if (!isSystemManagerIstantiated) {
+                    ScarletSystemManager.initializeSystemServices(mContext);
+                    isSystemManagerIstantiated = true;
                 }
-            }
+                ScarletSystemManager.startSystemIdleServices();
+                ScarletSystemManager.cacheCleaner(CentralSurfaces.getPackageManagerForUser(mContext, mLockscreenUserManager.getCurrentUserId()));
+                if (Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                                        Settings.Secure.SCARLET_AGGRESSIVE_IDLE_MODE, 0, mLockscreenUserManager.getCurrentUserId()) == 1) {
+                    Settings.Secure.putIntForUser(mContext.getContentResolver(),
+                                        Settings.Secure.SCARLET_AGGRESSIVE_IDLE_MODE_TRIGGER, 1,
+                                        mLockscreenUserManager.getCurrentUserId());
+                }
+          }
         }
 
         @Override
         public void onStartedWakingUp() {
             String tag = "CentralSurfaces#onStartedWakingUp";
+
             DejankUtils.startDetectingBlockingIpcs(tag);
             mNotificationShadeWindowController.batchApplyWindowLayoutParams(()-> {
                 mDeviceInteractive = true;
@@ -3986,9 +3990,14 @@ public class CentralSurfacesImpl extends CoreStartable implements
             });
             DejankUtils.stopDetectingBlockingIpcs(tag);
             if (Settings.System.getIntForUser(mContext.getContentResolver(),
-                                              Settings.System.SCARLET_IDLE_ASSISTANT_MANAGER, 1,
-                                              mLockscreenUserManager.getCurrentUserId()) == 1) {
-                ScarletIdleManager.stopManager(mContext);
+                                    Settings.System.SCARLET_SYSTEM_MANAGER, 0, mLockscreenUserManager.getCurrentUserId()) == 1) {
+                ScarletSystemManager.stopManager(mContext);
+                if (Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                                            Settings.Secure.SCARLET_AGGRESSIVE_IDLE_MODE, 0, mLockscreenUserManager.getCurrentUserId()) == 1) {
+                    Settings.Secure.putIntForUser(mContext.getContentResolver(),
+                                                Settings.Secure.SCARLET_AGGRESSIVE_IDLE_MODE_TRIGGER, 0,
+                                                mLockscreenUserManager.getCurrentUserId());
+                }
             }
         }
 

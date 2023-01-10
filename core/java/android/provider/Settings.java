@@ -6367,11 +6367,18 @@ public final class Settings {
         public static final String LOCK_GESTURE_STATUS = "lock_gesture_status";
 
         /**
-         * Scarlet Idle Assistant Manager
+         * Scarlet System Manager
          * @hide
          */
         @Readable
-        public static final String SCARLET_IDLE_ASSISTANT_MANAGER = "scarlet_idle_assistant_manager";
+        public static final String SCARLET_SYSTEM_MANAGER = "scarlet_system_manager";
+
+        /**
+         * Scarlet System Manager System Boost
+         * @hide
+         */
+        @Readable
+        public static final String SCARLET_SYSTEM_BOOST = "scarlet_system_boost";
 
         /**
          * @hide
@@ -12161,6 +12168,55 @@ public final class Settings {
          */
         @Readable
         public static final String WINDOW_IGNORE_SECURE = "window_ignore_secure";
+
+        /**
+         * Scarlet System Manager Aggressive Idle mode
+         * @hide
+         */
+        @Readable
+        public static final String SCARLET_AGGRESSIVE_IDLE_MODE = "scarlet_aggressive_idle_mode";
+       
+        /**
+         * Scarlet System Manager Aggressive Idle mode trigger/callback
+         * @hide
+         */
+        @Readable
+        public static final String SCARLET_AGGRESSIVE_IDLE_MODE_TRIGGER = "scarlet_aggressive_idle_mode_trigger";
+ 
+        /**
+         * Scarlet System Manager will automatically disable wifi
+         * @hide
+         */
+        @Readable
+        public static final String SCARLET_AGGRESSIVE_IDLE_MODE_WIFI_TOGGLE = "scarlet_aggressive_idle_mode_wifi_toggle";
+        
+        /**
+         * Scarlet System Manager will automatically disable bluetooth
+         * @hide
+         */
+        @Readable
+        public static final String SCARLET_AGGRESSIVE_IDLE_MODE_BLUETOOTH_TOGGLE = "scarlet_aggressive_idle_mode_bluetooth_toggle";
+        
+        /**
+         * Scarlet System Manager will automatically disable data
+         * @hide
+         */
+        @Readable
+        public static final String SCARLET_AGGRESSIVE_IDLE_MODE_CELLULAR_TOGGLE = "scarlet_aggressive_idle_mode_cellular_toggle";
+        
+        /**
+         * Scarlet System Manager will automatically disable location
+         * @hide
+         */
+        @Readable
+        public static final String SCARLET_AGGRESSIVE_IDLE_MODE_LOCATION_TOGGLE = "scarlet_aggressive_idle_mode_location_toggle";
+
+        /**
+         * Scarlet System Manager will override ringer mode
+         * @hide
+         */
+        @Readable
+        public static final String SCARLET_AGGRESSIVE_IDLE_MODE_RINGER_MODE = "scarlet_aggressive_idle_mode_ringer_mode";
 
         /**
          * These entries are considered common between the personal and the managed profile,
