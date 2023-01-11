@@ -25,4 +25,22 @@
         <item name="android:textSize">36dp</item>
         <item name="android:textColor">@color/settingslib_text_color_primary_device_default</item>
     </style>
+    
+      <!-- custom Action Bar -->
+    <style name="custom_toolbar.Expanded" parent="custom_toolbar.Collapsed">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">75dp</item>
+        <item name="android:layout_marginBottom">8dp</item>
+        <item name="android:layout_marginStart">24dp</item>
+        <item name="android:layout_marginEnd">75dp</item>
+        <item name="android:textSize">42dp</item>
+        <item name="android:textColor">@color/settingslib_text_color_primary_device_default</item>
+        <item name="android:fontFamily">@*android:string/config_headlineFontFamilyMedium</item>
+    </style>
+    <style name="custom_toolbar.Collapsed" parent="@android:style/TextAppearance.DeviceDefault.Widget.ActionBar.Title">
+        <item name="android:fontFamily">@string/settingslib_config_headlineFontFamily</item>
+        <item name="android:textSize">20dp</item>
+        <item name="android:textColor">@color/settingslib_text_color_primary_device_default</item>
+    </style>     
 </resources>

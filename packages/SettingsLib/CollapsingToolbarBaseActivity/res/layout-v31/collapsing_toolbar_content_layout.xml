@@ -18,50 +18,77 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    
     <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/app_bar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:fitsSystemWindows="true"
-        android:outlineAmbientShadowColor="@android:color/transparent"
-        android:outlineSpotShadowColor="@android:color/transparent"
-        android:background="@android:color/transparent"
-        android:theme="@style/Theme.CollapsingToolbar.Settings">
-
+      android:theme="@style/Theme.CollapsingToolbar.Settings"
+      android:id="@+id/app_bar"
+      android:background="@*android:color/xd_base_layout_header"
+      android:fitsSystemWindows="true"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      android:outlineSpotShadowColor="@android:color/transparent"
+      android:outlineAmbientShadowColor="@android:color/transparent">
+        
         <com.google.android.material.appbar.CollapsingToolbarLayout
-            android:id="@+id/collapsing_toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/settingslib_toolbar_layout_height"
-            android:clipToPadding="false"
-            app:forceApplySystemWindowInsetTop="true"
-            app:extraMultilineHeightEnabled="true"
-            app:contentScrim="@color/settingslib_colorSurfaceHeader"
-            app:maxLines="3"
-            app:layout_scrollFlags="scroll|exitUntilCollapsed|snap"
-            app:scrimAnimationDuration="150"
-            app:scrimVisibleHeightTrigger="@dimen/settingslib_scrim_visible_height_trigger"
-            app:statusBarScrim="@null"
-            app:titleCollapseMode="scale"
-            app:collapsedTitleTextAppearance="@style/CollapsingToolbarTitle.Collapsed"
-            app:expandedTitleTextAppearance="@style/CollapsingToolbarTitle.Expanded"
-            app:expandedTitleMarginStart="@dimen/expanded_title_margin_start"
-            app:expandedTitleMarginEnd="@dimen/expanded_title_margin_end"
-            app:toolbarId="@id/action_bar">
-
+          android:id="@+id/collapsing_toolbar"
+          android:clipToPadding="false"
+          android:layout_width="fill_parent"
+          android:layout_height="@*android:dimen/xd_toolbar_height"
+          app:collapsedTitleTextAppearance="@style/custom_toolbar.Collapsed"
+          app:contentScrim="@android:color/transparent"
+          app:expandedTitleMarginEnd="@*android:dimen/xd_toolbar_expanded_title_margin_end"
+          app:expandedTitleMarginStart="@*android:dimen/xd_toolbar_expanded_title_margin_start"
+          app:expandedTitleTextAppearance="@style/custom_toolbar.Expanded"
+          app:extraMultilineHeightEnabled="true"
+          app:forceApplySystemWindowInsetTop="true"
+          app:layout_scrollFlags="exitUntilCollapsed|scroll|snap"
+          app:maxLines="3"
+          app:scrimAnimationDuration="150"
+          app:scrimVisibleHeightTrigger="@dimen/settingslib_scrim_visible_height_trigger"
+          app:statusBarScrim="@null"
+          app:titleCollapseMode="scale"
+          app:toolbarId="@id/action_bar">
+            
             <Toolbar
-                android:id="@+id/action_bar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                android:theme="?android:attr/actionBarTheme"
-                android:transitionName="shared_element_view"
-                app:layout_collapseMode="pin"/>
+              android:theme="?android:actionBarTheme"
+              android:id="@+id/action_bar"
+              android:layout_width="fill_parent"
+              android:layout_height="?actionBarSize"
+              android:layout_marginTop="4dp"
+              android:transitionName="shared_element_view"
+              android:contentInsetStartWithNavigation="0dp"
+              android:navigationIcon="@*android:drawable/xd_back_arrow"
+              app:layout_collapseMode="pin" />
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
     <FrameLayout
-        android:id="@+id/content_frame"
-        android:layout_width="match_parent"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" >
+        
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="25dp"
+            app:cardBackgroundColor="@android:color/transparent"
+            app:cardCornerRadius="@*android:dimen/xd_pref_card_radius"
+            app:cardElevation="0dp">
+
+          <FrameLayout
+            android:id="@id/content_frame"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"/>
+
+        </androidx.cardview.widget.CardView>
+    </FrameLayout>
+
+    <FrameLayout
+      android:layout_width="match_parent"
+      android:layout_height="25dp"
+      android:background="@*android:drawable/xd_base_layout_round_mask"
+      app:layout_anchor="@+id/app_bar"
+      app:layout_anchorGravity="bottom"
+      android:layout_gravity="bottom"/>
 </merge>
