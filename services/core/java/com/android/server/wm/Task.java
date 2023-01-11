@@ -2569,6 +2569,10 @@ class Task extends TaskFragment {
 
         EventLogTags.writeWmTaskRemoved(mTaskId, reason);
         clearPinnedTaskIfNeed();
+        if (mChildPipActivity != null
+                && mChildPipActivity.getWindowingMode() != WINDOWING_MODE_PINNED) {
+            mChildPipActivity.clearLastParentBeforePip();
+        }
         // If applicable let the TaskOrganizer know the Task is vanishing.
         setTaskOrganizer(null);
 
