@@ -89,4 +89,7 @@
     
     <!-- Screen off delay -->
     <integer name="config_screen_off_delay">0</integer>
+
+    <!-- Update battery info every second when device is charging -->
+    <bool name="config_alternateFastchargeInfoUpdate">false</bool>
 </resources>
