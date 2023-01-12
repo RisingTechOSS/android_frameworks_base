@@ -19,7 +19,7 @@
     <item>
         <shape>
             <size android:width="@dimen/volume_dialog_panel_width" />
-            <solid android:color="@color/surface_aqua" />
+            <solid android:color="?androidprv:attr/colorSurface" />
     	<corners
         	android:bottomLeftRadius="@dimen/volume_dialog_panel_width_half"
         	android:topLeftRadius="@dimen/volume_dialog_panel_width_half"
