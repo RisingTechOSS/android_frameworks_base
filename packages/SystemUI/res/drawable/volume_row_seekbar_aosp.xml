@@ -22,10 +22,10 @@
     android:paddingMode="stack" >
     <item android:id="@android:id/background"
         android:gravity="center_vertical|fill_horizontal">
-            <shape>
+             <shape android:tint="?android:attr/colorAccent" android:alpha="0.8">
                 <size android:height="@dimen/volume_dialog_slider_width_aosp" />
                 <corners android:radius="@dimen/volume_dialog_slider_corner_radius" />
-                <solid android:color="@color/volume_row_bg" />
+                <solid android:color="#80626161" />
             </shape>
     </item>
     <item android:id="@android:id/progress"

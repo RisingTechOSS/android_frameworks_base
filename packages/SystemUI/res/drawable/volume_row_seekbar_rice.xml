@@ -25,10 +25,10 @@
         <inset
             android:insetLeft="@dimen/rounded_slider_track_inset"
             android:insetRight="@dimen/rounded_slider_track_inset" >
-            <shape>
+             <shape android:tint="?android:attr/colorAccent" android:alpha="0.8">
                 <size android:height="@dimen/volume_dialog_slider_width_bg" />
                 <corners android:radius="@dimen/volume_dialog_slider_corner_radius" />
-                <solid android:color="@color/volume_row_bg" />
+                <solid android:color="#80626161" />
             </shape>
        </inset>
     </item>
