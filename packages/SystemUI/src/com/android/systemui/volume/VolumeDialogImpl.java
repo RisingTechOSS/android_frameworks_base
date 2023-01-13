@@ -909,7 +909,7 @@ public class VolumeDialogImpl implements VolumeDialog,
         row.iconMuteRes = iconMuteRes;
         row.important = important;
         row.defaultStream = defaultStream;
-	if (customVolumeStyles == 0) {
+	    if (customVolumeStyles == 0) {
            row.view = mDialog.getLayoutInflater().inflate(R.layout.volume_dialog_row_aosp, null);
         } else if (customVolumeStyles == 1) {
            row.view = mDialog.getLayoutInflater().inflate(R.layout.volume_dialog_row_rui, null);
@@ -2362,16 +2362,13 @@ public class VolumeDialogImpl implements VolumeDialog,
                 ? Utils.getColorAttr(mContext, android.R.attr.colorBackgroundFloating)
                 : Utils.getColorAttr(mContext, com.android.internal.R.attr.colorAccentCustom);
 
-        final ColorStateList inverseTextTint = Utils.getColorAttr(
-                mContext, com.android.internal.R.attr.colorAccentCustom);
-
         row.sliderProgressSolid.setTintList(colorTint);
         if (row.sliderProgressIcon != null) {
             row.sliderProgressIcon.setTintList(bgTint);
         }
 
         if (row.icon != null) {
-            row.icon.setImageTintList(colorTint2);
+            row.icon.setImageTintList(customVolumeStyles >= 1 ? colorTint : colorTint2);
         }
 
         if (row.number != null) {
