@@ -110,7 +110,7 @@ import javax.inject.Inject;
 public class ThemeOverlayController extends CoreStartable implements Dumpable {
     protected static final String TAG = "ThemeOverlayController";
     protected static final String OVERLAY_BERRY_BLACK_THEME =
-            "com.android.system.theme.black";
+            "org.lineageos.overlay.customization.blacktheme";
     private static final boolean DEBUG = true;
 
     protected static final int NEUTRAL = 0;
