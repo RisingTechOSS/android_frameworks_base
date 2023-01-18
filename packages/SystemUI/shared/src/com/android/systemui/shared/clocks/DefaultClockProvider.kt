@@ -142,7 +142,7 @@ class DefaultClock(
 
         override fun onFontSettingChanged() {
             val customTextSize = Secure.getIntForUser(ctx.getContentResolver(),
-                Secure.KG_BIG_CLOCK_TEXT_SIZE, 86, UserHandle.USER_CURRENT)
+                Secure.KG_BIG_CLOCK_TEXT_SIZE, 180, UserHandle.USER_CURRENT)
             smallClock.setTypeface(
                 Typeface.create(
                 resources.getString(com.android.internal.R.string.config_clockFontFamily), Typeface.NORMAL)
@@ -160,9 +160,20 @@ class DefaultClock(
                 resources.getDimensionPixelSize(R.dimen.clock_text_size_base).toFloat() * customTextSize
             )
             currFont = resources.getString(com.android.internal.R.string.config_clockFontFamily)
-            if (!currFont.toString().toLowerCase().contains("sans")) {
-            smallClock.setLineSpacingScale(0.9f)
-            largeClock.setLineSpacingScale(0.9f)
+            if (currFont.toString().toLowerCase().contains("sans") && !currFont.toString().toLowerCase().contains("google")) {
+              smallClock.setLineSpacingScale(0.88f)
+              largeClock.setLineSpacingScale(0.88f)
+            } else if (currFont.toString().toLowerCase().contains("google")) {
+              smallClock.setLineSpacingScale(defaultLineSpacing)
+              largeClock.setLineSpacingScale(defaultLineSpacing)
+            } else if (currFont.toString().toLowerCase().contains("apice") 
+            	  && currFont.toString().toLowerCase().contains("coolstory")
+            	  && currFont.toString().toLowerCase().contains("evolve")) {
+              smallClock.setLineSpacingScale(0.92f)
+              largeClock.setLineSpacingScale(0.92f)
+            } else {
+              smallClock.setLineSpacingScale(0.9f)
+              largeClock.setLineSpacingScale(0.9f)
             }
             recomputePadding()
         }
@@ -187,10 +198,16 @@ class DefaultClock(
             currFont = resources.getString(com.android.internal.R.string.config_clockFontFamily)
             if (nf.format(FORMAT_NUMBER.toLong()) == burmeseNumerals) {
                 clocks.forEach { it.setLineSpacingScale(burmeseLineSpacing) }
-            } else if (!currFont.toString().toLowerCase().contains("sans")) {
-                clocks.forEach { it.setLineSpacingScale(0.9f) }
+            } else if (currFont.toString().toLowerCase().contains("sans") && !currFont.toString().toLowerCase().contains("google")) {
+              clocks.forEach { it.setLineSpacingScale(0.88f) }
+            } else if (currFont.toString().toLowerCase().contains("google")) {
+              clocks.forEach { it.setLineSpacingScale(defaultLineSpacing) }
+            } else if (currFont.toString().toLowerCase().contains("apice") 
+            	  && currFont.toString().toLowerCase().contains("coolstory")
+            	  && currFont.toString().toLowerCase().contains("evolve")) {
+              clocks.forEach { it.setLineSpacingScale(0.92f) }
             } else {
-                clocks.forEach { it.setLineSpacingScale(defaultLineSpacing) }
+              clocks.forEach { it.setLineSpacingScale(0.9f) }
             }
 
             clocks.forEach { it.refreshFormat() }
@@ -274,7 +291,7 @@ class DefaultClock(
 
     private fun recomputePadding() {
         val customTopMargin = Secure.getIntForUser(ctx.getContentResolver(),
-                Secure.KG_CUSTOM_CLOCK_TOP_MARGIN, 280, UserHandle.USER_CURRENT)
+                Secure.KG_CUSTOM_CLOCK_TOP_MARGIN, 120, UserHandle.USER_CURRENT)
         val lp = largeClock.getLayoutParams() as FrameLayout.LayoutParams
         lp.topMargin = (-1f * customTopMargin).toInt()
         largeClock.setLayoutParams(lp)
