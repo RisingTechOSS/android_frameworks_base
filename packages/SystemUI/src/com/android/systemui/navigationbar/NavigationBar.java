@@ -57,9 +57,11 @@ import android.annotation.NonNull;
 import android.app.ActivityTaskManager;
 import android.app.IActivityTaskManager;
 import android.app.StatusBarManager;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.database.ContentObserver;
 import android.graphics.Insets;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
@@ -70,8 +72,11 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
+import android.os.UserHandle;
 import android.os.RemoteException;
 import android.provider.DeviceConfig;
+import android.provider.Settings;
 import android.telecom.TelecomManager;
 import android.text.TextUtils;
 import android.util.Log;
@@ -234,6 +239,9 @@ public class NavigationBar extends ViewController<NavigationBarView> implements 
 
     private Locale mLocale;
     private int mLayoutDirection;
+
+    private ContentObserver mNavBarOrderContentObserver;
+    private ContentResolver mContentResolver;
 
     private Optional<Long> mHomeButtonLongPressDurationMs;
 
@@ -718,6 +726,18 @@ public class NavigationBar extends ViewController<NavigationBarView> implements 
 
         mNotificationShadeDepthController.addListener(mDepthListener);
         mTaskStackChangeListeners.registerTaskStackListener(mTaskStackListener);
+
+        // Navbar back/recents swap
+        mContentResolver = mContext.getContentResolver();
+        mNavBarOrderContentObserver = new ContentObserver(new Handler(Looper.getMainLooper())) {
+            @Override
+            public void onChange(boolean selfChange) {
+                mView.updateStates();
+            }
+        };
+        mContentResolver.registerContentObserver(
+                Settings.Secure.getUriFor(Settings.Secure.NAV_BAR_BUTTON_SWAP_ENABLED),
+                true, mNavBarOrderContentObserver, UserHandle.USER_ALL);
     }
 
     public void destroyView() {
@@ -732,6 +752,7 @@ public class NavigationBar extends ViewController<NavigationBarView> implements 
 
         mDeviceConfigProxy.removeOnPropertiesChangedListener(mOnPropertiesChangedListener);
         mTaskStackChangeListeners.unregisterTaskStackListener(mTaskStackListener);
+        mContentResolver.unregisterContentObserver(mNavBarOrderContentObserver);
     }
 
     @Override
