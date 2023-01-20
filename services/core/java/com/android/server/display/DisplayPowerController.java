@@ -559,8 +559,8 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
 
         final Resources resources = context.getResources();
 
-        mScreenOffDelayConfig = resources.getInteger(
-                com.android.internal.R.integer.config_screen_off_delay);
+        mScreenOffDelayConfig = Integer.parseInt(
+            SystemProperties.get("persist.sys.screen.blank_delay", "1000"));
 
         // DOZE AND DIM SETTINGS
         mScreenBrightnessDozeConfig = clampAbsoluteBrightness(
