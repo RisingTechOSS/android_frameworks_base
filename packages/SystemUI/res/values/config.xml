@@ -786,4 +786,7 @@
     
     <integer name="background_blur_radius">225</integer>
     <item name="background_blur_colour_opacity" format="float" type="dimen">0.88</item>
+
+    <!-- Preferred max refresh rate at AOD & Ambient Display, if supported by the display. -->
+    <integer name="config_aodMaxRefreshRate">-1</integer>
 </resources>
