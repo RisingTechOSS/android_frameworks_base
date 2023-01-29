@@ -1529,10 +1529,11 @@ public class CentralSurfacesImpl extends CoreStartable implements
             mDismissAllButton.getBackground().setAlpha(0);
             mDismissAllButton.setVisibility(View.GONE);
         } else {
-            mDismissAllButton.setVisibility(View.VISIBLE);
+            updateDismissAllButton();
             int alpha = Math.round(mNotificationPanelViewController.getExpandedFraction() * 255.0f);
             mDismissAllButton.setAlpha(alpha);
             mDismissAllButton.getBackground().setAlpha(alpha);
+            mDismissAllButton.setVisibility(View.VISIBLE);
         }
     }
 
@@ -4632,7 +4633,6 @@ public class CentralSurfacesImpl extends CoreStartable implements
             case NOTIFICATION_MATERIAL_DISMISS:
                 mShowDimissButton =
                         TunerService.parseIntegerSwitch(newValue, false);
-                updateDismissAllVisibility(true);
                 updateDismissAllButton();
                 break;
             case NOTIFICATION_MATERIAL_DISMISS_STYLE:
@@ -4840,9 +4840,6 @@ public class CentralSurfacesImpl extends CoreStartable implements
 
                 @Override
                 public void onStateChanged(int newState) {
-                    if (mState != newState) {
-                        updateDismissAllVisibility(newState != StatusBarState.KEYGUARD);
-                    }
                     mState = newState;
                     updateReportRejectedTouchVisibility();
                     mDozeServiceHost.updateDozing();
