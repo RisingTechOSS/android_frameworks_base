@@ -198,4 +198,13 @@
     <string name="screen_pinning_description_no_navbar_fpsensor">This keeps it in view until you unpin. Touch &amp; hold fingerprint sensor to unpin.</string>
     <!-- Notify use that they are in Lock-to-app (for devices without navbar and with gestures on fingerprint sensor)-->
     <string name="screen_pinning_toast_no_navbar_fpsensor">To unpin this screen, touch &amp; hold fingerprint sensor</string>
+
+    <!-- Scarlet QS Tiles -->
+    <string name="quick_settings_scarlet_boost_mode_label">System Boost</string>
+    <string name="quick_settings_scarlet_services_unavailable">System Manager Disabled</string>
+    <string name="quick_settings_scarlet_boost_mode_enabled">Boost Active</string>
+    <string name="quick_settings_scarlet_boost_mode_disabled">Boost Inactive</string>
+    <string name="quick_settings_scarlet_idle_mode_label">Aggressive Idle Manager</string>
+    <string name="quick_settings_scarlet_idle_mode_enabled">Agrressive Idle Active</string>
+    <string name="quick_settings_scarlet_idle_mode_disabled">Agrressive Idle Inactive</string>
 </resources>
