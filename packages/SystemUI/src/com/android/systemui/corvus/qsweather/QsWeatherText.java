@@ -151,11 +151,30 @@ public class QsWeatherText extends TextView implements
                     if ((mQsWeatherEnabled != 0 || mQsWeatherEnabled != 5)) {
                         if (mQsWeatherEnabled == 2 || mQsWeatherEnabled == 4) {
                             setText(mWeatherData.temp);
+                        } else if (mQsWeatherEnabled == 6) {
+                            String formattedCondition = mWeatherData.condition;
+                            if (formattedCondition.toLowerCase().contains("clouds")) {
+                              formattedCondition = "Cloudy";
+                            } else if (formattedCondition.toLowerCase().contains("rain")) {
+                              formattedCondition = "Rainy";
+                            } else if (formattedCondition.toLowerCase().contains("clear")) {
+                              formattedCondition = "Sunny";
+                            } else if (formattedCondition.toLowerCase().contains("storm")) {
+                              formattedCondition = "Stormy";
+                            } else if (formattedCondition.toLowerCase().contains("snow")) {
+                              formattedCondition = "Snowy";
+                            } else if (formattedCondition.toLowerCase().contains("wind")) {
+                              formattedCondition = "Windy";
+                            } else if (formattedCondition.toLowerCase().contains("mist")) {
+                              formattedCondition = "Misty";
+                            }
+                            setText(mWeatherData.temp + mWeatherData.tempUnits + " ~ "  + formattedCondition);
                         } else {
                             setText(mWeatherData.temp + mWeatherData.tempUnits);
                         }
                         if (mQsWeatherEnabled != 0 && mQsWeatherEnabled != 5) {
                             setVisibility(View.VISIBLE);
+                            setTextSize(16.0f);
                         }
                     }
                 } else {
