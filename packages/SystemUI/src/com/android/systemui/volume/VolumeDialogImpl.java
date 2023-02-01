@@ -2844,7 +2844,7 @@ public class VolumeDialogImpl implements VolumeDialog,
             final boolean doVibrate = Settings.System.getInt(mContext.getContentResolver(),
                     Settings.System.VOLUME_PANEL_HAPTIC_FEEDBACK, 1) != 0;
             if (doVibrate) {
-            seekBar.performHapticFeedback(CLOCK_TICK);
+               mController.vibrate(VibrationEffect.get(VibrationEffect.EFFECT_TEXTURE_TICK));
             }
         }
 
