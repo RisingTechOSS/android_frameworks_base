@@ -44,7 +44,6 @@
             android:textColor="?android:attr/colorAccent"
             android:layout_marginTop="12dp"
             android:layout_marginBottom="8dp"
-            android:visibility="gone"
             android:textAppearance="@style/TextAppearance.Volume.Header" />
         <FrameLayout
             android:id="@+id/volume_row_slider_frame"
