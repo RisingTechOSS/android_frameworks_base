@@ -4450,6 +4450,9 @@
     <!-- Name of the font family to use in the default lockscreen clock -->
     <string name="config_clockFontFamily" translatable="false">sans-serif</string>
 
+    <!-- Name of the font family to use in the default lockscreen date/smartspace -->
+    <string name="config_dateFontFamily" translatable="false">sans-serif</string>
+
     <!-- Size of icon shown beside a preference locked by admin -->
     <dimen name="config_restrictedIconSize">@dimen/restricted_icon_size_material</dimen>
 
