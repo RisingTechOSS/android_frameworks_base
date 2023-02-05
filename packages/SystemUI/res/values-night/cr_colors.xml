@@ -23,4 +23,5 @@
      <color name="qs_translucent_bg">#0FFFFFFF</color>
 
     <color name="surface_aqua">@color/surface_aqua_dark</color>
+    <color name="qs_white_bg">@android:color/system_neutral1_0</color>
 </resources>
