@@ -54,15 +54,6 @@ public class SwipeToScreenshotListener implements PointerEventListener {
 
     @Override
     public void onPointerEvent(MotionEvent event) {
-        if (!mBootCompleted) {
-            mBootCompleted = SystemProperties.getBoolean("sys.boot_completed", false);
-            return;
-        }
-        if (!mDeviceProvisioned) {
-            mDeviceProvisioned = Settings.Global.getInt(mContext.getContentResolver(),
-                Settings.Global.DEVICE_PROVISIONED, 0) != 0;
-            return;
-        }
         if (event.getAction() == 0) {
             changeThreeGestureState(THREE_GESTURE_STATE_NONE);
         } else if (mThreeGestureState == THREE_GESTURE_STATE_NONE && event.getPointerCount() == 3) {
