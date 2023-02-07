@@ -27,6 +27,7 @@ import android.animation.Animator;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
+import android.annotation.UiThread;
 import android.app.Fragment;
 import android.database.ContentObserver;
 import android.os.Bundle;
@@ -443,6 +444,7 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
     }
 
     /** Initializes views related to the notification icon area. */
+    @UiThread
     public void initNotificationIconArea() {
         ViewGroup notificationIconArea = mStatusBar.findViewById(R.id.notification_icon_area);
         mNotificationIconAreaInner =
