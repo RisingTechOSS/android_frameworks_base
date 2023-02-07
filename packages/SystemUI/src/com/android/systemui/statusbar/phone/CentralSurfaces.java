@@ -591,5 +591,5 @@ public interface CentralSurfaces extends Dumpable, ActivityStarter, LifecycleOwn
 
     void updateDismissAllVisibility(boolean visible);
 
-    void updateDismissAllButton();
+    void updateDismissAllButton(boolean visible);
 }

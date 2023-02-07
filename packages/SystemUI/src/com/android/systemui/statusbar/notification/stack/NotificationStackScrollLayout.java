@@ -695,7 +695,7 @@ public class NotificationStackScrollLayout extends ViewGroup implements Dumpable
         inflateEmptyShadeView();
         updateFooter();
         mSectionsManager.reinflateViews();
-        mCentralSurfaces.updateDismissAllButton();
+        mCentralSurfaces.updateDismissAllButton(mCentralSurfaces.getDismissAllButton() != null);
     }
 
     public void setIsRemoteInputActive(boolean isActive) {
@@ -753,7 +753,7 @@ public class NotificationStackScrollLayout extends ViewGroup implements Dumpable
     @Override
     @ShadeViewRefactor(RefactorComponent.SHADE_VIEW)
     public void onUiModeChanged() {
-        mCentralSurfaces.updateDismissAllButton();
+        mCentralSurfaces.updateDismissAllButton(mCentralSurfaces.getDismissAllButton() != null);
     }
 
     @ShadeViewRefactor(RefactorComponent.DECORATOR)

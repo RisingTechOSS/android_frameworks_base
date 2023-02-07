@@ -3341,9 +3341,8 @@ public final class NotificationPanelViewController extends PanelViewController {
             alpha = 0f;
         }
         mNotificationStackScrollLayoutController.setAlpha(alpha);
-        if (mBarState != StatusBarState.KEYGUARD && !isFullyCollapsed() && !isPanelVisibleBecauseOfHeadsUp()) {
-            mCentralSurfaces.updateDismissAllVisibility(true);
-        }
+        boolean showDismissButton = mBarState != StatusBarState.KEYGUARD && !isFullyCollapsed() && !isPanelVisibleBecauseOfHeadsUp() && mCentralSurfaces.getDismissAllButton() != null;
+        mCentralSurfaces.updateDismissAllVisibility(showDismissButton);
     }
 
     private float getFadeoutAlpha() {
