@@ -133,8 +133,6 @@ public class CameraDeviceImpl extends CameraDevice
     private final int mTotalPartialCount;
     private final Context mContext;
 
-    private final boolean mForceMultiResolution;
-
     private static final long NANO_PER_SECOND = 1000000000; //ns
 
     /**
@@ -308,9 +306,6 @@ public class CameraDeviceImpl extends CameraDevice
             mTotalPartialCount = partialCount;
         }
         mIsPrivilegedApp = checkPrivilegedAppList();
-
-        mForceMultiResolution = mContext.getResources().getBoolean(
-                com.android.internal.R.bool.config_forceMultiResolution);
     }
 
     public CameraDeviceCallbacks getCallbacks() {
@@ -1522,6 +1517,16 @@ public class CameraDeviceImpl extends CameraDevice
         String packageName = ActivityThread.currentOpPackageName();
         String packageList = SystemProperties.get("persist.vendor.camera.privapp.list");
 
+        /**
+         * e.g.
+         * persist.sys.aux.camera_oem_package=com.oneplus.camera
+         */
+        String cameraPackage = SystemProperties.get("persist.sys.aux.camera_oem_package", "");
+
+        if (!cameraPackage.equals("") && packageName.toLowerCase().contains(cameraPackage.toLowerCase())) {
+            return true;
+        }
+
         if (packageList.length() > 0) {
             TextUtils.StringSplitter splitter = new TextUtils.SimpleStringSplitter(',');
             splitter.setString(packageList);
@@ -1544,7 +1549,7 @@ public class CameraDeviceImpl extends CameraDevice
             return;
         }
         int inputFormat = inputConfig.getFormat();
-        if (inputConfig.isMultiResolution() || mForceMultiResolution) {
+        if (inputConfig.isMultiResolution()) {
             MultiResolutionStreamConfigurationMap configMap = mCharacteristics.get(
                     CameraCharacteristics.SCALER_MULTI_RESOLUTION_STREAM_CONFIGURATION_MAP);
 
@@ -1576,23 +1581,14 @@ public class CameraDeviceImpl extends CameraDevice
                         inputConfig.getWidth() + "x" + inputConfig.getHeight() + " is not valid");
             }
         } else {
-            /*
-             * don't check input format and size,
-             * if the package name is in the white list
-             */
-            if (isPrivilegedApp()) {
-                Log.w(TAG, "ignore input format/size check for white listed app");
-                return;
-            }
-            boolean skipInputConfigCheck =
-                SystemProperties.getBoolean("persist.camera.skip_input_config_check", true);
-            if (!skipInputConfigCheck) {
-              if (!checkInputConfigurationWithStreamConfigurations(inputConfig, /*maxRes*/false) &&
-                      !checkInputConfigurationWithStreamConfigurations(inputConfig, /*maxRes*/true)) {
-                  throw new IllegalArgumentException("Input config with format " +
-                          inputFormat + " and size " + inputConfig.getWidth() + "x" +
-                          inputConfig.getHeight() + " not supported by camera id " + mCameraId);
-              }
+              
+            if (!checkInputConfigurationWithStreamConfigurations(inputConfig, /*maxRes*/false) &&
+                    !checkInputConfigurationWithStreamConfigurations(inputConfig, /*maxRes*/true)) {
+                if (isPrivilegedApp()) return;
+                throw new IllegalArgumentException("Input config with format " +
+                        inputFormat + " and size " + inputConfig.getWidth() + "x" +
+                        inputConfig.getHeight() + " not supported by camera id " + mCameraId);
+
             }
         }
     }

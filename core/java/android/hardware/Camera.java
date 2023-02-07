@@ -291,8 +291,17 @@ public class Camera {
          * if the package name does not falls in this bucket
          */
         String packageName = ActivityThread.currentOpPackageName();
-    	if (packageName == null)
+
+        /**
+         * Expose camera if package name contains manufacturer/OEM name 
+         * 
+         */
+        String cameraPackage = SystemProperties.get("persist.sys.aux.camera_oem_package", "");
+
+    	if (packageName == null 
+            || !cameraPackage.equals("") && packageName.toLowerCase().contains(cameraPackage.toLowerCase()))
     	    return true;
+
         List<String> packageList = new ArrayList<>(Arrays.asList(
                 SystemProperties.get("vendor.camera.aux.packagelist", ",").split(",")));
         List<String> packageExcludelist = new ArrayList<>(Arrays.asList(
