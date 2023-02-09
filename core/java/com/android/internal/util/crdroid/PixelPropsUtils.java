@@ -36,11 +36,9 @@ public class PixelPropsUtils {
     private static final boolean DEBUG = false;
     
     private static final String PACKAGE_ASI = "com.google.android.settings.intelligence";
-    private static final String PACKAGE_FINSKY = "com.android.vending";
     private static final String PACKAGE_GMS = "com.google.android.gms";
     private static final String PACKAGE_GPHOTOS = "com.google.android.apps.photos";
     private static final String PACKAGE_NETFLIX = "com.netflix.mediaclient";
-    private static final String PROCESS_GMS_UNSTABLE = ".unstable";
     private static final String PROCESS_GMS_PERSISTENT = ".persistent";
 
     private static final Map<String, Object> propsToChange;
@@ -89,6 +87,8 @@ public class PixelPropsUtils {
 
     // Packages to Keep with original device
     private static final String[] packagesToKeep = {
+            PACKAGE_GMS,
+            PACKAGE_PS,
             "com.google.android.GoogleCamera",
             "com.google.android.GoogleCamera.Cameight",
             "com.google.android.GoogleCamera.Go",
@@ -181,9 +181,6 @@ public class PixelPropsUtils {
             "flame"
     };
 
-    private static volatile boolean sIsGms = false;
-    private static volatile boolean sIsFinsky = false;
-
     static {
         propsToKeep = new HashMap<>();
         propsToChange = new HashMap<>();
@@ -238,12 +235,6 @@ public class PixelPropsUtils {
         }
         if (Arrays.asList(packagesToKeep).contains(packageName)) {
             return;
-        }
-        sIsFinsky = packageName.equals(PACKAGE_FINSKY);
-        if (packageName.equals(PACKAGE_GMS)) {
-             final String processName = Application.getProcessName();
-             sIsGms = processName.contains(PROCESS_GMS_UNSTABLE) || processName.contains(PROCESS_GMS_PERSISTENT);
-             spoofBuildGms(sIsGms);
         }
         if (packageName.startsWith("com.google.") && !packageName.equals(PACKAGE_GMS)
                 || Arrays.asList(extraPackagesToChange).contains(packageName)) {
@@ -348,7 +339,7 @@ public class PixelPropsUtils {
 
     private static void setPropValue(String key, Object value) {
         try {
-            if (DEBUG) Log.d(TAG, "Defining prop " + key + " to " + value.toString());
+            if (DEBUG) Log.d(TAG, "Setting prop " + key + " to " + value.toString());
             Field field = Build.class.getDeclaredField(key);
             field.setAccessible(true);
             field.set(null, value);
@@ -362,22 +353,6 @@ public class PixelPropsUtils {
         try {
             // Unlock
             Field field = Build.class.getDeclaredField(key);
-            field.setAccessible(true);
-
-            // Edit
-            field.set(null, value);
-
-            // Lock
-            field.setAccessible(false);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            Log.e(TAG, "Failed to spoof Build." + key, e);
-        }
-    }
-
-    private static void setVersionField(String key, Integer value) {
-        try {
-            // Unlock
-            Field field = Build.VERSION.class.getDeclaredField(key);
             field.setAccessible(true);
 
             // Edit
@@ -405,20 +380,3 @@ public class PixelPropsUtils {
         setVersionField("DEVICE_INITIAL_SDK_INT", Build.VERSION_CODES.S);
     }
 
-    private static boolean isCallerSafetyNet() {
-        return Arrays.stream(Thread.currentThread().getStackTrace())
-                .anyMatch(elem -> elem.getClassName().toLowerCase().contains("droidguard"));
-    }
-
-    public static void onEngineGetCertificateChain() {
-        // Check stack for SafetyNet
-        if (sIsGms && isCallerSafetyNet()) {
-            throw new UnsupportedOperationException();
-        }
-
-        // Check stack for PlayIntegrity
-        if (sIsFinsky) {
-            throw new UnsupportedOperationException();
-        }
-    }
-}

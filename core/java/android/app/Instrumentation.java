@@ -41,6 +41,7 @@ import android.os.Process;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.SystemClock;
+import android.os.SystemProperties;
 import android.os.TestLooperManager;
 import android.os.UserHandle;
 import android.util.AndroidRuntimeException;
@@ -60,11 +61,14 @@ import com.android.internal.content.ReferrerIntent;
 import java.io.File;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
+import com.android.internal.util.crdroid.AttestationHooks;
 import com.android.internal.util.crdroid.PixelPropsUtils;
+import com.android.internal.util.crdroid.PropImitationHooks;
 
 /**
  * Base class for implementing application instrumentation code.  When running
@@ -92,6 +96,8 @@ public class Instrumentation {
     public static final String REPORT_KEY_STREAMRESULT = "stream";
 
     private static final String TAG = "Instrumentation";
+
+    private static final String DEVICE = "ro.product.device";
 
     private static final long CONNECT_TIMEOUT_MILLIS = 5000;
 
@@ -1227,6 +1233,21 @@ public class Instrumentation {
                 InputManager.INJECT_INPUT_EVENT_MODE_WAIT_FOR_FINISH);
     }
 
+    // Codenames for currently supported Pixels by Google
+    private static final String[] pixelCodenames = {
+            "cheetah",
+            "panther",
+            "bluejay",
+            "oriole",
+            "raven",
+            "redfin",
+            "barbet",
+            "bramble",
+            "sunfish",
+            "coral",
+            "flame"
+    };
+
     /**
      * Perform instantiation of the process's {@link Application} object.  The
      * default implementation provides the normal system behavior.
@@ -1244,6 +1265,12 @@ public class Instrumentation {
         Application app = getFactory(context.getPackageName())
                 .instantiateApplication(cl, className);
         app.attach(context);
+        boolean isPixelDevice = Arrays.asList(pixelCodenames).contains(SystemProperties.get(DEVICE));
+        if (!isPixelDevice) {
+            AttestationHooks.initApplicationBeforeOnCreate(app);
+        } else {
+            PropImitationHooks.setProps(app);
+        }
         String packageName = context.getPackageName();
         PixelPropsUtils.setProps(packageName);
         return app;
@@ -1263,6 +1290,12 @@ public class Instrumentation {
             ClassNotFoundException {
         Application app = (Application)clazz.newInstance();
         app.attach(context);
+        boolean isPixelDevice = Arrays.asList(pixelCodenames).contains(SystemProperties.get(DEVICE));
+        if (!isPixelDevice) {
+            AttestationHooks.initApplicationBeforeOnCreate(app);
+        } else {
+            PropImitationHooks.setProps(app);
+        }
         String packageName = context.getPackageName();
         PixelPropsUtils.setProps(packageName);
         return app;
