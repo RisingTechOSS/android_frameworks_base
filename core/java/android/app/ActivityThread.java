@@ -438,6 +438,8 @@ public final class ActivityThread extends ClientTransactionHandler
     Configuration mPendingConfiguration = null;
     // An executor that performs multi-step transactions.
     private final TransactionExecutor mTransactionExecutor = new TransactionExecutor(this);
+    
+    private boolean mProviderAcquired = false;
 
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
     private final ResourcesManager mResourcesManager;
@@ -1895,6 +1897,7 @@ public final class ActivityThread extends ClientTransactionHandler
                 synchronized (key.mLock) {
                     key.mHolder = holder;
                     key.mLock.notifyAll();
+                    mProviderAcquired = true;
                 }
             }
         }
@@ -7044,6 +7047,7 @@ public final class ActivityThread extends ClientTransactionHandler
     public final IContentProvider acquireProvider(
             Context c, String auth, int userId, boolean stable) {
         final IContentProvider provider = acquireExistingProvider(c, auth, userId, stable);
+        mProviderAcquired = false;
         if (provider != null) {
             return provider;
         }
@@ -7064,18 +7068,21 @@ public final class ActivityThread extends ClientTransactionHandler
                 // local, we'll need to wait for the publishing of the provider.
                 if (holder != null && holder.provider == null && !holder.mLocal) {
                     synchronized (key.mLock) {
-                        if (key.mHolder != null) {
+                        if (mProviderAcquired && key.mHolder != null) {
                             if (DEBUG_PROVIDER) {
                                 Slog.i(TAG, "already received provider: " + auth);
                             }
                         } else {
-                            key.mLock.wait(ContentResolver.CONTENT_PROVIDER_READY_TIMEOUT_MILLIS);
+                            if (!mProviderAcquired) {
+                                key.mLock.wait(ContentResolver.CONTENT_PROVIDER_READY_TIMEOUT_MILLIS);
+                            }
                         }
                         holder = key.mHolder;
                     }
                     if (holder != null && holder.provider == null) {
                         // probably timed out
                         holder = null;
+                        mProviderAcquired = false;
                     }
                 }
             }
@@ -7083,18 +7090,15 @@ public final class ActivityThread extends ClientTransactionHandler
             throw ex.rethrowFromSystemServer();
         } catch (InterruptedException e) {
             holder = null;
+            mProviderAcquired = false;
         } finally {
             // Clear the holder from the key since the key itself is never cleared.
             synchronized (key.mLock) {
                 key.mHolder = null;
+                mProviderAcquired = false;
             }
         }
-        if (holder == null) {
-            if (UserManager.get(c).isUserUnlocked(userId)) {
-                Slog.e(TAG, "Failed to find provider info for " + auth);
-            } else {
-                Slog.w(TAG, "Failed to find provider info for " + auth + " (user not unlocked)");
-            }
+        if (holder == null && !mProviderAcquired) {
             return null;
         }
 
@@ -7454,7 +7458,7 @@ public final class ActivityThread extends ClientTransactionHandler
             boolean noisy, boolean noReleaseNeeded, boolean stable) {
         ContentProvider localProvider = null;
         IContentProvider provider;
-        if (holder == null || holder.provider == null) {
+        if ((holder == null || holder.provider == null) && !mProviderAcquired) {
             if (DEBUG_PROVIDER || noisy) {
                 Slog.d(TAG, "Loading provider " + info.authority + ": "
                         + info.name);
