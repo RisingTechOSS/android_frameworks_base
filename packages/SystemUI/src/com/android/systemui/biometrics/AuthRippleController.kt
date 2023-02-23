@@ -126,7 +126,7 @@ class AuthRippleController @Inject constructor(
         val keyguardNotShowing = !keyguardStateController.isShowing
         val unlockNotAllowed = !keyguardUpdateMonitor
                 .isUnlockingWithBiometricAllowed(biometricSourceType)
-        if (keyguardNotShowing || unlockNotAllowed) {
+        if (keyguardNotShowing || !isRippleEnabled ||    unlockNotAllowed) {
             logger.notShowingUnlockRipple(keyguardNotShowing, unlockNotAllowed)
             return
         }
@@ -169,7 +169,7 @@ class AuthRippleController @Inject constructor(
     }
 
     private fun showUnlockedRipple() {
-        if (!isRippleEnabled) return
+    	if (!isRippleEnabled) return
 
         notificationShadeWindowController.setForcePluginOpen(true, this)
 
@@ -246,7 +246,7 @@ class AuthRippleController @Inject constructor(
      * Whether we're animating the light reveal scrim from a call to [onKeyguardFadingAwayChanged].
      */
     fun isAnimatingLightRevealScrim(): Boolean {
-        return lightRevealScrimAnimator?.isRunning ?: false
+        return if (!isRippleEnabled) false else (lightRevealScrimAnimator?.isRunning ?: false)
     }
 
     override fun onStartedGoingToSleep() {
