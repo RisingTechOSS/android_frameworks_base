@@ -166,9 +166,7 @@ public class KeyguardStatusBarView extends RelativeLayout {
                         com.android.internal.R.dimen.text_size_small_material));
         lp = (MarginLayoutParams) mCarrierLabel.getLayoutParams();
 
-        int marginStart = calculateMargin(
-                getResources().getDimensionPixelSize(R.dimen.keyguard_carrier_text_margin),
-                mPadding.first);
+        int marginStart = getResources().getDimensionPixelSize(R.dimen.keyguard_carrier_text_margin);
         lp.setMarginStart(marginStart);
 
         mCarrierLabel.setLayoutParams(lp);
@@ -479,17 +477,6 @@ public class KeyguardStatusBarView extends RelativeLayout {
         View v = findViewById(id);
         if (v instanceof DarkReceiver) {
             ((DarkReceiver) v).onDarkChanged(tintAreas, intensity, color);
-        }
-    }
-
-    /**
-     * Calculates the margin that isn't already accounted for in the view's padding.
-     */
-    private int calculateMargin(int margin, int padding) {
-        if (padding >= margin) {
-            return 0;
-        } else {
-            return margin - padding;
         }
     }
 
