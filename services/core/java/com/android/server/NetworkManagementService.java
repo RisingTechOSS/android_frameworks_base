@@ -79,6 +79,7 @@ import android.util.SparseIntArray;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.app.IBatteryStats;
+import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.DumpUtils;
 import com.android.internal.util.HexDump;
 import com.android.internal.util.Preconditions;
@@ -1511,7 +1512,7 @@ public class NetworkManagementService extends INetworkManagementService.Stub {
                 // default rules. We must not include default rules in the UIDs we send to
                 // ConnectivityManager#replaceFirewallChain, as this would have the opposite effect
                 // intended, leading such UIDs to be blocked or allowed erroneously.
-                applicableUidsForChain = uidFirewallRules.copyKeys();
+                applicableUidsForChain = ArrayUtils.defeatNullable(uidFirewallRules.copyKeys());
             }
             final ConnectivityManager cm = mContext.getSystemService(ConnectivityManager.class);
             try {
