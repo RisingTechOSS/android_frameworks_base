@@ -23,6 +23,8 @@ import android.os.UserHandle
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import android.view.ViewGroup.MarginLayoutParams
 import android.widget.FrameLayout
 import androidx.annotation.VisibleForTesting
 import com.android.systemui.customization.R
@@ -36,6 +38,8 @@ import com.android.systemui.plugins.log.LogBuffer
 import java.io.PrintWriter
 import java.util.Locale
 import java.util.TimeZone
+
+import kotlin.collections.mapOf
 
 import android.provider.Settings.Secure
 
@@ -227,13 +231,26 @@ class DefaultClockController(
 
         override fun onLocaleChanged(locale: Locale) {
             val nf = NumberFormat.getInstance(locale)
-            if (nf.format(FORMAT_NUMBER.toLong()) == burmeseNumerals) {
-                clocks.forEach { it.setLineSpacingScale(burmeseLineSpacing) }
-            } else {
-                clocks.forEach { it.setLineSpacingScale(defaultLineSpacing) }
-            }
+            val density = resources.displayMetrics.density
 
-            clocks.forEach { it.refreshFormat() }
+            val fontsMap = mapOf(
+                "sans" to 0.88f,
+                "google" to defaultLineSpacing,
+                "apice" to 0.92f,
+                "coolstory" to 0.92f,
+                "evolve" to 0.92f
+            )
+
+            val fontName = Secure.getStringForUser(ctx.contentResolver, Secure.KG_FONT_TYPE, UserHandle.USER_CURRENT)?.toLowerCase()
+            val defaultFont = if (fontName.isNullOrBlank()) "google-sans" else fontName
+            clocks.forEach { clock ->
+                val lineSpacing = fontsMap.entries.firstOrNull { (condition, _) ->
+                    defaultFont.contains(condition)
+                }?.value ?: 0.9f
+
+                clock.setLineSpacingScale(lineSpacing)
+                clock.refreshFormat()
+            }
         }
     }
 
