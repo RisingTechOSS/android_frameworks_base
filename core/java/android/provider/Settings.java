@@ -6014,6 +6014,12 @@ public final class Settings {
          * @hide
          */
         public static final String STATUSBAR_NOTIF_COUNT = "statusbar_notif_count";
+        
+        /**
+         * Colored QS notification icons
+         * @hide
+         */
+        public static final String QS_COLORED_ICONS = "qs_colored_icons";
 
         /**
          * Bring back old style mobile data indicators.

@@ -49,6 +49,9 @@ import com.android.systemui.statusbar.notification.RoundableState;
 import com.android.systemui.statusbar.notification.TransformState;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 
+import android.os.UserHandle;
+import android.provider.Settings;
+
 import java.util.Stack;
 
 /**
@@ -194,7 +197,9 @@ public class NotificationHeaderViewWrapper extends NotificationViewWrapper imple
         String pkgname = row.getEntry().getSbn().getPackageName();
         Drawable appIcon = pkgname != null ?
                     getApplicationIcon(pkgname) : null;
-        if (appIcon != null && mWorkProfileImage != null) {
+	boolean qsColoredIcons = Settings.System.getIntForUser(mContext.getContentResolver(),
+            Settings.System.QS_COLORED_ICONS, 0, UserHandle.USER_CURRENT) != 0;
+        if (qsColoredIcons && appIcon != null && mWorkProfileImage != null) {
             mIcon.setImageDrawable(appIcon);
             mWorkProfileImage.setImageIcon(notification.getSmallIcon());
             // The work profile image is always the same lets just set the icon tag for it not to
