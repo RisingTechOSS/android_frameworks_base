@@ -6101,6 +6101,24 @@ public final class Settings {
         public static final String NOTIFICATION_MATERIAL_DISMISS_BGSTYLE = "notification_material_dismiss_bgstyle";
 
         /**
+         * Whether to enable artwork blur
+         * @hide
+         */
+        public static final String MEDIA_ARTWORK_BLUR_ENABLED = "media_artwork_blur_enabled";
+
+        /**
+         * Adjust blur radius for background media
+         * @hide
+         */
+        public static final String MEDIA_ARTWORK_BLUR_RADIUS = "media_artwork_blur_radius";
+
+        /**
+         * Adjust fade percent for background media
+         * @hide
+         */
+        public static final String MEDIA_ARTWORK_FADE_PERCENT = "media_artwork_fade_percent";
+
+        /**
          * Keys we no longer back up under the current schema, but want to continue to
          * process when restoring historical backup datasets.
          *

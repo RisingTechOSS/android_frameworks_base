@@ -21,7 +21,17 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.content.res.Configuration
+import android.database.ContentObserver
+import android.net.Uri
+import android.os.Handler
+import android.os.UserHandle.USER_ALL
+import android.os.UserHandle.USER_CURRENT
+import android.provider.Settings
 import android.provider.Settings.ACTION_MEDIA_CONTROLS_SETTINGS
+import android.provider.Settings.System.MEDIA_ARTWORK_BLUR_ENABLED
+import android.provider.Settings.System.MEDIA_ARTWORK_BLUR_RADIUS
+import android.provider.Settings.System.MEDIA_ARTWORK_FADE_PERCENT
+import com.android.systemui.util.settings.SystemSettings
 import android.util.Log
 import android.util.MathUtils
 import android.view.LayoutInflater
@@ -39,6 +49,7 @@ import com.android.systemui.Dumpable
 import com.android.systemui.R
 import com.android.systemui.classifier.FalsingCollector
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
@@ -75,6 +86,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 
+
 private const val TAG = "MediaCarouselController"
 private val settingsIntent = Intent().setAction(ACTION_MEDIA_CONTROLS_SETTINGS)
 private val DEBUG = Log.isLoggable(TAG, Log.DEBUG)
@@ -104,6 +116,9 @@ constructor(
     private val mediaFlags: MediaFlags,
     private val keyguardUpdateMonitor: KeyguardUpdateMonitor,
     private val keyguardTransitionInteractor: KeyguardTransitionInteractor,
+    @Main private val mainHandler: Handler,
+    @Background bgHandler: Handler,
+    systemSettings: SystemSettings
 ) : Dumpable {
     /** The current width of the carousel */
     private var currentCarouselWidth: Int = 0
@@ -241,6 +256,9 @@ constructor(
     private val isReorderingAllowed: Boolean
         get() = visualStabilityProvider.isReorderingAllowed
 
+    private val settingsObserver = SettingsObserver(bgHandler, systemSettings)
+    private var artworkSettings = ArtworkSettings()
+
     init {
         dumpManager.registerDumpable(TAG, this)
         mediaFrame = inflateMediaCarousel()
@@ -287,6 +305,7 @@ constructor(
             mediaCarouselScrollHandler.scrollToStart()
         }
         visualStabilityProvider.addPersistentReorderingAllowedListener(visualStabilityCallback)
+        settingsObserver.observe()
         mediaManager.addListener(
             object : MediaDataManager.Listener {
                 override fun onMediaDataLoaded(
@@ -622,6 +641,7 @@ constructor(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT
                     )
+                newPlayer.updateArtworkSettings(artworkSettings)
                 newPlayer.mediaViewHolder?.player?.setLayoutParams(lp)
                 newPlayer.bindPlayer(data, key)
                 newPlayer.setListening(
@@ -646,6 +666,7 @@ constructor(
                     needsReordering = true
                 }
             } else {
+                existingPlayer.updateArtworkSettings(artworkSettings)
                 existingPlayer.bindPlayer(data, key)
                 MediaPlayerData.addMediaPlayer(
                     key,
@@ -1206,6 +1227,57 @@ constructor(
             )
         }
     }
+
+    private inner class SettingsObserver(
+        private val handler: Handler,
+        private val systemSettings: SystemSettings
+    ) : ContentObserver(handler) {
+
+        fun observe() {
+            handler.post {
+                val newSettings = ArtworkSettings(
+                    blurEnabled = systemSettings.getIntForUser(
+                        MEDIA_ARTWORK_BLUR_ENABLED, 0, USER_CURRENT) == 1,
+                    blurRadius = systemSettings.getFloatForUser(
+                        MEDIA_ARTWORK_BLUR_RADIUS, 125f, USER_CURRENT),
+                    fadeLevel = systemSettings.getIntForUser(
+                        MEDIA_ARTWORK_FADE_PERCENT, 30, USER_CURRENT)
+                )
+                mainHandler.post {
+                    artworkSettings = newSettings
+                }
+            }
+
+            systemSettings.registerContentObserverForUser(
+                MEDIA_ARTWORK_BLUR_ENABLED, this, USER_ALL)
+            systemSettings.registerContentObserverForUser(
+                MEDIA_ARTWORK_BLUR_RADIUS, this, USER_ALL)
+            systemSettings.registerContentObserverForUser(
+                MEDIA_ARTWORK_FADE_PERCENT, this, USER_ALL)
+        }
+
+        override fun onChange(selfChange: Boolean, uri: Uri) {
+            val newSettings = when (uri.lastPathSegment) {
+                MEDIA_ARTWORK_BLUR_ENABLED -> artworkSettings.copy(
+                    blurEnabled = systemSettings.getIntForUser(
+                        MEDIA_ARTWORK_BLUR_ENABLED, 0, USER_CURRENT) == 1
+                )
+                MEDIA_ARTWORK_BLUR_RADIUS -> artworkSettings.copy(
+                    blurRadius = systemSettings.getFloatForUser(
+                        MEDIA_ARTWORK_BLUR_RADIUS, 125f, USER_CURRENT)
+                )
+                MEDIA_ARTWORK_FADE_PERCENT -> artworkSettings.copy(
+                    fadeLevel = systemSettings.getIntForUser(
+                        MEDIA_ARTWORK_FADE_PERCENT, 30, USER_CURRENT)
+                )
+                else -> return
+            }
+            mainHandler.post {
+                artworkSettings = newSettings
+                updatePlayers(recreateMedia = true)
+            }
+        }
+    }
 }
 
 @VisibleForTesting
@@ -1430,3 +1502,9 @@ internal object MediaPlayerData {
         playerKeys().forEach { visibleMediaPlayers.put(it.key, it) }
     }
 }
+
+data class ArtworkSettings @JvmOverloads constructor(
+    val blurEnabled: Boolean = false,
+    val blurRadius: Float = 125f,
+    val fadeLevel: Int = 30,
+)
