@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Copyright (C) 2023 the risingOS Android Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <!-- System Manager -->
+    <string name="system_manager_service">System Manager Services</string>
+    <string name="adaptive_charge_service">Adaptive charging</string>
+    <string name="adaptive_charging_title">Adaptive charging enabled</string>
+    <string name="aggressive_idle_title">Aggressive idle enabled</string>
+    <string name="adaptive_charging_text">Device charging will be optimized based on usage pattern.</string>
+    <string name="aggressive_idle_text">System manager will try to optimize device\'s power consumption by restricting services while device is idle</string>
+    <!-- Indication on the keyguard that is shown when the device entered adaptive charging state. Should match keyguard_plugged_in_adaptive_charging [CHAR LIMIT=40]-->
+    <string name="keyguard_indication_adaptive_charging_time"><xliff:g id="percentage">%2$s</xliff:g> • Adaptive Charging (<xliff:g id="charging_time_left" example="4 hours and 2 minutes">%1$s</xliff:g> until full)</string>
+    <string name="keyguard_plugged_in_adaptive_charging"><xliff:g id="percentage">%s</xliff:g> • Adaptive Charging</string>
+</resources>

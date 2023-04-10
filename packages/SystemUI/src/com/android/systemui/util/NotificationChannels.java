@@ -45,6 +45,8 @@ public class NotificationChannels implements CoreStartable {
     public static String HINTS       = "HNT";
     public static String INSTANT     = "INS";
     public static String SETUP       = "STP";
+    public static String SYSTEM_MANAGER       = "SYSM";
+    public static String SYSTEM_ADAPTIVE_CHARGE       = "SYSAC";
 
     private final Context mContext;
 
@@ -93,6 +95,20 @@ public class NotificationChannels implements CoreStartable {
                 HINTS,
                 context.getString(R.string.notification_channel_hints),
                 NotificationManager.IMPORTANCE_DEFAULT);
+                
+        final NotificationChannel system_manager = new NotificationChannel(
+                SYSTEM_MANAGER,
+                context.getString(R.string.system_manager_service),
+                NotificationManager.IMPORTANCE_LOW);
+        system_manager.setSound(null, null);
+        system_manager.setBlockable(true);
+        
+        final NotificationChannel adaptive_charge = new NotificationChannel(
+                SYSTEM_ADAPTIVE_CHARGE,
+                context.getString(R.string.adaptive_charge_service),
+                NotificationManager.IMPORTANCE_LOW);
+        adaptive_charge.setSound(null, null);
+        adaptive_charge.setBlockable(true);
         // No need to bypass DND.
 
         nm.createNotificationChannels(Arrays.asList(
@@ -103,7 +119,9 @@ public class NotificationChannels implements CoreStartable {
                 createScreenshotChannel(
                         context.getString(R.string.notification_channel_screenshot)),
                 batteryChannel,
-                hint
+                hint,
+                system_manager,
+                adaptive_charge
         ));
 
         if (isTv(context)) {

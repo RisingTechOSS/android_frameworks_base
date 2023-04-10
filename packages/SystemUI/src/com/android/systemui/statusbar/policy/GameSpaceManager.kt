@@ -96,7 +96,11 @@ class GameSpaceManager @Inject constructor(
     private fun dispatchForegroundApp() {
         val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
         if (!pm.isInteractive && activeGame != null) return
-        SystemManagerUtils.boostingServiceHandler(activeGame != null)
+        val gameBoostLvl = Settings.System.getIntForUser(
+            context.contentResolver,
+            Settings.System.SYSTEM_MANAGER_GAME_BOOST_LEVEL, 0,
+            UserHandle.USER_CURRENT)
+        SystemManagerUtils.boostingServiceHandler(activeGame != null, gameBoostLvl)
         val action = if (activeGame != null) ACTION_GAME_START else ACTION_GAME_STOP
         Intent(action).apply {
             setPackage(GAMESPACE_PACKAGE)
