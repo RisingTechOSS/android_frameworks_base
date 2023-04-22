@@ -26,6 +26,7 @@ import android.content.res.Resources;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.UserHandle;
+import android.provider.Settings;
 import android.util.ArrayMap;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -62,6 +63,9 @@ public class QSPanel extends LinearLayout implements Tunable {
             "lineagesecure:" + LineageSettings.Secure.QS_SHOW_BRIGHTNESS_SLIDER;
     public static final String QS_BRIGHTNESS_SLIDER_POSITION =
             "lineagesecure:" + LineageSettings.Secure.QS_BRIGHTNESS_SLIDER_POSITION;
+
+    public static final String QS_UI_STYLE =
+            "system:" + Settings.System.QS_UI_STYLE;
 
     private static final String TAG = "QSPanel";
 
@@ -104,7 +108,8 @@ public class QSPanel extends LinearLayout implements Tunable {
     private PageIndicator mFooterPageIndicator;
     private int mContentMarginStart;
     private int mContentMarginEnd;
-    private boolean mUsingHorizontalLayout;
+    protected boolean mUsingHorizontalLayout;
+    
 
     @Nullable
     private LinearLayout mHorizontalLinearLayout;
