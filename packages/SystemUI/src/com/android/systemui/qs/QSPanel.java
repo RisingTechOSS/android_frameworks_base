@@ -65,6 +65,9 @@ public class QSPanel extends LinearLayout implements Tunable {
     public static final String QS_SHOW_BRIGHTNESS = "qs_show_brightness";
     public static final String QS_SHOW_HEADER = "qs_show_header";
 
+    public static final String QS_UI_STYLE =
+            "system:" + Settings.System.QS_UI_STYLE;
+
     private static final String TAG = "QSPanel";
 
     protected final Context mContext;
@@ -106,7 +109,8 @@ public class QSPanel extends LinearLayout implements Tunable {
     private PageIndicator mFooterPageIndicator;
     private int mContentMarginStart;
     private int mContentMarginEnd;
-    private boolean mUsingHorizontalLayout;
+    protected boolean mUsingHorizontalLayout;
+    
 
     @Nullable
     private LinearLayout mHorizontalLinearLayout;
