@@ -6325,6 +6325,11 @@ public final class Settings {
         public static final String BLUETOOTH_SHOW_BATTERY = "bluetooth_show_battery";
 
         /**
+         * @hide
+         */
+        public static final String PREVENT_POINTER_ACCELERATION = "prevent_pointer_acceleration";
+
+        /**
          * Keys we no longer back up under the current schema, but want to continue to
          * process when restoring historical backup datasets.
          *
@@ -6454,6 +6459,7 @@ public final class Settings {
             PRIVATE_SETTINGS.add(DESKTOP_MODE);
             PRIVATE_SETTINGS.add(FORCE_FULLSCREEN_CUTOUT_APPS);
             PRIVATE_SETTINGS.add(OMNIJAWS_WEATHER_ICON_PACK);
+            PRIVATE_SETTINGS.add(PREVENT_POINTER_ACCELERATION);
         }
 
         /**
