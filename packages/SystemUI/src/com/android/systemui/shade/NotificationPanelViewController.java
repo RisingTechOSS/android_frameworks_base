@@ -2565,7 +2565,7 @@ public final class NotificationPanelViewController implements Dumpable {
         }
         mNotificationStackScrollLayoutController.setAlpha(alpha);
         if (mBarState != StatusBarState.KEYGUARD && !isFullyCollapsed() && !isPanelVisibleBecauseOfHeadsUp()) {
-            mCentralSurfaces.updateDismissAllVisibility(true);
+            mCentralSurfaces.updateDismissAllVisibility(mReTickerVisible != null && mReTickerVisible ? false : true);
         }
     }
 
@@ -5266,6 +5266,7 @@ public final class NotificationPanelViewController implements Dumpable {
         if (visibility && mReTickerComeback.getVisibility() == View.VISIBLE) {
             // check if we can dismiss reticker
             retickerDismiss();
+            mReTickerVisible = false;
         }
 
         if (visibility && getExpandedFraction() != 1) {
@@ -5315,16 +5316,19 @@ public final class NotificationPanelViewController implements Dumpable {
                     }
                     retickerDismiss();
                     reTickerViewVisibility();
+                    mReTickerVisible = false;
                 });
             }
         } else {
             retickerDismiss();
+            mReTickerVisible = false;
         }
     }
 
     protected void reTickerViewVisibility() {
         if (!mReTickerStatus) {
             retickerDismiss();
+            mReTickerVisible = false;
             return;
         }
 
@@ -5397,6 +5401,7 @@ public final class NotificationPanelViewController implements Dumpable {
                 if (mIsDismissRequested) {
                     // Dismiss was requested during animation, trigger dismiss animation
                     retickerDismiss(); 
+                    mReTickerVisible = false;
                 }
             }
         });
@@ -5448,7 +5453,6 @@ public final class NotificationPanelViewController implements Dumpable {
             public void onAnimationEnd(Animator animation) {
                 mReTickerComeback.setVisibility(View.GONE);
                 mNotificationStackScroller.setVisibility(View.VISIBLE);
-                mReTickerVisible = false;
                 mReTickerComeback.getViewTreeObserver().removeOnComputeInternalInsetsListener(mInsetsListener);
             }
         });
