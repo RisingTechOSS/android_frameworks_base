@@ -70,6 +70,7 @@ public class ToastPresenter {
         View view = LayoutInflater.from(context).inflate(TEXT_TOAST_LAYOUT, null);
         TextView textView = view.findViewById(com.android.internal.R.id.message);
         textView.setText(text);
+        textView.setSelected(true);
         return view;
     }
 
@@ -84,6 +85,7 @@ public class ToastPresenter {
         View view = LayoutInflater.from(context).inflate(TEXT_TOAST_LAYOUT_WITH_ICON, null);
         TextView textView = view.findViewById(com.android.internal.R.id.message);
         textView.setText(text);
+        textView.setSelected(true);
         ImageView imageView = view.findViewById(com.android.internal.R.id.icon);
         if (imageView != null) {
             imageView.setImageDrawable(icon);
