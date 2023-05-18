@@ -809,87 +809,57 @@ public abstract class LayoutInflater {
             constructor = null;
             sConstructorMap.remove(name);
         }
-        Class<? extends View> clazz = null;
 
-        try {
-            Trace.traceBegin(Trace.TRACE_TAG_VIEW, name);
+        if (constructor == null) {
+            Class<? extends View> clazz;
+            try {
+                clazz = viewContext.getClassLoader().loadClass(prefix != null ? (prefix + name) : name).asSubclass(View.class);
 
-            if (constructor == null) {
-                // Class not found in the cache, see if it's real, and try to add it
-                clazz = Class.forName(prefix != null ? (prefix + name) : name, false,
-                        mContext.getClassLoader()).asSubclass(View.class);
-
-                if (mFilter != null && clazz != null) {
+                if (mFilter != null) {
                     boolean allowed = mFilter.onLoadClass(clazz);
                     if (!allowed) {
                         failNotAllowed(name, prefix, viewContext, attrs);
                     }
                 }
+
                 constructor = clazz.getConstructor(mConstructorSignature);
                 constructor.setAccessible(true);
                 sConstructorMap.put(name, constructor);
-            } else {
-                // If we have a filter, apply it to cached constructor
-                if (mFilter != null) {
-                    // Have we seen this name before?
-                    Boolean allowedState = mFilterMap.get(name);
-                    if (allowedState == null) {
-                        // New class -- remember whether it is allowed
-                        clazz = Class.forName(prefix != null ? (prefix + name) : name, false,
-                                mContext.getClassLoader()).asSubclass(View.class);
-
-                        boolean allowed = clazz != null && mFilter.onLoadClass(clazz);
-                        mFilterMap.put(name, allowed);
-                        if (!allowed) {
-                            failNotAllowed(name, prefix, viewContext, attrs);
-                        }
-                    } else if (allowedState.equals(Boolean.FALSE)) {
-                        failNotAllowed(name, prefix, viewContext, attrs);
-                    }
-                }
+            } catch (NoSuchMethodException e) {
+                final InflateException ie = new InflateException(
+                        getParserStateDescription(viewContext, attrs)
+                                + ": Error inflating class " + (prefix != null ? (prefix + name) : name), e);
+                ie.setStackTrace(EMPTY_STACK_TRACE);
+                throw ie;
             }
+        }
 
-            Object lastContext = mConstructorArgs[0];
-            mConstructorArgs[0] = viewContext;
-            Object[] args = mConstructorArgs;
-            args[1] = attrs;
+        Object lastContext = mConstructorArgs[0];
+        mConstructorArgs[0] = viewContext;
+        Object[] args = mConstructorArgs;
+        args[1] = attrs;
 
-            try {
-                final View view = constructor.newInstance(args);
-                if (view instanceof ViewStub) {
-                    // Use the same context when inflating ViewStub later.
-                    final ViewStub viewStub = (ViewStub) view;
-                    viewStub.setLayoutInflater(cloneInContext((Context) args[0]));
-                }
-                return view;
-            } finally {
-                mConstructorArgs[0] = lastContext;
+        try {
+            final View view = constructor.newInstance(args);
+            if (view instanceof ViewStub) {
+                final ViewStub viewStub = (ViewStub) view;
+                viewStub.setLayoutInflater(cloneInContext((Context) args[0]));
             }
-        } catch (NoSuchMethodException e) {
-            final InflateException ie = new InflateException(
-                    getParserStateDescription(viewContext, attrs)
-                    + ": Error inflating class " + (prefix != null ? (prefix + name) : name), e);
-            ie.setStackTrace(EMPTY_STACK_TRACE);
-            throw ie;
-
+            return view;
         } catch (ClassCastException e) {
-            // If loaded class is not a View subclass
             final InflateException ie = new InflateException(
                     getParserStateDescription(viewContext, attrs)
-                    + ": Class is not a View " + (prefix != null ? (prefix + name) : name), e);
+                            + ": Class is not a View " + (prefix != null ? (prefix + name) : name), e);
             ie.setStackTrace(EMPTY_STACK_TRACE);
             throw ie;
-        } catch (ClassNotFoundException e) {
-            // If loadClass fails, we should propagate the exception.
-            throw e;
         } catch (Exception e) {
             final InflateException ie = new InflateException(
                     getParserStateDescription(viewContext, attrs) + ": Error inflating class "
-                            + (clazz == null ? "<unknown>" : clazz.getName()), e);
+                            + (constructor.getDeclaringClass() == null ? "<unknown>" : constructor.getDeclaringClass().getName()), e);
             ie.setStackTrace(EMPTY_STACK_TRACE);
             throw ie;
         } finally {
-            Trace.traceEnd(Trace.TRACE_TAG_VIEW);
+            mConstructorArgs[0] = lastContext;
         }
     }
 
@@ -1009,6 +979,8 @@ public abstract class LayoutInflater {
                     } else {
                         view = createView(context, name, null, attrs);
                     }
+                } catch (RuntimeException e) {
+                    // ignore attrs error
                 } finally {
                     mConstructorArgs[0] = lastContext;
                 }
