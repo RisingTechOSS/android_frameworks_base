@@ -27,6 +27,7 @@ import com.android.internal.annotations.VisibleForTesting;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -87,7 +88,8 @@ public class CachedBluetoothDeviceManager {
                 return cachedDevice;
             }
             // Check the member devices for the coordinated set if it exists
-            final Set<CachedBluetoothDevice> memberDevices = cachedDevice.getMemberDevice();
+            final Set<CachedBluetoothDevice> memberDevices =
+                    new HashSet<CachedBluetoothDevice>(cachedDevice.getMemberDevice());
             if (!memberDevices.isEmpty()) {
                 for (CachedBluetoothDevice memberDevice : memberDevices) {
                     if (memberDevice.getDevice().equals(device)) {
