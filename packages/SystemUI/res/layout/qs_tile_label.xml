@@ -36,7 +36,7 @@
         android:textDirection="locale"
         android:ellipsize="marquee"
         android:marqueeRepeatLimit="1"
-        android:singleLine="true"
+        android:maxLines="1"
         android:focusable="false"
         android:importantForAccessibility="no"
         android:textAppearance="@style/TextAppearance.QS.TileLabel"/>
@@ -49,7 +49,7 @@
         android:textDirection="locale"
         android:ellipsize="marquee"
         android:marqueeRepeatLimit="1"
-        android:singleLine="true"
+        android:maxLines="1"
         android:visibility="gone"
         android:focusable="false"
         android:importantForAccessibility="no"
