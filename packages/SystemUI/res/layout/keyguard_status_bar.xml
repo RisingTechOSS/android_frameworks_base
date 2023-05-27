@@ -47,7 +47,7 @@
             android:layout_height="match_parent"
             android:layout_marginEnd="@dimen/status_bar_padding_end"
             android:gravity="center_vertical|end">
-            <include layout="@layout/system_icons" />
+            <include layout="@layout/system_icons_keyguard" />
         </FrameLayout>
 
         <ImageView android:id="@+id/multi_user_avatar"
