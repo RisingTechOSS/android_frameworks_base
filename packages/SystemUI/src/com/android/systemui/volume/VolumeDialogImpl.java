@@ -2354,25 +2354,33 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
                 // animate!
                 if (row.anim != null && row.anim.isRunning()
                         && row.animTargetProgress == newProgress) {
-                    return;  // already animating to the target progress
+                    // already animating to the target progress
+                    return;
                 }
                 // start/update animation
                 if (row.anim == null) {
                     row.anim = ObjectAnimator.ofInt(row.slider, "progress", progress, newProgress);
                     row.anim.setInterpolator(new DecelerateInterpolator());
+                    row.anim.setDuration(UPDATE_ANIMATION_DURATION);
+                    row.anim.addListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            // Reset the animation reference
+                            row.anim = null;
+                        }
+                    });
                 } else {
                     row.anim.cancel();
-                    row.anim.setIntValues(progress, newProgress);
+                    row.anim.setIntValues(row.slider.getProgress(), newProgress);
                 }
                 row.animTargetProgress = newProgress;
-                row.anim.setDuration(UPDATE_ANIMATION_DURATION);
-                row.anim.addListener(
-                        getJankListener(row.view, TYPE_UPDATE, UPDATE_ANIMATION_DURATION));
                 row.anim.start();
             } else {
                 // update slider directly to clamped value
                 if (row.anim != null) {
                     row.anim.cancel();
+                    // Reset the animation reference
+                    row.anim = null;
                 }
                 row.slider.setProgress(newProgress, true);
             }
