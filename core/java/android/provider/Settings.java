@@ -5946,6 +5946,11 @@ public final class Settings {
          */
         public static final String LOCKSCREEN_WEATHER_ENABLED = "lockscreen_weather_enabled";
 
+	    /**
+         * @hide
+         */
+        public static final String OMNIJAWS_WEATHER_ICON_PACK = "omnijaws_weather_icon_pack";
+
         /**
          * @hide
          */
@@ -6185,6 +6190,7 @@ public final class Settings {
             PRIVATE_SETTINGS.add(DISPLAY_COLOR_MODE_VENDOR_HINT);
             PRIVATE_SETTINGS.add(DESKTOP_MODE);
             PRIVATE_SETTINGS.add(FORCE_FULLSCREEN_CUTOUT_APPS);
+            PRIVATE_SETTINGS.add(OMNIJAWS_WEATHER_ICON_PACK);
         }
 
         /**
