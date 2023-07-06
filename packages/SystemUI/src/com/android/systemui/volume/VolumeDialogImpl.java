@@ -163,6 +163,8 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
+import javax.security.auth.callback.Callback;
+
 /**
  * Visual presentation of the volume dialog.
  *
@@ -2524,33 +2526,37 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
         if (row.tracking) {
             return;  // don't update if user is sliding
         }
-        final int progress = row.slider.getProgress();
-        final int level = getImpliedLevel(row.slider, progress);
+
         final boolean rowVisible = row.view.getVisibility() == VISIBLE;
         final boolean inGracePeriod = (SystemClock.uptimeMillis() - row.userAttempt)
                 < USER_ATTEMPT_GRACE_PERIOD;
+
         mHandler.removeMessages(H.RECHECK, row);
+
         if (mShowing && rowVisible && inGracePeriod) {
             if (D.BUG) Log.d(TAG, "inGracePeriod");
             mHandler.sendMessageAtTime(mHandler.obtainMessage(H.RECHECK, row),
                     row.userAttempt + USER_ATTEMPT_GRACE_PERIOD);
             return;  // don't update if visible and in grace period
         }
+
+        final int progress = row.slider.getProgress();
+        final int level = getImpliedLevel(row.slider, progress);
+
         if (vlevel == level) {
             if (mShowing && rowVisible) {
                 return;  // don't clamp if visible
             }
         }
-        final int newProgress = vlevel * 100;
-        if (progress != newProgress && !row.ss.muted || maxChanged) {
+
+        if ((progress != (vlevel * 100) && !row.ss.muted) || maxChanged) {
+            final int newProgress = vlevel * 100;
+
             if (mShowing && rowVisible) {
-                // animate!
-                if (row.anim != null && row.anim.isRunning()
-                        && row.animTargetProgress == newProgress) {
-                    // already animating to the target progress
-                    return;
+                if (row.anim != null && row.anim.isRunning() && row.animTargetProgress == newProgress) {
+                    return; // already animating to the target progress
                 }
-                // start/update animation
+
                 if (row.anim == null) {
                     row.anim = ObjectAnimator.ofInt(row.slider, "progress", progress, newProgress);
                     row.anim.setInterpolator(new DecelerateInterpolator());
@@ -2558,30 +2564,27 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
                     row.anim.addListener(new AnimatorListenerAdapter() {
                         @Override
                         public void onAnimationEnd(Animator animation) {
-                            // Reset the animation reference
-                            row.anim = null;
+                            getJankListener(row.view, TYPE_UPDATE, UPDATE_ANIMATION_DURATION);
                         }
                     });
                 } else {
                     row.anim.cancel();
                     row.anim.setIntValues(row.slider.getProgress(), newProgress);
                 }
+
                 row.animTargetProgress = newProgress;
                 row.anim.start();
             } else {
-                // update slider directly to clamped value
                 if (row.anim != null) {
                     row.anim.cancel();
-                    // Reset the animation reference
-                    row.anim = null;
                 }
-                row.slider.setProgress(newProgress, true);
+
+                row.slider.setProgress(newProgress);
             }
         }
 
         // update header text
-        Util.setText(row.header, Utils.formatPercentage((enable && !row.ss.muted)
-                        ? vlevel : 0, row.ss.levelMax));
+        Util.setText(row.header, Utils.formatPercentage((enable && !row.ss.muted) ? vlevel : 0, row.ss.levelMax));
     }
 
     private void recheckH(VolumeRow row) {
