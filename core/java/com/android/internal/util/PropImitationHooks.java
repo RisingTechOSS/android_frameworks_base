@@ -41,9 +41,7 @@ public class PropImitationHooks {
 
     private static final String sP7PFp = "google/cheetah/cheetah:13/TQ3A.230705.001.A1/10217028:user/release-keys";
     private static final String sCertifiedFp = sP7PFp;
-
-    private static final String sStockFp =
-            Resources.getSystem().getString(R.string.config_stockFingerprint);
+    private static final String sStockFp = SystemProperties.get("ro.vendor.build.fingerprint");
 
     private static final String PACKAGE_ARCORE = "com.google.ar.core";
     private static final String PACKAGE_FINSKY = "com.android.vending";
