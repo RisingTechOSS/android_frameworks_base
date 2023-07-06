@@ -39,7 +39,7 @@ public class PropImitationHooks {
     private static final String TAG = "PropImitationHooks";
     private static final boolean DEBUG = false;
 
-    private static final String sP7PFp = "google/cheetah/cheetah:13/TQ3A.230705.001.A1/10217028:user/release-keys";
+    private static final String sP7PFp = "google/cheetah/cheetah:13/TQ3A.230705.001/10216780:user/release-keys";
     private static final String sCertifiedFp = sP7PFp;
     private static final String sStockFp = SystemProperties.get("ro.vendor.build.fingerprint");
 
