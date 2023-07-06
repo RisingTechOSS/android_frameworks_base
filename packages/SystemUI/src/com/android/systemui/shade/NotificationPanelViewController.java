@@ -5266,7 +5266,6 @@ public final class NotificationPanelViewController implements Dumpable {
         if (visibility && mReTickerComeback.getVisibility() == View.VISIBLE) {
             // check if we can dismiss reticker
             retickerDismiss();
-            mReTickerVisible = false;
         }
 
         if (visibility && getExpandedFraction() != 1) {
@@ -5315,19 +5314,16 @@ public final class NotificationPanelViewController implements Dumpable {
                     }
                     retickerDismiss();
                     reTickerViewVisibility();
-                    mReTickerVisible = false;
                 });
             }
         } else {
             retickerDismiss();
-            mReTickerVisible = false;
         }
     }
 
     protected void reTickerViewVisibility() {
         if (!mReTickerStatus) {
             retickerDismiss();
-            mReTickerVisible = false;
             return;
         }
 
@@ -5344,6 +5340,7 @@ public final class NotificationPanelViewController implements Dumpable {
     }
 
     public void retickerAnimate() {
+        closeQsIfPossible();
         mCentralSurfaces.updateDismissAllVisibility(false);
 
         if (mIsAnimatingTicker) {
@@ -5399,8 +5396,7 @@ public final class NotificationPanelViewController implements Dumpable {
                 mIsAnimatingTicker = false; // Animation has finished
                 if (mIsDismissRequested) {
                     // Dismiss was requested during animation, trigger dismiss animation
-                    retickerDismiss(); 
-                    mReTickerVisible = false;
+                    retickerDismiss();
                 }
             }
         });
