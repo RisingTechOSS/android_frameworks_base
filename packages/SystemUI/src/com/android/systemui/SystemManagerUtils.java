@@ -272,7 +272,9 @@ public class SystemManagerUtils {
                 String lowercasePackageName = packageName.toLowerCase();
                 if (!essentialProcesses.contains(lowercasePackageName)
                         && lowercasePackageName.contains("camera")
-                        && lowercasePackageName.contains("settings")|| isAppRunningInBackground(usageStatsManager, processInfo.processName)) {
+                        && lowercasePackageName.contains("settings")
+                        && !lowercasePackageName.contains("player") 
+                        && isAppRunningInBackground(usageStatsManager, processInfo.processName)) {
                     processesToKill.add(processInfo.processName);
                     break; // Break out of the inner loop if a match is found
                 }
