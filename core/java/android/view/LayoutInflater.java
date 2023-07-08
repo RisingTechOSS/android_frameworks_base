@@ -50,9 +50,14 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Instantiates a layout XML file into its corresponding {@link android.view.View}
@@ -646,8 +651,7 @@ public abstract class LayoutInflater {
 
                 if (DEBUG) {
                     System.out.println("**************************");
-                    System.out.println("Creating root view: "
-                            + name);
+                    System.out.println("Creating root view: " + name);
                     System.out.println("**************************");
                 }
 
@@ -666,14 +670,13 @@ public abstract class LayoutInflater {
 
                     if (root != null) {
                         if (DEBUG) {
-                            System.out.println("Creating params from root: " +
-                                    root);
+                            System.out.println("Creating params from root: " + root);
                         }
                         // Create layout params that match root, if supplied
                         params = root.generateLayoutParams(attrs);
                         if (!attachToRoot) {
-                            // Set the layout params for temp if we are not
-                            // attaching. (If we are, we use addView, below)
+                            // Set the layout params for temp if we are not attaching.
+                            // (If we are, we use addView, below)
                             temp.setLayoutParams(params);
                         }
                     }
@@ -689,8 +692,8 @@ public abstract class LayoutInflater {
                         System.out.println("-----> done inflating children");
                     }
 
-                    // We are supposed to attach all the views we found (int temp)
-                    // to root. Do that now.
+                    // We are supposed to attach all the views we found (int temp) to root.
+                    // Do that now.
                     if (root != null && attachToRoot) {
                         root.addView(temp, params);
                     }
@@ -701,15 +704,13 @@ public abstract class LayoutInflater {
                         result = temp;
                     }
                 }
-
             } catch (XmlPullParserException e) {
                 final InflateException ie = new InflateException(e.getMessage(), e);
                 ie.setStackTrace(EMPTY_STACK_TRACE);
                 throw ie;
             } catch (Exception e) {
                 final InflateException ie = new InflateException(
-                        getParserStateDescription(inflaterContext, attrs)
-                        + ": " + e.getMessage(), e);
+                        getParserStateDescription(inflaterContext, attrs) + ": " + e.getMessage(), e);
                 ie.setStackTrace(EMPTY_STACK_TRACE);
                 throw ie;
             } finally {
@@ -804,71 +805,144 @@ public abstract class LayoutInflater {
             throws ClassNotFoundException, InflateException {
         Objects.requireNonNull(viewContext);
         Objects.requireNonNull(name);
-        Constructor<? extends View> constructor = sConstructorMap.get(name);
-        if (constructor != null && !verifyClassLoader(constructor)) {
-            constructor = null;
-            sConstructorMap.remove(name);
-        }
+        String prefixedName = prefix != null ? (prefix + name) : name;
+        Class<? extends View> clazz = null;
 
-        if (constructor == null) {
-            Class<? extends View> clazz;
-            try {
-                clazz = viewContext.getClassLoader().loadClass(prefix != null ? (prefix + name) : name).asSubclass(View.class);
+        try {
+            Trace.traceBegin(Trace.TRACE_TAG_VIEW, name);
 
-                if (mFilter != null) {
-                    boolean allowed = mFilter.onLoadClass(clazz);
-                    if (!allowed) {
+            // Opportunistically create view directly instead of using reflection
+            View view = tryCreateViewDirect(prefixedName, viewContext, attrs);
+            if (view == null) {
+                Constructor<? extends View> constructor = sConstructorMap.get(name);
+                if (constructor != null && !verifyClassLoader(constructor)) {
+                    constructor = null;
+                    sConstructorMap.remove(name);
+                }
+
+                if (constructor == null) {
+                    // Class not found in the cache, see if it's real, and try to add it
+                    clazz = loadClass(prefixedName);
+                    if (mFilter != null && clazz != null && !mFilter.onLoadClass(clazz)) {
+                        failNotAllowed(name, prefix, viewContext, attrs);
+                    }
+                    constructor = clazz.getConstructor(mConstructorSignature);
+                    constructor.setAccessible(true);
+                    sConstructorMap.put(name, constructor);
+                } else if (mFilter != null) {
+                    // If we have a filter, apply it to cached constructor
+                    if (!checkAllowedState(name, constructor)) {
                         failNotAllowed(name, prefix, viewContext, attrs);
                     }
                 }
 
-                constructor = clazz.getConstructor(mConstructorSignature);
-                constructor.setAccessible(true);
-                sConstructorMap.put(name, constructor);
-            } catch (NoSuchMethodException e) {
-                final InflateException ie = new InflateException(
-                        getParserStateDescription(viewContext, attrs)
-                                + ": Error inflating class " + (prefix != null ? (prefix + name) : name), e);
-                ie.setStackTrace(EMPTY_STACK_TRACE);
-                throw ie;
+                Object lastContext = mConstructorArgs[0];
+                mConstructorArgs[0] = viewContext;
+                Object[] args = mConstructorArgs;
+                args[1] = attrs;
+
+                try {
+                    view = constructor.newInstance(args);
+                } finally {
+                    mConstructorArgs[0] = lastContext;
+                }
             }
-        }
 
-        Object lastContext = mConstructorArgs[0];
-        mConstructorArgs[0] = viewContext;
-        Object[] args = mConstructorArgs;
-        args[1] = attrs;
-
-        try {
-            final View view = constructor.newInstance(args);
             if (view instanceof ViewStub) {
+                // Use the same context when inflating ViewStub later.
                 final ViewStub viewStub = (ViewStub) view;
-                viewStub.setLayoutInflater(cloneInContext((Context) args[0]));
+                viewStub.setLayoutInflater(cloneInContext((Context) viewContext));
             }
+
             return view;
-        } catch (ClassCastException e) {
+        } catch (NoSuchMethodException e) {
             final InflateException ie = new InflateException(
                     getParserStateDescription(viewContext, attrs)
-                            + ": Class is not a View " + (prefix != null ? (prefix + name) : name), e);
+                    + ": Error inflating class " + (prefix != null ? (prefix + name) : name), e);
             ie.setStackTrace(EMPTY_STACK_TRACE);
             throw ie;
+        } catch (ClassCastException e) {
+            // If loaded class is not a View subclass
+            final InflateException ie = new InflateException(
+                    getParserStateDescription(viewContext, attrs)
+                    + ": Class is not a View " + (prefix != null ? (prefix + name) : name), e);
+            ie.setStackTrace(EMPTY_STACK_TRACE);
+            throw ie;
+        } catch (ClassNotFoundException e) {
+            // If loadClass fails, we should propagate the exception.
+            throw e;
         } catch (Exception e) {
             final InflateException ie = new InflateException(
                     getParserStateDescription(viewContext, attrs) + ": Error inflating class "
-                            + (constructor.getDeclaringClass() == null ? "<unknown>" : constructor.getDeclaringClass().getName()), e);
+                            + (clazz == null ? "<unknown>" : clazz.getName()), e);
             ie.setStackTrace(EMPTY_STACK_TRACE);
             throw ie;
         } finally {
-            mConstructorArgs[0] = lastContext;
+            Trace.traceEnd(Trace.TRACE_TAG_VIEW);
         }
     }
 
-    /**
-     * Throw an exception because the specified class is not allowed to be inflated.
-     */
+    private View tryCreateViewDirect(String name, Context viewContext, AttributeSet attrs)
+            throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException,
+            InvocationTargetException, InstantiationException {
+        if (isFrequentlyUsedFrameworkView(name)) {
+            Class<?> clazz = loadClass(name);
+            Constructor<?> constructor = clazz.getConstructor(Context.class, AttributeSet.class);
+            constructor.setAccessible(true);
+            return (View) constructor.newInstance(viewContext, attrs);
+        }
+        return null;
+    }
+
+    private Class<? extends View> loadClass(String className) throws ClassNotFoundException {
+        return Class.forName(className, false, mContext.getClassLoader()).asSubclass(View.class);
+    }
+
+    private boolean checkAllowedState(String name, Constructor<? extends View> constructor) {
+        Boolean allowedState = mFilterMap.get(name);
+        if (allowedState == null) {
+            // New class - check if allowed and cache the result
+            Class<? extends View> clazz = constructor.getDeclaringClass();
+            boolean allowed = clazz != null && mFilter.onLoadClass(clazz);
+            mFilterMap.put(name, allowed);
+            return allowed;
+        } else {
+            return allowedState;
+        }
+    }
+
+    private static final Set<String> frequentlyUsedViews = new HashSet<>(Arrays.asList(
+            "android.widget.",
+            "android.app.",
+            "android.view.",
+            "androidx.",
+            "com.google.android.",
+            "android.support.v7.",
+            ".view",
+            "textview",
+            ".widget",
+            ".components",
+            ".emoji",
+            "com.android.launcher3.",
+            "com.android.internal.widget.",
+            "com.android.settings.",
+            "com.android.systemui.",
+            ".webkit"
+    ));
+
+    private boolean isFrequentlyUsedFrameworkView(String viewName) {
+        String v = viewName.toLowerCase();
+        for (String prefix : frequentlyUsedViews) {
+            if (v.contains(prefix)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void failNotAllowed(String name, String prefix, Context context, AttributeSet attrs) {
         throw new InflateException(getParserStateDescription(context, attrs)
-                + ": Class not allowed to be inflated "+ (prefix != null ? (prefix + name) : name));
+                + ": Class not allowed to be inflated " + (prefix != null ? (prefix + name) : name));
     }
 
     /**
