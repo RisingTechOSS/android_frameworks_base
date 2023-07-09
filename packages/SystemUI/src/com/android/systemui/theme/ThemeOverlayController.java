@@ -120,6 +120,8 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
     private static final String PREF_COLOR_OVERRIDE ="monet_engine_color_override";
     private static final String PREF_CUSTOM_BGCOLOR ="monet_engine_custom_bgcolor";
     private static final String PREF_BGCOLOR_OVERRIDE ="monet_engine_bgcolor_override";
+    private static final String QS_SHOW_BATTERY_PERCENT ="system:qs_show_battery_percent";
+    private static final String QS_BATTERY_STYLE ="system:qs_battery_style";
 
     protected static final int NEUTRAL = 0;
     protected static final int ACCENT = 1;
@@ -705,6 +707,8 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
         mTunerService.addTunable(this, PREF_COLOR_OVERRIDE);
         mTunerService.addTunable(this, PREF_CUSTOM_BGCOLOR);
         mTunerService.addTunable(this, PREF_BGCOLOR_OVERRIDE);
+        mTunerService.addTunable(this, QS_BATTERY_STYLE);
+        mTunerService.addTunable(this, QS_SHOW_BATTERY_PERCENT);
 
         // Upon boot, make sure we have the most up to date colors
         Runnable updateColors = () -> {
@@ -788,6 +792,10 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
             case PREF_BGCOLOR_OVERRIDE:
                 mBgColorOverride =
                         TunerService.parseInteger(newValue, 0xFF1b6ef3);
+                reevaluateSystemTheme(true /* forceReload */);
+                break;
+            case QS_SHOW_BATTERY_PERCENT:
+            case QS_BATTERY_STYLE:
                 reevaluateSystemTheme(true /* forceReload */);
                 break;
             default:
