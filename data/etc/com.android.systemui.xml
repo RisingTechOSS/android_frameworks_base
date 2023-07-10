@@ -90,5 +90,7 @@
         <permission name="android.permission.FORCE_STOP_PACKAGES" />
         <permission name="android.permission.DEVICE_POWER" />
         <permission name="android.permission.POWER_SAVER" />
+        <permission name="android.permission.WRITE_APN_SETTINGS" />
+        <permission name="android.permission.CHANGE_APP_IDLE_STATE" />
     </privapp-permissions>
 </permissions>

@@ -533,11 +533,15 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces, Tune
     protected GameSpaceManager mGameSpaceManager;
 
     private final PulseControllerImpl mPulseController;
+    private SystemManagerUtils systemManager;
     private VisualizerView mVisualizerView;
 
     /** Controller for the Shade. */
     @VisibleForTesting
     NotificationPanelViewController mNotificationPanelViewController;
+
+   // System Manager
+    private boolean isSysManagerInstantiated = false;
 
     // settings
     private QSPanelController mQSPanelController;
@@ -906,6 +910,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces, Tune
         mFingerprintManager = fingerprintManager;
         mSysUiState = sysUiState;
         mPulseController = new PulseControllerImpl(mContext, this, mCommandQueue, mUiBgExecutor);
+        systemManager = new SystemManagerUtils();
 
         mLockscreenShadeTransitionController = lockscreenShadeTransitionController;
         mStartingSurfaceOptional = startingSurfaceOptional;
@@ -3663,11 +3668,12 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces, Tune
             }
 
             DejankUtils.stopDetectingBlockingIpcs(tag);
-            try {
-                performSystemManagerService(1);
-            } catch (Exception e) {
-                SystemManagerUtils.initSystemManager(mContext);
+            if (!isSysManagerInstantiated) {
+                systemManager.initSystemManager(mContext);
+                isSysManagerInstantiated = true;
             }
+            performSystemManagerService(1);
+
         }
 
         @Override
@@ -3737,27 +3743,24 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces, Tune
 
             });
             DejankUtils.stopDetectingBlockingIpcs(tag);
-            try {
-                performSystemManagerService(0);
-            } catch (Exception e) {
-                SystemManagerUtils.initSystemManager(mContext);
-            }
+            performSystemManagerService(0);
         }
 
         public void performSystemManagerService(int trigger) {
-            if (mContext == null) {
+            if (!isSysManagerInstantiated || mContext == null) {
                 return;
             }
-            NotificationManager notifMan = mContext.getSystemService(NotificationManager.class);
-            if (notifMan == null) {
+
+            NotificationManager notificationManager = mContext.getSystemService(NotificationManager.class);
+            if (notificationManager == null) {
                 return;
             }
+
             if (trigger == 1) {
-                SystemManagerUtils.startIdleService(mContext);
-                SystemManagerUtils.killBackgroundProcesses(mContext);
-                PackageManager pm = CentralSurfaces.getPackageManagerForUser(mContext, mLockscreenUserManager.getCurrentUserId());
+                systemManager.startIdleService(mContext);
+                systemManager.killBackgroundProcesses(mContext);
             } else {
-                SystemManagerUtils.cancelIdleService();
+                systemManager.cancelIdleService();
             }
 
             int userId = mLockscreenUserManager.getCurrentUserId();
@@ -3774,10 +3777,11 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces, Tune
                     trigger,
                     userId);
 
-                PackageManager pm = CentralSurfaces.getPackageManagerForUser(mContext, userId);
-                SystemManagerUtils.deepClean(mContext, pm , trigger == 1);
+                PackageManager packageManager = CentralSurfaces.getPackageManagerForUser(mContext, userId);
+                systemManager.deepClean(mContext, packageManager, trigger == 1);
             }
-            PowerNotificationWarnings.showSystemManagerNotification(mContext, notifMan, isAggressiveIdleEnabled);
+
+            PowerNotificationWarnings.showSystemManagerNotification(mContext, notificationManager, isAggressiveIdleEnabled);
 
             boolean isCharging = mKeyguardIndicationController.isDeviceCharging();
             boolean isAdaptiveChargingEnabled = Settings.Secure.getIntForUser(
@@ -3785,8 +3789,9 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces, Tune
                 Settings.Secure.SYS_ADAPTIVE_CHARGING_ENABLED,
                 1,
                 userId) == 1;
-            SystemManagerUtils.enterPowerSaveMode(mContext, isCharging && isAdaptiveChargingEnabled);
-            PowerNotificationWarnings.showAdaptiveChargeNotification(mContext, notifMan, isCharging && isAdaptiveChargingEnabled);
+
+            systemManager.enterPowerSaveMode(mContext, isCharging && isAdaptiveChargingEnabled);
+            PowerNotificationWarnings.showAdaptiveChargeNotification(mContext, notificationManager, isCharging && isAdaptiveChargingEnabled);
         }
 
         @Override

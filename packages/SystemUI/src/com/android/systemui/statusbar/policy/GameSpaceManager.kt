@@ -100,7 +100,8 @@ class GameSpaceManager @Inject constructor(
             context.contentResolver,
             Settings.System.SYSTEM_MANAGER_GAME_BOOST_LEVEL, 0,
             UserHandle.USER_CURRENT)
-        SystemManagerUtils.boostingServiceHandler(activeGame != null, gameBoostLvl)
+        val systemManagerUtils = SystemManagerUtils()
+        systemManagerUtils.boostingServiceHandler(activeGame != null, gameBoostLvl)
         val action = if (activeGame != null) ACTION_GAME_START else ACTION_GAME_STOP
         Intent(action).apply {
             setPackage(GAMESPACE_PACKAGE)
