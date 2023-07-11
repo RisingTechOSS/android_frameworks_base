@@ -123,7 +123,7 @@ public class CurrentWeatherView extends FrameLayout implements OmniJawsClient.Om
             if (mWeatherInfo != null) {
                 Drawable d = mWeatherClient.getWeatherConditionImage(mWeatherInfo.conditionCode);
                 mCurrentImage.setImageDrawable(d);
-                mRightText.setText(mWeatherInfo.temp + " " + mWeatherInfo.tempUnits);
+                mRightText.setText(mWeatherInfo.temp + mWeatherInfo.tempUnits);
                 mLeftText.setText(mWeatherInfo.city);
                 mLeftText.setVisibility(mShowWeatherLocation ? View.VISIBLE : View.GONE);
             }
