@@ -11786,6 +11786,11 @@ public final class Settings {
         public static final String ENABLE_COMBINED_SIGNAL_ICONS = "enable_combined_signal_icons";
 
         /**
+         * @hide
+         */
+        public static final String PREF_KG_USER_SWITCHER = "pref_kg_user_switcher";
+
+        /**
          * Whether to show privacy indicator for location
          * @hide
          */

@@ -52,10 +52,12 @@ import android.util.Log;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
 import android.util.TypedValue;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
+import com.android.systemui.R;
 import com.android.internal.graphics.ColorUtils;
 import com.android.systemui.CoreStartable;
 import com.android.systemui.Dumpable;
@@ -599,6 +601,30 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
                     }
                 },
                 UserHandle.USER_ALL);
+                
+        mSecureSettings.registerContentObserverForUser(
+                Settings.Secure.getUriFor(Settings.Secure.PREF_KG_USER_SWITCHER),
+                false,
+                new ContentObserver(mBgHandler) {
+                    @Override
+                    public void onChange(boolean selfChange, Collection<Uri> collection, int flags,
+                            int userId) {
+                        restartSystemUI();
+                    }
+                },
+                UserHandle.USER_ALL);
+                
+        mSecureSettings.registerContentObserverForUser(
+                Settings.Secure.getUriFor(Settings.Secure.ENABLE_COMBINED_SIGNAL_ICONS),
+                false,
+                new ContentObserver(mBgHandler) {
+                    @Override
+                    public void onChange(boolean selfChange, Collection<Uri> collection, int flags,
+                            int userId) {
+                        restartSystemUI();
+                    }
+                },
+                UserHandle.USER_ALL);
 
         mSystemSettings.registerContentObserverForUser(
                 Settings.System.getUriFor(Settings.System.QS_TILE_VERTICAL_LAYOUT),
@@ -662,18 +688,6 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
                     public void onChange(boolean selfChange, Collection<Uri> collection, int flags,
                             int userId) {
                         reevaluateSystemTheme(true /* forceReload */);
-                    }
-                },
-                UserHandle.USER_ALL);
-
-        mSecureSettings.registerContentObserverForUser(
-                Settings.Secure.getUriFor(Settings.Secure.ENABLE_COMBINED_SIGNAL_ICONS),
-                false,
-                new ContentObserver(mBgHandler) {
-                    @Override
-                    public void onChange(boolean selfChange, Collection<Uri> collection, int flags,
-                            int userId) {
-                        restartSystemUI();
                     }
                 },
                 UserHandle.USER_ALL);
@@ -753,9 +767,17 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
     }
 
     private void restartSystemUI() {
-        android.os.Process.killProcess(android.os.Process.myPid());
-    }
+        Toast toast = Toast.makeText(mContext, R.string.restarting_systemui_msg, Toast.LENGTH_SHORT);
+        toast.show();
 
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                android.os.Process.killProcess(android.os.Process.myPid());
+            }
+        }, toast.getDuration() + 2000);
+    }
+    
     @Override
     public void onTuningChanged(String key, String newValue) {
         switch (key) {
