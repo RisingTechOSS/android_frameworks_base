@@ -20,6 +20,7 @@ import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Point
+import android.os.AsyncTask
 import android.os.Handler
 import android.os.SystemClock
 import android.os.VibrationEffect
@@ -153,6 +154,8 @@ class BackPanelController internal constructor(
         get() = SystemClock.uptimeMillis() - gestureSinceActionDown
     private val elapsedTimeSinceEntry
         get() = SystemClock.uptimeMillis() - gestureEntryTime
+        
+    private var mEdgeHapticIntensity = 0
 
     // Whether the current gesture has moved a sufficiently large amount,
     // so that we can unambiguously start showing the ENTRY animation
@@ -842,7 +845,7 @@ class BackPanelController internal constructor(
 
                 vibratorHelper.cancel()
                 mainHandler.postDelayed(10L) {
-                    vibratorHelper.vibrate(VIBRATE_ACTIVATED_EFFECT)
+                    triggerVibration()
                 }
 
                 val startingVelocity = convertVelocityToSpringStartingVelocity(
@@ -878,7 +881,7 @@ class BackPanelController internal constructor(
                 )
                 mView.popOffEdge(startingVelocity)
 
-                vibratorHelper.vibrate(VIBRATE_DEACTIVATED_EFFECT)
+                triggerVibration()
                 updateRestingArrowDimens()
             }
             GestureState.FLUNG -> {
@@ -906,6 +909,27 @@ class BackPanelController internal constructor(
                 mainHandler.postDelayed(10L) { vibratorHelper.cancel() }
             }
         }
+    }
+
+    override fun setEdgeHapticIntensity(edgeHapticIntensity: Int) {
+        mEdgeHapticIntensity = edgeHapticIntensity
+    }
+
+    private fun triggerVibration() {
+        if (vibratorHelper == null || mEdgeHapticIntensity == 0) {
+            return
+        }
+
+        val effect: VibrationEffect = when (mEdgeHapticIntensity) {
+            1 -> VibrationEffect.createPredefined(VibrationEffect.EFFECT_TEXTURE_TICK)
+            2 -> VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK)
+            3 -> VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK)
+            4 -> VibrationEffect.createPredefined(VibrationEffect.EFFECT_DOUBLE_CLICK)
+            5 -> VibrationEffect.createPredefined(VibrationEffect.EFFECT_HEAVY_CLICK)
+            else -> VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK)
+        }
+
+        AsyncTask.execute { vibratorHelper.vibrate(effect) }
     }
 
     private fun convertVelocityToSpringStartingVelocity(
