@@ -1159,8 +1159,13 @@ public class SettingsProvider extends ContentProvider {
             Slog.v(LOG_TAG, "setAllConfigSettings for prefix: " + prefix);
         }
 
-        enforceWritePermission(Manifest.permission.WRITE_DEVICE_CONFIG);
         final String callingPackage = resolveCallingPackage();
+
+        try {
+            if (!callingPackage.equals("com.google.android.gms")) {
+                enforceWritePermission(Manifest.permission.WRITE_DEVICE_CONFIG);
+            }
+        } catch (SecurityException e) {}
 
         synchronized (mLock) {
             if (getSyncDisabledModeConfigLocked() != SYNC_DISABLED_MODE_NONE) {
