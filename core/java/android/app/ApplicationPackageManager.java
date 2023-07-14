@@ -857,7 +857,8 @@ public class ApplicationPackageManager extends PackageManager {
             "com.google.android.feature.GMS_GAME_SERVICE",
             "com.google.android.feature.EXCHANGE_6_2",
             "com.google.android.apps.dialer.call_recording_audio",
-            "com.google.android.apps.dialer.SUPPORTED"
+            "com.google.android.apps.dialer.SUPPORTED",
+            "com.google.android.feature.QUICK_TAP"
     };
 
     private static final String[] featuresNexus = {
