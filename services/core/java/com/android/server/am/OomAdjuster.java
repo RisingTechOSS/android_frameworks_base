@@ -91,6 +91,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.ServiceInfo;
+import android.hardware.power.Boost;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManagerInternal;
@@ -229,6 +230,8 @@ public class OomAdjuster {
     private final ActivityManagerService mService;
     private final ProcessList mProcessList;
     private final ActivityManagerGlobalLock mProcLock;
+    // Threshold for B-services when in memory pressure
+    int mBServiceAppThreshold = 16;
 
     private final int mNumSlots;
     private final ArrayList<ProcessRecord> mTmpProcessList = new ArrayList<ProcessRecord>();
@@ -313,6 +316,7 @@ public class OomAdjuster {
         mTmpQueue = new ArrayDeque<ProcessRecord>(mConstants.CUR_MAX_CACHED_PROCESSES << 1);
         mNumSlots = ((ProcessList.CACHED_APP_MAX_ADJ - ProcessList.CACHED_APP_MIN_ADJ + 1) >> 1)
                 / ProcessList.CACHED_APP_IMPORTANCE_LEVELS;
+        mBServiceAppThreshold = (mConstants.CUR_MAX_CACHED_PROCESSES / 4);
     }
 
     void initSettings() {
@@ -1063,6 +1067,9 @@ public class OomAdjuster {
         int numCachedExtraGroup = 0;
         int numEmpty = 0;
         int numTrimming = 0;
+        ProcessRecord selectedAppRecord = null;
+        long serviceLastActivity = 0;
+        int numBServices = 0;
 
         boolean proactiveKillsEnabled = mConstants.PROACTIVE_KILLS_ENABLED;
         double lowSwapThresholdPercent = mConstants.LOW_SWAP_THRESHOLD_PERCENT;
@@ -1071,6 +1078,33 @@ public class OomAdjuster {
 
         for (int i = numLru - 1; i >= 0; i--) {
             ProcessRecord app = lruList.get(i);
+            if (app.mState.isServiceB() && app.mState.getCurAdj() == ProcessList.SERVICE_B_ADJ) {
+                numBServices++;
+
+                ServiceRecord latestService = null;
+                long minServiceLastActivity = Long.MAX_VALUE;
+
+                for (int s = app.mServices.numberOfRunningServices() - 1; s >= 0; s--) {
+                    ServiceRecord sr = app.mServices.getRunningServiceAt(s);
+
+                    if (SystemClock.uptimeMillis() - sr.lastActivity < (mBServiceAppThreshold * 1000)) {
+                        continue;
+                    }
+
+                    if (sr.lastActivity < minServiceLastActivity) {
+                        minServiceLastActivity = sr.lastActivity;
+                        latestService = sr;
+                    }
+                }
+
+                if (latestService != null) {
+                    selectedAppRecord = app;
+                    serviceLastActivity = minServiceLastActivity;
+                }
+            }
+            if (DEBUG_OOM_ADJ && selectedAppRecord != null) Slog.d(TAG,
+                    "Identified app.processName = " + selectedAppRecord.processName
+                    + " app.pid = " + selectedAppRecord.getPid());
             final ProcessStateRecord state = app.mState;
             if (!app.isKilledByAm() && app.getThread() != null) {
                 // We don't need to apply the update for the process which didn't get computed
@@ -1173,6 +1207,17 @@ public class OomAdjuster {
         }
 
         mLastFreeSwapPercent = freeSwapPercent;
+
+        if (numBServices > mBServiceAppThreshold && mService.mAppProfiler.allowLowerMemLevelLocked() && selectedAppRecord != null) {
+            int pid = selectedAppRecord.getPid();
+            int uid = selectedAppRecord.info.uid;
+
+            ProcessList.setOomAdj(pid, uid, ProcessList.CACHED_APP_MAX_ADJ);
+            selectedAppRecord.mState.setSetAdj(selectedAppRecord.mState.getCurAdj());
+            if (mLocalPowerManager != null) {
+                mLocalPowerManager.setPowerBoost(Boost.INTERACTION, 80);
+            }
+        }
 
         return mService.mAppProfiler.updateLowMemStateLSP(numCached, numEmpty, numTrimming);
     }
