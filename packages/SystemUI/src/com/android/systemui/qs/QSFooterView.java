@@ -84,7 +84,7 @@ public class QSFooterView extends FrameLayout {
         mConnectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         mWifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         mSubManager = (SubscriptionManager) context.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
-        telephonyManager = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
+        telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
     }
 
     @Override
@@ -100,7 +100,11 @@ public class QSFooterView extends FrameLayout {
     }
 
     private void setUsageText(boolean expanded) {
-        if (!isExpanded(expanded)) return;
+       boolean showQsData = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.SYS_QS_FOOTER_DATA_USAGE, 0) != 0;
+        if (!isExpanded(expanded && showQsData)) {
+            return;
+        }
         if (!isWifiConnected()) {
             mDataController.setSubscriptionId(SubscriptionManager.getDefaultDataSubscriptionId());
         }
