@@ -33,6 +33,7 @@
     <com.android.systemui.battery.BatteryMeterView android:id="@+id/battery"
         android:layout_height="match_parent"
         android:layout_width="wrap_content"
+        android:gravity="center_vertical"
         android:clipToPadding="false"
         android:clipChildren="false"
         systemui:textAppearance="@style/TextAppearance.StatusBar.Clock" />
@@ -41,6 +42,8 @@
         android:id="@+id/right_clock_layout"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_vertical"
         android:orientation="horizontal"
         >
         <com.android.systemui.statusbar.policy.Clock
@@ -49,9 +52,10 @@
             android:layout_height="wrap_content"
             android:textAppearance="@style/TextAppearance.StatusBar.Clock"
             android:singleLine="true"
-            android:paddingStart="@dimen/status_bar_clock_starting_padding"
-            android:paddingEnd="@dimen/status_bar_clock_end_padding"
-            android:gravity="center_vertical|start"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="2dp"
+            android:gravity="center_vertical"
+            android:layout_gravity="center_vertical"
             android:visibility="gone"
             systemui:isStatusBar="true"
         />
@@ -61,8 +65,8 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_gravity="center_vertical|end"
-            android:paddingStart="@dimen/status_bar_clock_starting_padding"
-            android:paddingEnd="@dimen/status_bar_clock_end_padding"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="2dp"
             android:gravity="center_vertical"
             android:scaleType="center"
             android:visibility="gone" />
