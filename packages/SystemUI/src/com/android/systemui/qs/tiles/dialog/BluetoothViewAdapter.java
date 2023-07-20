@@ -204,11 +204,6 @@ public class BluetoothViewAdapter extends
             mDisconnectIconLayout.setVisibility(device.isConnected() ? View.VISIBLE : View.GONE);
             mDisconnectIcon.setOnClickListener(v -> device.disconnect());
 
-            final int iconColor = isActive ? mContext.getColor(R.color.connected_network_primary_color)
-                    : Utils.getColorAttrDefaultColor(mContext, android.R.attr.colorControlNormal);
-            mDisconnectIcon.setColorFilter(iconColor);
-            mBluetoothEndIcon.setColorFilter(iconColor);
-
             final Bundle args = new Bundle(1);
             args.putString(KEY_DEVICE_ADDRESS, device.getAddress());
             mBluetoothEndIcon.setOnClickListener(v -> {
