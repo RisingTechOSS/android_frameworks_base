@@ -68,16 +68,35 @@ public:
     }
 };
 
+class KeystoreServiceCache {
+public:
+    static sp<IKeystoreService> getServiceInstance() {
+        std::lock_guard<std::mutex> lock(mutex_);
+
+        if (!service_) {
+            sp<IServiceManager> sm = defaultServiceManager();
+            sp<IBinder> binder = sm->getService(String16("android.security.keystore"));
+            service_ = interface_cast<IKeystoreService>(binder);
+        }
+
+        return service_;
+    }
+
+private:
+    static sp<IKeystoreService> service_;
+    static std::mutex mutex_;
+};
+
+sp<IKeystoreService> KeystoreServiceCache::service_ = nullptr;
+std::mutex KeystoreServiceCache::mutex_;
+
 static void notifyKeystore(uint8_t *auth_token, size_t auth_token_length) {
-    if (auth_token != NULL && auth_token_length > 0) {
-        // TODO: cache service?
-        sp<IServiceManager> sm = defaultServiceManager();
-        sp<IBinder> binder = sm->getService(String16("android.security.keystore"));
-        sp<IKeystoreService> service = interface_cast<IKeystoreService>(binder);
-        if (service != NULL) {
+    if (auth_token != nullptr && auth_token_length > 0) {
+        sp<IKeystoreService> service = KeystoreServiceCache::getServiceInstance();
+        if (service != nullptr) {
             status_t ret = service->addAuthToken(auth_token, auth_token_length);
             if (ret != ResponseCode::NO_ERROR) {
-                ALOGE("Falure sending auth token to KeyStore: %d", ret);
+                ALOGE("Failure sending auth token to KeyStore: %d", ret);
             }
         } else {
             ALOGE("Unable to communicate with KeyStore");
