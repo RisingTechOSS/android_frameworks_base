@@ -90,8 +90,6 @@ import com.android.systemui.util.settings.SecureSettings;
 
 import lineageos.providers.LineageSettings;
 
-import lineageos.providers.LineageSettings;
-
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;

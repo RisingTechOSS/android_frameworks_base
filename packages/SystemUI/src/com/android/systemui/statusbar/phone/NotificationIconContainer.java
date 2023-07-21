@@ -40,12 +40,15 @@ import androidx.collection.ArrayMap;
 
 import com.android.internal.statusbar.StatusBarIcon;
 import com.android.settingslib.Utils;
+import com.android.systemui.Dependency;
 import com.android.systemui.R;
 import com.android.systemui.animation.Interpolators;
 import com.android.systemui.statusbar.StatusBarIconView;
 import com.android.systemui.statusbar.notification.stack.AnimationFilter;
 import com.android.systemui.statusbar.notification.stack.AnimationProperties;
 import com.android.systemui.statusbar.notification.stack.ViewState;
+
+import com.android.systemui.tuner.TunerService;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,7 +58,7 @@ import java.util.function.Consumer;
  * A container for notification icons. It handles overflowing icons properly and positions them
  * correctly on the screen.
  */
-public class NotificationIconContainer extends ViewGroup {
+public class NotificationIconContainer extends ViewGroup implements TunerService.Tunable {
     /**
      * A float value indicating how much before the overflow start the icons should transform into
      * a dot. A value of 0 means that they are exactly at the end and a value of 1 means it starts
@@ -177,10 +180,23 @@ public class NotificationIconContainer extends ViewGroup {
     private View mIsolatedIconForAnimation;
     private int mThemedTextColorPrimary;
 
+    private static final String STATUS_BAR_LOGO =
+            "system:" + Settings.System.STATUS_BAR_LOGO;
+
+    private static final String STATUS_BAR_LOGO_POSITION =
+            "system:" + Settings.System.STATUS_BAR_LOGO_POSITION;
+
+    private int statusBarLogo;
+    private int statusBarLogoStyle;
+
     public NotificationIconContainer(Context context, AttributeSet attrs) {
         super(context, attrs);
         initDimens();
         setWillNotDraw(!(DEBUG || DEBUG_OVERFLOW));
+
+        final TunerService tunerService = Dependency.get(TunerService.class);
+        tunerService.addTunable(this, STATUS_BAR_LOGO);
+        tunerService.addTunable(this, STATUS_BAR_LOGO_POSITION);
     }
 
     private void initDimens() {
@@ -544,12 +560,28 @@ public class NotificationIconContainer extends ViewGroup {
     }
 
     private int getMaxVisibleIcons(int childCount) {
-        boolean isLogoEnabled = Settings.System.getIntForUser(getContext().getContentResolver(),
-                                Settings.System.STATUS_BAR_LOGO, 0, UserHandle.USER_CURRENT) == 1;
-        boolean isLogoLeftEnabled = Settings.System.getIntForUser(getContext().getContentResolver(),
-                                Settings.System.STATUS_BAR_LOGO_POSITION, 0, UserHandle.USER_CURRENT) == 0;
-        return mOnLockScreen ? MAX_ICONS_ON_AOD :
-                mIsStaticLayout ? (isLogoEnabled && isLogoLeftEnabled ? MAX_STATIC_ICONS - 1 : MAX_STATIC_ICONS) : childCount;
+        boolean isLogoEnabled = statusBarLogo == 1;
+        boolean isLogoLeftEnabled = statusBarLogoStyle == 0;
+
+        int finalStaticIcons = MAX_STATIC_ICONS - (isLogoEnabled && isLogoLeftEnabled ? 1 : 0);
+
+        return mOnLockScreen ? MAX_ICONS_ON_AOD : mIsStaticLayout ? finalStaticIcons : childCount;
+    }
+
+    @Override
+    public void onTuningChanged(String key, String newValue) {
+        switch (key) {
+            case STATUS_BAR_LOGO:
+                statusBarLogo =
+                    TunerService.parseInteger(newValue, 0);
+                break;
+            case STATUS_BAR_LOGO_POSITION:
+                statusBarLogoStyle =
+                    TunerService.parseInteger(newValue, 0);
+                break;
+            default:
+                break;
+        }
     }
 
     private float getLayoutEnd() {

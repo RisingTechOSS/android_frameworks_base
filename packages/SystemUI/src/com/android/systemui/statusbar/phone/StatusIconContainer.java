@@ -33,11 +33,16 @@ import android.util.Log;
 import android.view.View;
 
 import com.android.keyguard.AlphaOptimizedLinearLayout;
+import com.android.systemui.Dependency;
 import com.android.systemui.R;
 import com.android.systemui.statusbar.StatusIconDisplayable;
 import com.android.systemui.statusbar.notification.stack.AnimationFilter;
 import com.android.systemui.statusbar.notification.stack.AnimationProperties;
 import com.android.systemui.statusbar.notification.stack.ViewState;
+
+import com.android.systemui.tuner.TunerService;
+
+import lineageos.providers.LineageSettings;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,14 +53,26 @@ import java.util.List;
  *
  * Children are expected to implement {@link StatusIconDisplayable}
  */
-public class StatusIconContainer extends AlphaOptimizedLinearLayout {
+public class StatusIconContainer extends AlphaOptimizedLinearLayout 
+    implements TunerService.Tunable {
+
+    private static final String STATUS_BAR_SHOW_BATTERY_PERCENT =
+            "system:" + Settings.System.STATUS_BAR_SHOW_BATTERY_PERCENT;
+            
+    private static final String STATUS_BAR_LOGO =
+            "system:" + Settings.System.STATUS_BAR_LOGO;
+
+    private static final String STATUS_BAR_LOGO_POSITION =
+            "system:" + Settings.System.STATUS_BAR_LOGO_POSITION;
+            
+    private static final String CLOCK_POSITION =
+            "lineagesystem:" + LineageSettings.System.STATUS_BAR_CLOCK;
 
     private static final String TAG = "StatusIconContainer";
     private static final boolean DEBUG = false;
     private static final boolean DEBUG_OVERFLOW = false;
     // Max 8 status icons including battery
-    public int MAX_ICONS =
-            getResources().getInteger(R.integer.config_maxVisibleStatusIcons);
+    public int MAX_ICONS = 7;
     private static final int MAX_DOTS = 1;
             
     private int mDotPadding;
@@ -75,6 +92,12 @@ public class StatusIconContainer extends AlphaOptimizedLinearLayout {
     // Any ignored icon will never be added as a child
     private ArrayList<String> mIgnoredSlots = new ArrayList<>();
 
+    private int maxStatusIcons;
+    private int batteryPercentStyle;
+    private int statusBarLogo;
+    private int statusBarLogoStyle;
+    private int statusBarClockPosition;
+
     public StatusIconContainer(Context context) {
         this(context, null);
     }
@@ -83,12 +106,12 @@ public class StatusIconContainer extends AlphaOptimizedLinearLayout {
         super(context, attrs);
         initDimens();
         setWillNotDraw(!DEBUG_OVERFLOW);
-        boolean isLogoEnabled = Settings.System.getIntForUser(context.getContentResolver(),
-                                Settings.System.STATUS_BAR_LOGO, 0, UserHandle.USER_CURRENT) == 1;
-        boolean isLogoRightEnabled = Settings.System.getIntForUser(context.getContentResolver(),
-                                Settings.System.STATUS_BAR_LOGO_POSITION, 0, UserHandle.USER_CURRENT) == 1;
-        int maxIcons = isLogoEnabled && isLogoRightEnabled ? MAX_ICONS - 1 : MAX_ICONS;
-        MAX_ICONS = maxIcons;
+        
+        final TunerService tunerService = Dependency.get(TunerService.class);
+        tunerService.addTunable(this, STATUS_BAR_SHOW_BATTERY_PERCENT);
+        tunerService.addTunable(this, STATUS_BAR_LOGO);
+        tunerService.addTunable(this, STATUS_BAR_LOGO_POSITION);
+        tunerService.addTunable(this, CLOCK_POSITION);
     }
 
     @Override
@@ -110,9 +133,49 @@ public class StatusIconContainer extends AlphaOptimizedLinearLayout {
                 com.android.internal.R.dimen.status_bar_icon_size);
         mDotPadding = getResources().getDimensionPixelSize(R.dimen.overflow_icon_dot_padding);
         mIconSpacing = getResources().getDimensionPixelSize(R.dimen.status_bar_system_icon_spacing);
+        maxStatusIcons = getResources().getInteger(R.integer.config_maxVisibleStatusIcons);
         int radius = getResources().getDimensionPixelSize(R.dimen.overflow_dot_radius);
         mStaticDotDiameter = 2 * radius;
         mUnderflowWidth = mIconDotFrameWidth + (MAX_DOTS - 1) * (mStaticDotDiameter + mDotPadding);
+        MAX_ICONS = maxStatusIcons;
+    }
+
+    private int calculateAddIconSlots() {
+        int addIconSlotsCount = 0;
+        if (statusBarLogo == 1 && statusBarLogoStyle == 1) {
+            addIconSlotsCount++;
+        }
+        if (batteryPercentStyle > 1) {
+            addIconSlotsCount++;
+        }
+        if (statusBarClockPosition == 0) {
+            addIconSlotsCount++;
+        }
+        return addIconSlotsCount;
+    }
+
+    @Override
+    public void onTuningChanged(String key, String newValue) {
+        switch (key) {
+            case STATUS_BAR_SHOW_BATTERY_PERCENT:
+                batteryPercentStyle =
+                    TunerService.parseInteger(newValue, 0);
+                break;
+            case STATUS_BAR_LOGO:
+                statusBarLogo =
+                    TunerService.parseInteger(newValue, 0);
+                break;
+            case STATUS_BAR_LOGO_POSITION:
+                statusBarLogoStyle =
+                    TunerService.parseInteger(newValue, 0);
+                break;
+            case CLOCK_POSITION:
+                statusBarClockPosition =
+                    TunerService.parseInteger(newValue, 2);
+                break;
+            default:
+                break;
+        }
     }
 
     @Override
@@ -166,7 +229,7 @@ public class StatusIconContainer extends AlphaOptimizedLinearLayout {
             }
         }
 
-        int visibleCount = mMeasureViews.size();
+        int visibleCount = mMeasureViews.size() + calculateAddIconSlots();
         int maxVisible = visibleCount <= MAX_ICONS ? MAX_ICONS : MAX_ICONS - 1;
         int totalWidth = mPaddingLeft + mPaddingRight;
         boolean trackWidth = true;
@@ -174,11 +237,12 @@ public class StatusIconContainer extends AlphaOptimizedLinearLayout {
         // Measure all children so that they report the correct width
         int childWidthSpec = MeasureSpec.makeMeasureSpec(width, MeasureSpec.UNSPECIFIED);
         mNeedsUnderflow = mShouldRestrictIcons && visibleCount > MAX_ICONS;
-        for (int i = 0; i < visibleCount; i++) {
+        int minVisibleCount = Math.min(visibleCount, mMeasureViews.size());
+        for (int i = 0; i < minVisibleCount; i++) {
             // Walking backwards
-            View child = mMeasureViews.get(visibleCount - i - 1);
+            View child = mMeasureViews.get(minVisibleCount - i - 1);
             measureChild(child, childWidthSpec, heightMeasureSpec);
-            int spacing = i == visibleCount - 1 ? 0 : mIconSpacing;
+            int spacing = i == minVisibleCount - 1 ? 0 : mIconSpacing;
             if (mShouldRestrictIcons) {
                 if (i < maxVisible && trackWidth) {
                     totalWidth += getViewTotalMeasuredWidth(child) + spacing;
@@ -354,13 +418,14 @@ public class StatusIconContainer extends AlphaOptimizedLinearLayout {
         }
 
         // Show either 1-MAX_ICONS icons, or (MAX_ICONS - 1) icons + overflow
-        int totalVisible = mLayoutStates.size();
-        int maxVisible = totalVisible <= MAX_ICONS ? MAX_ICONS : MAX_ICONS - 1;
+        int totalVisible = mLayoutStates.size() + calculateAddIconSlots();
+        int minTotalVisible = Math.min(totalVisible, mMeasureViews.size());
+        int maxVisible = minTotalVisible <= MAX_ICONS ? MAX_ICONS : MAX_ICONS - 1;
 
         mUnderflowStart = 0;
         int visible = 0;
         int firstUnderflowIndex = -1;
-        for (int i = totalVisible - 1; i >= 0; i--) {
+        for (int i = minTotalVisible - 1; i >= 0; i--) {
             StatusIconState state = mLayoutStates.get(i);
             // Allow room for underflow if we found we need it in onMeasure
             if (mNeedsUnderflow && (state.getXTranslation() < (contentStart + mUnderflowWidth))
