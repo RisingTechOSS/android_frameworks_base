@@ -16,9 +16,10 @@
 
 package android.security.net.config;
 
-import android.util.ArraySet;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 /** @hide */
 public final class PinSet {
@@ -26,6 +27,7 @@ public final class PinSet {
             new PinSet(Collections.<Pin>emptySet(), Long.MAX_VALUE);
     public final long expirationTime;
     public final Set<Pin> pins;
+    private AtomicReference<Set<String>> cachedAlgorithms = new AtomicReference<>(null);
 
     public PinSet(Set<Pin> pins, long expirationTime) {
         if (pins == null) {
@@ -36,10 +38,13 @@ public final class PinSet {
     }
 
     Set<String> getPinAlgorithms() {
-        // TODO: Cache this.
-        Set<String> algorithms = new ArraySet<String>();
-        for (Pin pin : pins) {
-            algorithms.add(pin.digestAlgorithm);
+        Set<String> algorithms = cachedAlgorithms.get();
+        if (algorithms == null) {
+            algorithms = new HashSet<>();
+            for (Pin pin : pins) {
+                algorithms.add(pin.digestAlgorithm);
+            }
+            cachedAlgorithms.set(Collections.unmodifiableSet(algorithms));
         }
         return algorithms;
     }
