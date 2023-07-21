@@ -43,6 +43,12 @@ public final class Trace {
      */
 
     private static final String TAG = "Trace";
+    
+    private static long cachedTags = 0L;
+
+    private static long lastRefreshTime = 0L;
+    
+    private static final long REFRESH_INTERVAL_MS = 60 * 1000;
 
     // These tags must be kept in sync with system/core/include/cutils/trace.h.
     // They should also be added to frameworks/native/cmds/atrace/atrace.cpp.
@@ -161,8 +167,14 @@ public final class Trace {
     @UnsupportedAppUsage
     @SystemApi(client = MODULE_LIBRARIES)
     public static boolean isTagEnabled(long traceTag) {
-        long tags = nativeGetEnabledTags();
-        return (tags & traceTag) != 0;
+        long currentTime = System.currentTimeMillis();
+        synchronized (Trace.class) {
+            if (currentTime - lastRefreshTime > REFRESH_INTERVAL_MS) {
+                cachedTags = nativeGetEnabledTags();
+                lastRefreshTime = currentTime;
+            }
+        }
+        return (cachedTags & traceTag) != 0;
     }
 
     /**
