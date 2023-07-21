@@ -19,11 +19,17 @@ package android.filterfw.geometry;
 
 import android.compat.annotation.UnsupportedAppUsage;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @hide
  */
 public class Point {
 
+    private static final Map<Float, Float> cosCache = new HashMap<>();
+    private static final Map<Float, Float> sinCache = new HashMap<>();
+    
     @UnsupportedAppUsage
     public float x;
     @UnsupportedAppUsage
@@ -101,9 +107,23 @@ public class Point {
     }
 
     public Point rotated(float radians) {
-        // TODO(renn): Optimize: Keep cache of cos/sin values
-        return new Point((float)(Math.cos(radians) * x - Math.sin(radians) * y),
-                         (float)(Math.sin(radians) * x + Math.cos(radians) * y));
+        float cosVal, sinVal;
+
+        if (cosCache.containsKey(radians)) {
+            cosVal = cosCache.get(radians);
+        } else {
+            cosVal = (float) Math.cos(radians);
+            cosCache.put(radians, cosVal);
+        }
+
+        if (sinCache.containsKey(radians)) {
+            sinVal = sinCache.get(radians);
+        } else {
+            sinVal = (float) Math.sin(radians);
+            sinCache.put(radians, sinVal);
+        }
+
+        return new Point(cosVal * x - sinVal * y, sinVal * x + cosVal * y);
     }
 
     public Point rotatedAround(Point center, float radians) {
