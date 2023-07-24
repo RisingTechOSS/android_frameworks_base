@@ -20,25 +20,41 @@ import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.util.AttributeSet;
+import android.provider.Settings;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 
+import com.android.internal.graphics.ColorUtils;
+import com.android.systemui.Dependency;
 import com.android.systemui.R;
 import com.android.systemui.util.LargeScreenUtils;
+import com.android.systemui.tuner.TunerService;
 
 /**
  * View that contains the top-most bits of the QS panel (primarily the status bar with date, time,
  * battery, carrier info and privacy icons) and also contains the {@link QuickQSPanel}.
  */
-public class QuickStatusBarHeader extends FrameLayout {
+public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tunable {
 
     private boolean mExpanded;
     private boolean mQsDisabled;
 
+    private static final String QS_HEADER_IMAGE =
+            "system:" + Settings.System.QS_HEADER_IMAGE;
+
     protected QuickQSPanel mHeaderQsPanel;
+
+    // QS Header
+    private ImageView mQsHeaderImageView;
+    private View mQsHeaderLayout;
+    private boolean mHeaderImageEnabled;
+    private int mHeaderImageValue;
 
     public QuickStatusBarHeader(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -49,7 +65,43 @@ public class QuickStatusBarHeader extends FrameLayout {
         super.onFinishInflate();
         mHeaderQsPanel = findViewById(R.id.quick_qs_panel);
 
+	    mQsHeaderLayout = findViewById(R.id.layout_header);
+        mQsHeaderImageView = findViewById(R.id.qs_header_image_view);
+        mQsHeaderImageView.setClipToOutline(true);
+
+        Dependency.get(TunerService.class).addTunable(this, QS_HEADER_IMAGE);
+
         updateResources();
+    }
+
+    @Override
+    public void onTuningChanged(String key, String newValue) {
+        switch (key) {
+            case QS_HEADER_IMAGE:
+                mHeaderImageValue =
+                       TunerService.parseInteger(newValue, 0);
+                mHeaderImageEnabled = mHeaderImageValue != 0;
+                updateResources();
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void updateQSHeaderImage() {
+        int orientation = getResources().getConfiguration().orientation;
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE || !mHeaderImageEnabled) {
+            if (mQsHeaderImageView == null) {
+                return;
+            }
+            mQsHeaderImageView.setVisibility(View.GONE);
+            return;
+        }
+	    int fadeFilter = ColorUtils.blendARGB(Color.TRANSPARENT, Color.BLACK, 30 / 100f);
+	    int resId = getResources().getIdentifier("qs_header_image_" + String.valueOf(mHeaderImageValue), "drawable", "com.android.systemui");
+	    mQsHeaderImageView.setImageResource(resId);
+	    mQsHeaderImageView.setColorFilter(fadeFilter, PorterDuff.Mode.SRC_ATOP);
+	    mQsHeaderImageView.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -90,6 +142,7 @@ public class QuickStatusBarHeader extends FrameLayout {
                     .getDimensionPixelSize(R.dimen.large_screen_shade_header_min_height);
         }
         mHeaderQsPanel.setLayoutParams(qqsLP);
+        updateQSHeaderImage();
     }
 
     public void setExpanded(boolean expanded, QuickQSPanelController quickQSPanelController) {
