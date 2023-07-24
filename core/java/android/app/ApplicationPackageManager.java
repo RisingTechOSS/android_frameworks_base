@@ -827,7 +827,6 @@ public class ApplicationPackageManager extends PackageManager {
             "com.google.android.feature.ANDROID_ONE_EXPERIENCE",
             "com.google.android.feature.GOOGLE_FI_BUNDLED",
             "com.google.android.feature.LILY_EXPERIENCE",
-            "com.google.android.feature.TURBO_PRELOAD",
             "com.google.android.feature.WELLBEING",
             "com.google.android.feature.PIXEL_2024_EXPERIENCE",
             "com.google.android.feature.PIXEL_2024_MIDYEAR_EXPERIENCE",
@@ -851,7 +850,6 @@ public class ApplicationPackageManager extends PackageManager {
             "com.google.photos.trust_debug_certs",
             "com.google.android.feature.AER_OPTIMIZED",
             "com.google.android.feature.NEXT_GENERATION_ASSISTANT",
-            "com.google.android.feature.ADAPTIVE_CHARGING",
             "com.google.android.feature.DREAMLINER",
             "android.software.game_service",
             "com.google.android.feature.GMS_GAME_SERVICE",
@@ -859,6 +857,11 @@ public class ApplicationPackageManager extends PackageManager {
             "com.google.android.apps.dialer.call_recording_audio",
             "com.google.android.apps.dialer.SUPPORTED",
             "com.google.android.feature.QUICK_TAP"
+    };
+
+    private static final String[] featuresPixelExclusives = {
+            "com.google.android.feature.TURBO_PRELOAD",
+            "com.google.android.feature.ADAPTIVE_CHARGING"
     };
 
     private static final String[] featuresNexus = {
@@ -878,6 +881,9 @@ public class ApplicationPackageManager extends PackageManager {
                 SystemProperties.getBoolean("persist.sys.pixelprops.gphotos", true)) {
             if (Arrays.asList(featuresPixel).contains(name)) return false;
             if (Arrays.asList(featuresNexus).contains(name)) return true;
+        }
+        if (Arrays.asList(featuresPixelExclusives).contains(name)) {
+            return SystemProperties.get("ro.product.brand").toLowerCase().contains("google") && SystemProperties.get("ro.product.manufacturer").toLowerCase().contains("google");
         }
         if (Arrays.asList(featuresPixel).contains(name)) return true;
         if (Arrays.asList(featuresAndroid).contains(name)) return true;
