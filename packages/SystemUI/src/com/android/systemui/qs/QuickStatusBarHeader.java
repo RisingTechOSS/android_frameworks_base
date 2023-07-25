@@ -22,8 +22,9 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.util.AttributeSet;
 import android.provider.Settings;
+import android.util.AttributeSet;
+import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -56,8 +57,12 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
     private boolean mHeaderImageEnabled;
     private int mHeaderImageValue;
 
+    private int mCurrentOrientation;
+    private SparseArray<Integer> mHeaderImageResources;
+
     public QuickStatusBarHeader(Context context, AttributeSet attrs) {
         super(context, attrs);
+        mHeaderImageResources = new SparseArray<>();
     }
 
     @Override
@@ -65,11 +70,13 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
         super.onFinishInflate();
         mHeaderQsPanel = findViewById(R.id.quick_qs_panel);
 
-	    mQsHeaderLayout = findViewById(R.id.layout_header);
+        mQsHeaderLayout = findViewById(R.id.layout_header);
         mQsHeaderImageView = findViewById(R.id.qs_header_image_view);
         mQsHeaderImageView.setClipToOutline(true);
 
         Dependency.get(TunerService.class).addTunable(this, QS_HEADER_IMAGE);
+        
+        mCurrentOrientation = getResources().getConfiguration().orientation;
 
         updateResources();
     }
@@ -78,10 +85,9 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
     public void onTuningChanged(String key, String newValue) {
         switch (key) {
             case QS_HEADER_IMAGE:
-                mHeaderImageValue =
-                       TunerService.parseInteger(newValue, 0);
+                mHeaderImageValue = TunerService.parseInteger(newValue, 0);
                 mHeaderImageEnabled = mHeaderImageValue != 0;
-                updateResources();
+                updateQSHeaderImage();
                 break;
             default:
                 break;
@@ -89,60 +95,51 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
     }
 
     private void updateQSHeaderImage() {
-        int orientation = getResources().getConfiguration().orientation;
-        if (orientation == Configuration.ORIENTATION_LANDSCAPE || !mHeaderImageEnabled) {
-            if (mQsHeaderImageView == null) {
-                return;
-            }
+        if (mCurrentOrientation == Configuration.ORIENTATION_LANDSCAPE || !mHeaderImageEnabled) {
             mQsHeaderImageView.setVisibility(View.GONE);
             return;
         }
-	    int fadeFilter = ColorUtils.blendARGB(Color.TRANSPARENT, Color.BLACK, 30 / 100f);
-	    int resId = getResources().getIdentifier("qs_header_image_" + String.valueOf(mHeaderImageValue), "drawable", "com.android.systemui");
-	    mQsHeaderImageView.setImageResource(resId);
-	    mQsHeaderImageView.setColorFilter(fadeFilter, PorterDuff.Mode.SRC_ATOP);
-	    mQsHeaderImageView.setVisibility(View.VISIBLE);
+        int fadeFilter = ColorUtils.blendARGB(Color.TRANSPARENT, Color.BLACK, 30 / 100f);
+        mQsHeaderImageView.setColorFilter(fadeFilter, PorterDuff.Mode.SRC_ATOP);
+        mQsHeaderImageView.setVisibility(View.VISIBLE);
+        Integer resourceId = mHeaderImageResources.get(mHeaderImageValue);
+        if (resourceId == null) {
+            resourceId = getResources().getIdentifier(
+                    "qs_header_image_" + mHeaderImageValue, "drawable", "com.android.systemui");
+            mHeaderImageResources.put(mHeaderImageValue, resourceId);
+        }
+        mQsHeaderImageView.setImageResource(resourceId);
     }
 
     @Override
     protected void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
+        mCurrentOrientation = newConfig.orientation;
         updateResources();
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         // Only react to touches inside QuickQSPanel
-        if (event.getY() > mHeaderQsPanel.getTop()) {
-            return super.onTouchEvent(event);
-        } else {
-            return false;
-        }
+        return event.getY() > mHeaderQsPanel.getTop() && super.onTouchEvent(event);
     }
 
     void updateResources() {
         Resources resources = mContext.getResources();
         boolean largeScreenHeaderActive =
                 LargeScreenUtils.shouldUseLargeScreenShadeHeader(resources);
+        
+        updateQSHeaderImage();
 
         ViewGroup.LayoutParams lp = getLayoutParams();
-        if (mQsDisabled) {
-            lp.height = 0;
-        } else {
-            lp.height = WRAP_CONTENT;
-        }
+        lp.height = mQsDisabled ? 0 : ViewGroup.LayoutParams.WRAP_CONTENT;
         setLayoutParams(lp);
 
         MarginLayoutParams qqsLP = (MarginLayoutParams) mHeaderQsPanel.getLayoutParams();
-        if (largeScreenHeaderActive) {
-            qqsLP.topMargin = mContext.getResources()
-                    .getDimensionPixelSize(R.dimen.qqs_layout_margin_top);
-        } else {
-            qqsLP.topMargin = mContext.getResources()
-                    .getDimensionPixelSize(R.dimen.large_screen_shade_header_min_height);
-        }
+        qqsLP.topMargin = largeScreenHeaderActive
+                ? mContext.getResources().getDimensionPixelSize(R.dimen.qqs_layout_margin_top)
+                : mContext.getResources().getDimensionPixelSize(R.dimen.large_screen_shade_header_min_height);
         mHeaderQsPanel.setLayoutParams(qqsLP);
-        updateQSHeaderImage();
     }
 
     public void setExpanded(boolean expanded, QuickQSPanelController quickQSPanelController) {

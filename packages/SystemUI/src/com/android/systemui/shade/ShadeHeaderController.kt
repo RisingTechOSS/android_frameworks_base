@@ -310,7 +310,6 @@ constructor(
 
         variableDateViewControllerFactory.create(date as VariableDateView).init()
         batteryMeterViewController.init()
-        updateQsBatteryStyle()
 
         iconManager = tintedIconManagerFactory.create(iconContainer, StatusBarLocation.QS)
         iconManager.setTint(
@@ -486,7 +485,6 @@ constructor(
             header.visibility = visibility
             visible = visibility == View.VISIBLE
         }
-        updateQsBatteryStyle()
     }
 
     private fun updateTransition() {
