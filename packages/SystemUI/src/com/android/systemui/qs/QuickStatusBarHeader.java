@@ -22,6 +22,8 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.RenderEffect;
+import android.graphics.Shader;
 import android.provider.Settings;
 import android.util.AttributeSet;
 import android.util.SparseArray;
@@ -49,6 +51,15 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
     private static final String QS_HEADER_IMAGE =
             "system:" + Settings.System.QS_HEADER_IMAGE;
 
+    private static final String QS_HEADER_IMAGE_FADE_LEVEL =
+            "system:" + Settings.System.QS_HEADER_IMAGE_FADE_LEVEL;
+
+    private static final String QS_HEADER_IMAGE_OPACITY_LEVEL =
+            "system:" + Settings.System.QS_HEADER_IMAGE_OPACITY_LEVEL;
+
+    private static final String QS_HEADER_IMAGE_BLUR_LEVEL =
+            "system:" + Settings.System.QS_HEADER_IMAGE_BLUR_LEVEL;
+
     protected QuickQSPanel mHeaderQsPanel;
 
     // QS Header
@@ -56,7 +67,11 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
     private View mQsHeaderLayout;
     private boolean mHeaderImageEnabled;
     private int mHeaderImageValue;
-
+    private int mHeaderImageFadeLevel;
+    private int mHeaderImageOpacityLevel;
+    private float mLSBlurRadius;
+    private RenderEffect blurEffect;
+                
     private int mCurrentOrientation;
     private SparseArray<Integer> mHeaderImageResources;
 
@@ -75,6 +90,9 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
         mQsHeaderImageView.setClipToOutline(true);
 
         Dependency.get(TunerService.class).addTunable(this, QS_HEADER_IMAGE);
+        Dependency.get(TunerService.class).addTunable(this, QS_HEADER_IMAGE_FADE_LEVEL);
+        Dependency.get(TunerService.class).addTunable(this, QS_HEADER_IMAGE_OPACITY_LEVEL);
+        Dependency.get(TunerService.class).addTunable(this, QS_HEADER_IMAGE_BLUR_LEVEL);
         
         mCurrentOrientation = getResources().getConfiguration().orientation;
 
@@ -89,6 +107,19 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
                 mHeaderImageEnabled = mHeaderImageValue != 0;
                 updateQSHeaderImage();
                 break;
+            case QS_HEADER_IMAGE_FADE_LEVEL:
+                mHeaderImageFadeLevel = TunerService.parseInteger(newValue, 40);
+                updateQSHeaderImage();
+                break;
+            case QS_HEADER_IMAGE_OPACITY_LEVEL:
+                mHeaderImageOpacityLevel = TunerService.parseInteger(newValue, 30);
+                updateQSHeaderImage();
+                break;
+            case QS_HEADER_IMAGE_BLUR_LEVEL:
+                mLSBlurRadius = (float) TunerService.parseInteger(newValue, 0);
+                blurEffect = RenderEffect.createBlurEffect(mLSBlurRadius, mLSBlurRadius, Shader.TileMode.MIRROR);
+                updateQSHeaderImage();
+                break;
             default:
                 break;
         }
@@ -99,7 +130,7 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
             mQsHeaderImageView.setVisibility(View.GONE);
             return;
         }
-        int fadeFilter = ColorUtils.blendARGB(Color.TRANSPARENT, Color.BLACK, 30 / 100f);
+        int fadeFilter = ColorUtils.blendARGB(Color.TRANSPARENT, Color.BLACK, mHeaderImageFadeLevel / 100f);
         mQsHeaderImageView.setColorFilter(fadeFilter, PorterDuff.Mode.SRC_ATOP);
         mQsHeaderImageView.setVisibility(View.VISIBLE);
         Integer resourceId = mHeaderImageResources.get(mHeaderImageValue);
@@ -109,6 +140,10 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
             mHeaderImageResources.put(mHeaderImageValue, resourceId);
         }
         mQsHeaderImageView.setImageResource(resourceId);
+        mQsHeaderImageView.setImageAlpha(mHeaderImageOpacityLevel);
+        if (mLSBlurRadius > 0) {
+            mQsHeaderImageView.setRenderEffect(blurEffect);
+        }
     }
 
     @Override

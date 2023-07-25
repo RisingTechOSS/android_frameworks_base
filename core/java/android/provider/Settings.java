@@ -6201,6 +6201,24 @@ public final class Settings {
         public static final String QS_HEADER_IMAGE = "qs_header_image";
 
         /**
+         * QS Header fade level
+         * @hide
+         */
+        public static final String QS_HEADER_IMAGE_FADE_LEVEL = "qs_header_image_fade_level";
+        
+        /**
+         * QS Header opacity level
+         * @hide
+         */
+        public static final String QS_HEADER_IMAGE_OPACITY_LEVEL = "qs_header_image_opacity_level";
+        
+        /**
+         * QS Header blur level
+         * @hide
+         */
+        public static final String QS_HEADER_IMAGE_BLUR_LEVEL = "qs_header_image_blur_level";
+
+        /**
          * Keys we no longer back up under the current schema, but want to continue to
          * process when restoring historical backup datasets.
          *
