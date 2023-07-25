@@ -216,13 +216,13 @@ public class HeadsUpAppearanceController extends ViewController<HeadsUpStatusBar
             boolean animateIsolation = false;
             if (newEntry == null) {
                 // no heads up anymore, lets start the disappear animation
-                mNotificationPanelViewController.reTickerView(false);
+                mNotificationPanelViewController.hideReticker();
                 setShown(false);
                 animateIsolation = !isExpanded();
             } else if (previousEntry == null) {
                 // We now have a headsUp and didn't have one before. Let's start the disappear
                 // animation
-                mNotificationPanelViewController.reTickerView(true);
+                mNotificationPanelViewController.updateReticker(newEntry);
                 setShown(true);
                 animateIsolation = !isExpanded();
             }
