@@ -50,15 +50,29 @@
           android:layout_marginRight="0dp"  
           android:background="#00000000" >
 
-          <ImageView 
-              android:id="@+id/qs_header_image_view"
+            <FrameLayout
               android:layout_width="match_parent"
-              android:layout_height="match_parent"    
-              android:layout_marginTop="0dp"
-              android:layout_marginBottom="0dp"
-              android:scaleType="centerCrop"
-              android:visibility="gone"
-              android:background="@drawable/qs_header_image_view_outline" />
+              android:layout_height="match_parent">
+
+                  <ImageView 
+                      android:id="@+id/qs_header_image_view"
+                      android:layout_width="match_parent"
+                      android:layout_height="match_parent"    
+                      android:layout_marginTop="0dp"
+                      android:layout_marginBottom="0dp"
+                      android:scaleType="centerCrop"
+                      android:visibility="gone"
+                      android:adjustViewBounds="true"
+                      android:background="@drawable/qs_header_image_view_outline" />
+
+                <View
+                    android:id="@+id/qs_header_gradient_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="bottom"
+                    android:background="@drawable/custom_gradient_bottom"/>
+
+            </FrameLayout>
 
         </LinearLayout>    
 
