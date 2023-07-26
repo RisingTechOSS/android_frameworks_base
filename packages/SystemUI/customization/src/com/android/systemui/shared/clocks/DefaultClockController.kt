@@ -194,14 +194,16 @@ class DefaultClockController(
         seedColor: Int?,
     ) : DefaultClockFaceController(view, seedColor) {
         override fun recomputePadding(targetRegion: Rect?) {
-            // We center the view within the targetRegion instead of within the parent
-            // view by computing the difference and adding that to the padding.
-            val parent = view.parent
-            val lp = view.getLayoutParams() as FrameLayout.LayoutParams
-            val customTopMargin = Secure.getIntForUser(ctx.getContentResolver(),
-                Secure.KG_CUSTOM_CLOCK_TOP_MARGIN, 280, UserHandle.USER_CURRENT)
-            lp.topMargin = (-1f * customTopMargin).toInt()
-            view.setLayoutParams(lp)
+            if (view != null) {
+                // We center the view within the targetRegion instead of within the parent
+                // view by computing the difference and adding that to the padding.
+                val parent = view.parent
+                val lp = view.getLayoutParams() as FrameLayout.LayoutParams
+                val customTopMargin = Secure.getIntForUser(ctx.getContentResolver(),
+                    Secure.KG_CUSTOM_CLOCK_TOP_MARGIN, 280, UserHandle.USER_CURRENT)
+                lp.topMargin = (-1f * customTopMargin).toInt()
+                view.setLayoutParams(lp)
+            }
         }
 
         fun moveForSplitShade(fromRect: Rect, toRect: Rect, fraction: Float) {

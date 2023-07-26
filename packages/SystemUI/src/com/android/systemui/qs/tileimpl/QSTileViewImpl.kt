@@ -370,6 +370,9 @@ open class QSTileViewImpl @JvmOverloads constructor(
     }
 
     private fun createAndAddLabels() {
+        if (context == null) {
+            return
+        }
         labelContainer = LayoutInflater.from(context)
                 .inflate(if (isA11Style) R.layout.qs_tile_label_a11 else (if (vertical)  R.layout.qs_tile_label_vertical else R.layout.qs_tile_label), this, false) as IgnorableChildLinearLayout
         label = labelContainer.requireViewById(R.id.tile_label)
@@ -400,6 +403,9 @@ open class QSTileViewImpl @JvmOverloads constructor(
     }
 
     private fun createAndAddSideView() {
+        if (context == null) {
+            return
+        }
         sideView = LayoutInflater.from(context)
                 .inflate(if (isA11Style) R.layout.qs_tile_side_icon else R.layout.qs_tile_side_icon_a11, this, false) as ViewGroup
         customDrawableView = sideView.requireViewById(R.id.customDrawable)

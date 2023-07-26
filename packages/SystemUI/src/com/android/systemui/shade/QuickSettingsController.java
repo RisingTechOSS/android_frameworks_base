@@ -687,7 +687,9 @@ public class QuickSettingsController {
 
     /** Closes the Qs customizer. */
     public void closeQsCustomizer() {
-        mQs.closeCustomizer();
+       if (mQs != null) {
+            mQs.closeCustomizer();
+       }
     }
 
     /** Returns whether touches from the notification panel should be disallowed */
