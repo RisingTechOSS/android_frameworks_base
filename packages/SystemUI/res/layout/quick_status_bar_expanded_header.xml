@@ -38,8 +38,8 @@
         android:id="@+id/layout_header"
         android:layout_width="match_parent"          
         android:layout_height="@dimen/qs_header_height_full"
-        android:layout_marginLeft="-100dp"
-        android:layout_marginRight="-100dp"  
+        android:layout_marginLeft="@dimen/qs_header_side_offsets"
+        android:layout_marginRight="@dimen/qs_header_side_offsets"  
         android:background="#00000000" >
 
         <LinearLayout

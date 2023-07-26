@@ -59,6 +59,12 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
 
     private static final String QS_HEADER_IMAGE_BLUR_LEVEL =
             "system:" + Settings.System.QS_HEADER_IMAGE_BLUR_LEVEL;
+            
+    private static final String QS_HEADER_IMAGE_HEIGHT =
+            "system:" + Settings.System.QS_HEADER_IMAGE_HEIGHT;
+            
+    private static final String QS_HEADER_IMAGE_FILTER_COLOR =
+            "system:" + Settings.System.QS_HEADER_IMAGE_FILTER_COLOR;
 
     protected QuickQSPanel mHeaderQsPanel;
 
@@ -71,6 +77,8 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
     private int mHeaderImageOpacityLevel;
     private float mLSBlurRadius;
     private RenderEffect blurEffect;
+    private int mHeaderImageHeight;
+    private int mHeaderImageFilterColor;
                 
     private int mCurrentOrientation;
     private SparseArray<Integer> mHeaderImageResources;
@@ -93,7 +101,9 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
         Dependency.get(TunerService.class).addTunable(this, QS_HEADER_IMAGE_FADE_LEVEL);
         Dependency.get(TunerService.class).addTunable(this, QS_HEADER_IMAGE_OPACITY_LEVEL);
         Dependency.get(TunerService.class).addTunable(this, QS_HEADER_IMAGE_BLUR_LEVEL);
-        
+        Dependency.get(TunerService.class).addTunable(this, QS_HEADER_IMAGE_HEIGHT);
+        Dependency.get(TunerService.class).addTunable(this, QS_HEADER_IMAGE_FILTER_COLOR);
+
         mCurrentOrientation = getResources().getConfiguration().orientation;
 
         updateResources();
@@ -120,6 +130,14 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
                 blurEffect = RenderEffect.createBlurEffect(mLSBlurRadius, mLSBlurRadius, Shader.TileMode.MIRROR);
                 updateQSHeaderImage();
                 break;
+            case QS_HEADER_IMAGE_HEIGHT:
+                mHeaderImageHeight = TunerService.parseInteger(newValue, 80);
+                updateQSHeaderImage();
+                break;
+            case QS_HEADER_IMAGE_FILTER_COLOR:
+                mHeaderImageFilterColor = TunerService.parseInteger(newValue, 0xFFFFFFFF);
+                updateQSHeaderImage();
+                break;
             default:
                 break;
         }
@@ -130,7 +148,7 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
             mQsHeaderImageView.setVisibility(View.GONE);
             return;
         }
-        int fadeFilter = ColorUtils.blendARGB(Color.TRANSPARENT, Color.BLACK, mHeaderImageFadeLevel / 100f);
+        int fadeFilter = ColorUtils.blendARGB(Color.TRANSPARENT, mHeaderImageFilterColor, mHeaderImageFadeLevel / 100f);
         mQsHeaderImageView.setColorFilter(fadeFilter, PorterDuff.Mode.SRC_ATOP);
         mQsHeaderImageView.setVisibility(View.VISIBLE);
         Integer resourceId = mHeaderImageResources.get(mHeaderImageValue);
@@ -140,10 +158,18 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
             mHeaderImageResources.put(mHeaderImageValue, resourceId);
         }
         mQsHeaderImageView.setImageResource(resourceId);
-        mQsHeaderImageView.setImageAlpha(mHeaderImageOpacityLevel);
+        mQsHeaderImageView.setImageAlpha(255 / 100 * mHeaderImageOpacityLevel);
         if (mLSBlurRadius > 0) {
             mQsHeaderImageView.setRenderEffect(blurEffect);
         }
+        ViewGroup.MarginLayoutParams qsHeaderLayout = (ViewGroup.MarginLayoutParams) mQsHeaderLayout.getLayoutParams(); 
+        qsHeaderLayout.height = dpToPx(mHeaderImageHeight);
+        mQsHeaderLayout.setLayoutParams(qsHeaderLayout); 
+    }
+
+    public int dpToPx(int dp) {
+        float density = mContext.getResources().getDisplayMetrics().density;
+        return (int) (dp * density);
     }
 
     @Override

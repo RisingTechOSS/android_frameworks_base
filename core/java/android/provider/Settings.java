@@ -6219,6 +6219,18 @@ public final class Settings {
         public static final String QS_HEADER_IMAGE_BLUR_LEVEL = "qs_header_image_blur_level";
 
         /**
+         * QS Header image height
+         * @hide
+         */
+        public static final String QS_HEADER_IMAGE_HEIGHT = "qs_header_image_height";
+        
+        /**
+         * QS Header image filter color
+         * @hide
+         */
+        public static final String QS_HEADER_IMAGE_FILTER_COLOR = "qs_header_image_filter_color";
+
+        /**
          * Enable and Disable Dual Tone Colors QsPanel
          * @hide
          */
