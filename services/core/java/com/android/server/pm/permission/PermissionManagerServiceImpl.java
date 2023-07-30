@@ -174,7 +174,8 @@ public class PermissionManagerServiceImpl implements PermissionManagerServiceInt
 
     private static final String SKIP_KILL_APP_REASON_NOTIFICATION_TEST = "skip permission revoke "
             + "app kill for notification test";
-
+            
+    private static final String SIMPLE_DEVICE_CONFIG = "org.protonaosp.deviceconfig";
 
     /** Define allowed permissions for Android Auto */
     private ArrayList<String> androidAutoPerms = new ArrayList<String>(
@@ -3534,10 +3535,10 @@ public class PermissionManagerServiceImpl implements PermissionManagerServiceInt
             // Special permissions for the system default text classifier.
             allowed = true;
         }
-        if (!allowed && bp.isConfigurator()
-                && ArrayUtils.contains(mPackageManagerInt.getKnownPackageNames(
-                KnownPackages.PACKAGE_CONFIGURATOR,
-                UserHandle.USER_SYSTEM), pkg.getPackageName())) {
+        boolean isSystemConfigurator = ArrayUtils.contains(mPackageManagerInt.getKnownPackageNames
+                    (KnownPackages.PACKAGE_CONFIGURATOR, UserHandle.USER_SYSTEM), pkg.getPackageName()) 
+                    || pkg.getPackageName().equals(SIMPLE_DEVICE_CONFIG);
+        if (!allowed && bp.isConfigurator() && isSystemConfigurator) {
             // Special permissions for the device configurator.
             allowed = true;
         }
