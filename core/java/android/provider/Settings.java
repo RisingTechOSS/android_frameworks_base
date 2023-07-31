@@ -6023,6 +6023,11 @@ public final class Settings {
         /**
          * @hide
          */
+        public static final String LOCKSCREEN_WEATHER_CONDITION = "lockscreen_weather_condition";
+
+        /**
+         * @hide
+         */
         public static final String LOCKSCREEN_WEATHER_STYLE = "lockscreen_weather_style";
 
         /**
