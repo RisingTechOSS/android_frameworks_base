@@ -46,6 +46,8 @@ public class PropImitationHooks {
 
     private static final String TAG = "PropImitationHooks";
     private static final boolean DEBUG = false;
+    
+    private static final String PRODUCT_DEVICE = "ro.product.device";
 
     private static final String sP7PFp = "google/cheetah/cheetah:13/TQ3A.230705.001/10216780:user/release-keys";
     private static final String sCertifiedFp = sP7PFp;
@@ -151,6 +153,13 @@ public class PropImitationHooks {
             "com.dts.freefireth"
     ));
 
+    // Codenames for Pixel 6 series
+    private static final String[] pixel6Series = {
+            "bluejay",
+            "oriole",
+            "raven",
+    };
+
     private static volatile boolean sIsGms, sIsFinsky;
     private static volatile String sProcessName;
 
@@ -182,6 +191,12 @@ public class PropImitationHooks {
                     spoofBuildGms();
                     break;
                 case PACKAGE_GCAM:
+                    boolean isPixel6Series = Arrays.asList(pixel6Series).contains(SystemProperties.get(PRODUCT_DEVICE));
+                    if (isPixel6Series) {
+                        dlog("Spoofing as Pixel 7 Pro for: " + packageName);
+                        sP7Props.forEach((k, v) -> setPropValue(k, v));
+                    }
+                    break;
                 case PACKAGE_CINEMATIC_PHOTOS:
                 case PACKAGE_GOOGLE_WALLPAPERS:
                 case PACKAGE_SUBSCRIPTION_RED:
