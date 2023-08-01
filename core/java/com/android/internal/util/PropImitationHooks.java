@@ -54,6 +54,9 @@ public class PropImitationHooks {
     private static final String sStockFp = SystemProperties.get("ro.vendor.build.fingerprint");
 
     private static final String PACKAGE_ARCORE = "com.google.ar.core";
+    private static final String PACKAGE_ASI = "com.google.android.as";
+    private static final String PACKAGE_COMPUTE_SERVICES = "com.google.android.as.oss";
+    private static final String PACKAGE_EXT_SERVICES = "com.google.android.ext.services";
     private static final String PACKAGE_FINSKY = "com.android.vending";
     private static final String PACKAGE_GMS = "com.google.android.gms";
     private static final String PROCESS_GMS_UNSTABLE = PACKAGE_GMS + ".unstable";
@@ -197,13 +200,15 @@ public class PropImitationHooks {
                         sP7Props.forEach((k, v) -> setPropValue(k, v));
                     }
                     break;
-                case PACKAGE_CINEMATIC_PHOTOS:
-                case PACKAGE_GOOGLE_WALLPAPERS:
                 case PACKAGE_SUBSCRIPTION_RED:
                     dlog("Spoofing as Pixel 7 Pro for: " + packageName);
                     sP7Props.forEach((k, v) -> setPropValue(k, v));
                     break;
                 case PACKAGE_AIAI:
+                case PACKAGE_ASI:
+                case PACKAGE_COMPUTE_SERVICES:
+                case PACKAGE_CINEMATIC_PHOTOS:
+                case PACKAGE_GOOGLE_WALLPAPERS:
                 case PACKAGE_EMOJI_WALLPAPER:
                 case PACKAGE_GASSIST:
                 case PACKAGE_GBOARD:
