@@ -720,6 +720,18 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
                     }
                 },
                 UserHandle.USER_ALL);
+                
+        mSystemSettings.registerContentObserverForUser(
+                Settings.System.getUriFor(Settings.System.QS_PANEL_TILE_HAPTIC),
+                false,
+                new ContentObserver(mBgHandler) {
+                    @Override
+                    public void onChange(boolean selfChange, Collection<Uri> collection, int flags,
+                            int userId) {
+                        reevaluateSystemTheme(true /* forceReload */);
+                    }
+                },
+                UserHandle.USER_ALL);
 
         mSystemSettings.registerContentObserverForUser(
                 Settings.System.getUriFor(Settings.System.RETICKER_STATUS),

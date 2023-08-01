@@ -27,7 +27,10 @@ import android.content.res.Resources.ID_NULL
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.RippleDrawable
 import android.graphics.drawable.GradientDrawable
+import android.os.AsyncTask
 import android.os.Trace
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.graphics.Color
 import android.os.UserHandle
 import android.provider.Settings
@@ -115,6 +118,11 @@ open class QSTileViewImpl @JvmOverloads constructor(
             context.contentResolver,
             System.QS_UI_STYLE, 0, UserHandle.USER_CURRENT
         ) == 1
+        
+    private val qsTileHaptic: Int = System.getIntForUser(
+            context.contentResolver,
+            System.QS_PANEL_TILE_HAPTIC, 0, UserHandle.USER_CURRENT
+        )
 
     private val colorActive = Utils.getColorAttrDefaultColor(context,
             android.R.attr.colorAccent)
@@ -466,7 +474,10 @@ open class QSTileViewImpl @JvmOverloads constructor(
         click: OnClickListener?,
         longClick: OnLongClickListener?
     ) {
-        setOnClickListener(click)
+        setOnClickListener {
+            triggerVibration()
+            click?.onClick(it)
+        }
         onLongClickListener = longClick
     }
 
@@ -731,6 +742,24 @@ open class QSTileViewImpl @JvmOverloads constructor(
 
         lastState = state.state
         lastDisabledByPolicy = state.disabledByPolicy
+    }
+
+    private fun triggerVibration() {
+        var vibratorHelper: Vibrator? = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator?
+        if (vibratorHelper == null || qsTileHaptic == 0) {
+            return
+        }
+
+        val effect: VibrationEffect = when (qsTileHaptic) {
+            1 -> VibrationEffect.createPredefined(VibrationEffect.EFFECT_TEXTURE_TICK)
+            2 -> VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK)
+            3 -> VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK)
+            4 -> VibrationEffect.createPredefined(VibrationEffect.EFFECT_DOUBLE_CLICK)
+            5 -> VibrationEffect.createPredefined(VibrationEffect.EFFECT_HEAVY_CLICK)
+            else -> VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK)
+        }
+
+        AsyncTask.execute { vibratorHelper.vibrate(effect) }
     }
 
     private fun setAllColors(
