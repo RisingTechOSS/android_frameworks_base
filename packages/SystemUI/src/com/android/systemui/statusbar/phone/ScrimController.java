@@ -892,11 +892,9 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
                     mNotificationsAlpha = behindFraction * mCustomScrimAlpha;
                 } else {
                     if (mFeatureFlags.isEnabled(Flags.LARGE_SHADE_GRANULAR_ALPHA_INTERPOLATION)) {
-                        mBehindAlpha = mLargeScreenShadeInterpolator.getBehindScrimAlpha(
-                                mPanelExpansionFraction * mDefaultScrimAlpha);
+                        mBehindAlpha = mPanelExpansionFraction * mCustomScrimAlpha;
                         mNotificationsAlpha =
-                                mLargeScreenShadeInterpolator.getNotificationScrimAlpha(
-                                        mPanelExpansionFraction);
+                                mPanelExpansionFraction * mCustomScrimAlpha;
                     } else {
                         // Behind scrim will finish fading in at 30% expansion.
                         float behindFraction = MathUtils
