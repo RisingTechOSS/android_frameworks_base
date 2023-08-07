@@ -530,6 +530,9 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
                     @Override
                     public void onChange(boolean selfChange, Collection<Uri> collection, int flags,
                             int userId) {
+                        if (mUserTracker.getUserId() != userId) {
+                            return;
+                        }
                         reevaluateSystemTheme(true /* forceReload */);
                     }
                 },
@@ -542,6 +545,9 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
                     @Override
                     public void onChange(boolean selfChange, Collection<Uri> collection, int flags,
                             int userId) {
+                        if (mUserTracker.getUserId() != userId) {
+                            return;
+                        }
                         reevaluateSystemTheme(true /* forceReload */);
                     }
                 },
@@ -554,6 +560,9 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
                     @Override
                     public void onChange(boolean selfChange, Collection<Uri> collection, int flags,
                             int userId) {
+                        if (mUserTracker.getUserId() != userId) {
+                            return;
+                        }
                         reevaluateSystemTheme(true /* forceReload */);
                     }
                 },
@@ -566,6 +575,9 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
                     @Override
                     public void onChange(boolean selfChange, Collection<Uri> collection, int flags,
                             int userId) {
+                        if (mUserTracker.getUserId() != userId) {
+                            return;
+                        }
                         reevaluateSystemTheme(true /* forceReload */);
                     }
                 },
@@ -578,6 +590,9 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
                     @Override
                     public void onChange(boolean selfChange, Collection<Uri> collection, int flags,
                             int userId) {
+                        if (mUserTracker.getUserId() != userId) {
+                            return;
+                        }
                         reevaluateSystemTheme(true /* forceReload */);
                     }
                 },
@@ -590,6 +605,9 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
                     @Override
                     public void onChange(boolean selfChange, Collection<Uri> collection, int flags,
                             int userId) {
+                        if (mUserTracker.getUserId() != userId) {
+                            return;
+                        }
                         reevaluateSystemTheme(true /* forceReload */);
                     }
                 },
@@ -602,6 +620,9 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
                     @Override
                     public void onChange(boolean selfChange, Collection<Uri> collection, int flags,
                             int userId) {
+                        if (mUserTracker.getUserId() != userId) {
+                            return;
+                        }
                         reevaluateSystemTheme(true /* forceReload */);
                     }
                 },
@@ -614,6 +635,9 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
                     @Override
                     public void onChange(boolean selfChange, Collection<Uri> collection, int flags,
                             int userId) {
+                        if (mUserTracker.getUserId() != userId) {
+                            return;
+                        }
                         restartSystemUI();
                     }
                 },
@@ -626,6 +650,9 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
                     @Override
                     public void onChange(boolean selfChange, Collection<Uri> collection, int flags,
                             int userId) {
+                        if (mUserTracker.getUserId() != userId) {
+                            return;
+                        }
                         restartSystemUI();
                     }
                 },
@@ -680,6 +707,9 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
                     @Override
                     public void onChange(boolean selfChange, Collection<Uri> collection, int flags,
                             int userId) {
+                        if (mUserTracker.getUserId() != userId) {
+                            return;
+                        }
                         reevaluateSystemTheme(true /* forceReload */);
                     }
                 },
@@ -692,6 +722,9 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
                     @Override
                     public void onChange(boolean selfChange, Collection<Uri> collection, int flags,
                             int userId) {
+                        if (mUserTracker.getUserId() != userId) {
+                            return;
+                        }
                         reevaluateSystemTheme(true /* forceReload */);
                     }
                 },
@@ -704,6 +737,9 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
                     @Override
                     public void onChange(boolean selfChange, Collection<Uri> collection, int flags,
                             int userId) {
+                        if (mUserTracker.getUserId() != userId) {
+                            return;
+                        }
                         reevaluateSystemTheme(true /* forceReload */);
                     }
                 },
@@ -716,6 +752,9 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
                     @Override
                     public void onChange(boolean selfChange, Collection<Uri> collection, int flags,
                             int userId) {
+                        if (mUserTracker.getUserId() != userId) {
+                            return;
+                        }
                         restartSystemUI();
                     }
                 },
@@ -728,6 +767,9 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
                     @Override
                     public void onChange(boolean selfChange, Collection<Uri> collection, int flags,
                             int userId) {
+                        if (mUserTracker.getUserId() != userId) {
+                            return;
+                        }
                         reevaluateSystemTheme(true /* forceReload */);
                     }
                 },
@@ -740,6 +782,9 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
                     @Override
                     public void onChange(boolean selfChange, Collection<Uri> collection, int flags,
                             int userId) {
+                        if (mUserTracker.getUserId() != userId) {
+                            return;
+                        }
                         restartSystemUI();
                     }
                 },
