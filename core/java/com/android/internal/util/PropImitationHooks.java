@@ -50,7 +50,8 @@ public class PropImitationHooks {
     private static final String PRODUCT_DEVICE = "ro.product.device";
 
     private static final String sP7PFp = "google/cheetah/cheetah:13/TQ3A.230705.001/10216780:user/release-keys";
-    private static final String sCertifiedFp = sP7PFp;
+    private static final String sFelixFp = "google/felix/felix:13/TQ3C.230805.001.A4/10354937:user/release-keys";
+    private static final String sCertifiedFp = sFelixFp;
     private static final String sStockFp = SystemProperties.get("ro.vendor.build.fingerprint");
 
     private static final String PACKAGE_ARCORE = "com.google.ar.core";
@@ -79,7 +80,7 @@ public class PropImitationHooks {
             "com.google.android.gms/.auth.uiflows.minutemaid.MinuteMaidActivity");
 
     private static final Map<String, Object> sP7Props = createGoogleSpoofProps("cheetah", "Pixel 7 Pro", sP7PFp);
-    private static final Map<String, Object> sPFoldProps = createGoogleSpoofProps("felix", "Pixel Fold", "google/felix/felix:13/TQ3C.230705.001.C2/10334521:user/release-keys");
+    private static final Map<String, Object> sPFoldProps = createGoogleSpoofProps("felix", "Pixel Fold", sFelixFp);
     private static final Map<String, Object> gPhotosProps = createGoogleSpoofProps("marlin", "Pixel XL", "google/marlin/marlin:10/QP1A.191005.007.A3/5972272:user/release-keys");
     private static final Map<String, Object> redfinProps = createGoogleSpoofProps("redfin", "Pixel 5", "google/redfin/redfin:13/TQ3A.230605.011/10161073:user/release-keys");
     private static final Map<String, Object> asusROG1Props = createGameProps("ASUS_Z01QD", "Asus");
