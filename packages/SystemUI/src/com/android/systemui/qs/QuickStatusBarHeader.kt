@@ -114,10 +114,12 @@ class QuickStatusBarHeader @JvmOverloads constructor(
         }
         if (mCurrentOrientation == Configuration.ORIENTATION_LANDSCAPE || !mHeaderImageEnabled) {
             mQsHeaderImageView.visibility = View.GONE
+            mQsHeaderGradientView.visibility = View.GONE
             return
         }
 
         mQsHeaderImageView.visibility = View.VISIBLE
+        mQsHeaderGradientView.visibility = View.VISIBLE
 
         val fadeFilter = ColorUtils.blendARGB(Color.TRANSPARENT, mHeaderImageFilterColor, mHeaderImageFadeLevel / 100f)
         mQsHeaderImageView.setColorFilter(fadeFilter, PorterDuff.Mode.SRC_ATOP)
