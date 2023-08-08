@@ -31,7 +31,7 @@
     <item android:id="@android:id/progress"
         android:gravity="center_vertical|fill_horizontal">
         <com.android.systemui.util.RoundedCornerProgressDrawable
-            android:drawable="@drawable/volume_row_seekbar_progress_aosp"
+            android:drawable="@drawable/volume_row_seekbar_progress"
             />
     </item>
 </layer-list>

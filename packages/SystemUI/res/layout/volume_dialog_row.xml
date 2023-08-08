@@ -60,7 +60,7 @@
                 android:layout_gravity="center"
                 android:thumb="@null"
                 android:splitTrack="false"
-                android:progressDrawable="@drawable/volume_row_seekbar_aosp"
+                android:progressDrawable="@drawable/volume_row_seekbar"
                 android:background="@null"
                 android:layoutDirection="ltr"
                 android:rotation="270" />

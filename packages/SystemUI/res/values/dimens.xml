@@ -16,6 +16,8 @@
 */
 -->
 <resources>
+    <dimen name="abc_star_small">17.0dip</dimen>
+
     <!-- Recommended minimum clickable element dimension -->
     <dimen name="min_clickable_item_size">48dp</dimen>
 

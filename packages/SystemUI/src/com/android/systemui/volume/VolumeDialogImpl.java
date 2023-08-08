@@ -155,6 +155,8 @@ import com.android.systemui.util.RoundedCornerProgressDrawable;
 
 import lineageos.providers.LineageSettings;
 
+import com.android.internal.util.rising.ThemeUtils;
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -345,6 +347,7 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
     private int mAnimatingRows = 0;
     
     private int customVolumeStyles = 0;
+    private ThemeUtils mThemeUtils;
     
     private boolean mShowMediaController = true;
 
@@ -423,6 +426,8 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
         mSeparateNotification = mDeviceConfigProxy.getBoolean(DeviceConfig.NAMESPACE_SYSTEMUI,
                 SystemUiDeviceConfigFlags.VOLUME_SEPARATE_NOTIFICATION, false);
         updateRingerModeIconSet();
+        
+        mThemeUtils = new ThemeUtils(mContext);
     }
 
     /**
@@ -891,12 +896,21 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
                 if (customVolumeStyles != selectedVolStyle) {
                     customVolumeStyles = selectedVolStyle;
                     mHandler.post(() -> {
+                        if (customVolumeStyles > 2) {
+                            setVolumeStyle("com.android.system.volume.style"+ customVolumeStyles, "android.theme.customization.volume_panel");
+                        } else {
+                            setVolumeStyle("com.android.systemui", "android.theme.customization.volume_panel");
+                        }
                         mControllerCallbackH.onConfigurationChanged();
                     });
                 }
             } 
         }
     };
+
+    private void setVolumeStyle(String pkgName, String category) {
+        mThemeUtils.setOverlayEnabled(category, pkgName, "com.android.systemui");
+    }
 
     protected ViewGroup getDialogView() {
         return mDialogView;
@@ -1012,12 +1026,12 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
         row.iconMuteRes = iconMuteRes;
         row.important = important;
         row.defaultStream = defaultStream;
-	    if (customVolumeStyles == 0) {
-           row.view = mDialog.getLayoutInflater().inflate(R.layout.volume_dialog_row_aosp, null);
-        } else if (customVolumeStyles == 1) {
+        if (customVolumeStyles == 1) {
            row.view = mDialog.getLayoutInflater().inflate(R.layout.volume_dialog_row_rui, null);
-        } else {
+        } else if (customVolumeStyles == 2) {
            row.view = mDialog.getLayoutInflater().inflate(R.layout.volume_dialog_row_rice, null);
+        } else {
+            row.view = mDialog.getLayoutInflater().inflate(R.layout.volume_dialog_row, null);
         }
         row.view.setId(row.stream);
         row.view.setTag(row);
@@ -1033,18 +1047,19 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
 
         row.anim = null;
 
-	final LayerDrawable seekbarDrawable;
-	
-	if (customVolumeStyles == 0) {
-          seekbarDrawable =
-                  (LayerDrawable) mContext.getDrawable(R.drawable.volume_row_seekbar_aosp);
-	} else if (customVolumeStyles == 1) {
-          seekbarDrawable =
-                  (LayerDrawable) mContext.getDrawable(R.drawable.volume_row_seekbar_rui);
-	} else {
-          seekbarDrawable =
-                  (LayerDrawable) mContext.getDrawable(R.drawable.volume_row_seekbar_rice);
-	}
+        int[] drawables = {
+            R.drawable.volume_row_seekbar,
+            R.drawable.volume_row_seekbar_rui,
+            R.drawable.volume_row_seekbar_rice,
+            R.drawable.volume_row_seekbar_double_layer,
+            R.drawable.volume_row_seekbar_gradient,
+            R.drawable.volume_row_seekbar_neumorph,
+            R.drawable.volume_row_seekbar_neumorph_outline,
+            R.drawable.volume_row_seekbar_outline,
+            R.drawable.volume_row_seekbar_shaded_layer
+        };
+
+        final LayerDrawable seekbarDrawable = (LayerDrawable) mContext.getDrawable(drawables[customVolumeStyles]);
 
         final LayerDrawable seekbarProgressDrawable = (LayerDrawable)
                 ((RoundedCornerProgressDrawable) seekbarDrawable.findDrawableByLayerId(
