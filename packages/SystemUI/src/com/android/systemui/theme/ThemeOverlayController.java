@@ -124,8 +124,6 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
     private static final String PREF_COLOR_OVERRIDE ="monet_engine_color_override";
     private static final String PREF_CUSTOM_BGCOLOR ="monet_engine_custom_bgcolor";
     private static final String PREF_BGCOLOR_OVERRIDE ="monet_engine_bgcolor_override";
-    private static final String QS_SHOW_BATTERY_PERCENT ="system:qs_show_battery_percent";
-    private static final String QS_BATTERY_STYLE ="system:qs_battery_style";
 
     protected static final int NEUTRAL = 0;
     protected static final int ACCENT = 1;
@@ -789,6 +787,36 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
                     }
                 },
                 UserHandle.USER_ALL);
+                
+        mSystemSettings.registerContentObserverForUser(
+                Settings.System.getUriFor(Settings.System.QS_SHOW_BATTERY_PERCENT),
+                false,
+                new ContentObserver(mBgHandler) {
+                    @Override
+                    public void onChange(boolean selfChange, Collection<Uri> collection, int flags,
+                            int userId) {
+                        if (mUserTracker.getUserId() != userId) {
+                            return;
+                        }
+                        reevaluateSystemTheme(true /* forceReload */);
+                    }
+                },
+                UserHandle.USER_ALL);
+                
+        mSystemSettings.registerContentObserverForUser(
+                Settings.System.getUriFor(Settings.System.QS_BATTERY_STYLE),
+                false,
+                new ContentObserver(mBgHandler) {
+                    @Override
+                    public void onChange(boolean selfChange, Collection<Uri> collection, int flags,
+                            int userId) {
+                        if (mUserTracker.getUserId() != userId) {
+                            return;
+                        }
+                        reevaluateSystemTheme(true /* forceReload */);
+                    }
+                },
+                UserHandle.USER_ALL);
 
         mUserTracker.addCallback(mUserTrackerCallback, mMainExecutor);
 
@@ -807,8 +835,6 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
         mTunerService.addTunable(this, PREF_COLOR_OVERRIDE);
         mTunerService.addTunable(this, PREF_CUSTOM_BGCOLOR);
         mTunerService.addTunable(this, PREF_BGCOLOR_OVERRIDE);
-        mTunerService.addTunable(this, QS_BATTERY_STYLE);
-        mTunerService.addTunable(this, QS_SHOW_BATTERY_PERCENT);
 
         // Upon boot, make sure we have the most up to date colors
         Runnable updateColors = () -> {
@@ -866,49 +892,65 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
     
     @Override
     public void onTuningChanged(String key, String newValue) {
+        boolean forceReload = false;
+
         switch (key) {
             case PREF_CHROMA_FACTOR:
-                mChromaFactor =
-                        (float) TunerService.parseInteger(newValue, 100) / 100f;
-                reevaluateSystemTheme(true /* forceReload */);
+                float newChromaFactor = (float) TunerService.parseInteger(newValue, 100) / 100f;
+                if (mChromaFactor != newChromaFactor) {
+                    mChromaFactor = newChromaFactor;
+                    forceReload = true;
+                }
                 break;
             case PREF_LUMINANCE_FACTOR:
-                mLuminanceFactor =
-                        (float) TunerService.parseInteger(newValue, 100) / 100f;
-                reevaluateSystemTheme(true /* forceReload */);
+                float newLuminanceFactor = (float) TunerService.parseInteger(newValue, 100) / 100f;
+                if (mLuminanceFactor != newLuminanceFactor) {
+                    mLuminanceFactor = newLuminanceFactor;
+                    forceReload = true;
+                }
                 break;
             case PREF_TINT_BACKGROUND:
-                mTintBackground =
-                        TunerService.parseIntegerSwitch(newValue, false);
-                reevaluateSystemTheme(true /* forceReload */);
+                boolean newTintBackground = TunerService.parseIntegerSwitch(newValue, false);
+                if (mTintBackground != newTintBackground) {
+                    mTintBackground = newTintBackground;
+                    forceReload = true;
+                }
                 break;
             case PREF_CUSTOM_COLOR:
-                mCustomColor =
-                        TunerService.parseIntegerSwitch(newValue, false);
-                reevaluateSystemTheme(true /* forceReload */);
+                boolean newCustomColor = TunerService.parseIntegerSwitch(newValue, false);
+                if (mCustomColor != newCustomColor) {
+                    mCustomColor = newCustomColor;
+                    forceReload = true;
+                }
                 break;
             case PREF_COLOR_OVERRIDE:
-                mColorOverride =
-                        TunerService.parseInteger(newValue, 0xFF1b6ef3);
-                reevaluateSystemTheme(true /* forceReload */);
+                int newColorOverride = TunerService.parseInteger(newValue, 0xFF1b6ef3);
+                if (mColorOverride != newColorOverride) {
+                    mColorOverride = newColorOverride;
+                    forceReload = true;
+                }
                 break;
             case PREF_CUSTOM_BGCOLOR:
-                mCustomBgColor =
-                        TunerService.parseIntegerSwitch(newValue, false);
-                reevaluateSystemTheme(true /* forceReload */);
+                boolean newCustomBgColor = TunerService.parseIntegerSwitch(newValue, false);
+                if (mCustomBgColor != newCustomBgColor) {
+                    mCustomBgColor = newCustomBgColor;
+                    forceReload = true;
+                }
                 break;
             case PREF_BGCOLOR_OVERRIDE:
-                mBgColorOverride =
-                        TunerService.parseInteger(newValue, 0xFF1b6ef3);
-                reevaluateSystemTheme(true /* forceReload */);
-                break;
-            case QS_SHOW_BATTERY_PERCENT:
-            case QS_BATTERY_STYLE:
-                reevaluateSystemTheme(true /* forceReload */);
+                int newBgColorOverride = TunerService.parseInteger(newValue, 0xFF1b6ef3);
+                if (mBgColorOverride != newBgColorOverride) {
+                    mBgColorOverride = newBgColorOverride;
+                    forceReload = true;
+                }
                 break;
             default:
                 break;
-         }
+        }
+
+        if (forceReload) {
+            reevaluateSystemTheme(true /* forceReload */);
+        }
     }
 
     protected void reevaluateSystemTheme(boolean forceReload) {
