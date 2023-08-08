@@ -160,6 +160,7 @@ class BackPanelController internal constructor(
     private var mIsLongSwipe = false
     private var mLongSwipeEnabled = false
     private var mLongSwipeThreshold = 0f
+    private var mSwipeStartTime: Long = 0
     private var mTriggerLongSwipe = false
 
     // Whether the current gesture has moved a sufficiently large amount,
@@ -424,7 +425,9 @@ class BackPanelController internal constructor(
         // occurs between the screen edge and the touch start.
         val xTranslation = max(0f, if (mView.isLeftPanel) x - startX else startX - x)
         
-        mIsLongSwipe = MathUtils.abs(xTranslation) > mLongSwipeThreshold
+        val MIN_SWIPE_DURATION = 300
+        val swipeDuration = System.currentTimeMillis() - mSwipeStartTime
+        mIsLongSwipe = MathUtils.abs(xTranslation) > mLongSwipeThreshold && swipeDuration > MIN_SWIPE_DURATION
 
         // Compared to last time, how far we moved in the x direction. If <0, we are moving closer
         // to the edge. If >0, we are moving further from the edge
@@ -465,9 +468,9 @@ class BackPanelController internal constructor(
             }
         }
 
-        if (mLongSwipeEnabled) {
-            setTriggerLongSwipe(mIsLongSwipe)
-        }
+        var triggerLongSwipeCallback = mLongSwipeEnabled && mIsLongSwipe
+        setTriggerLongSwipe(triggerLongSwipeCallback)
+        mView.drawCirclePath(triggerLongSwipeCallback)
         
         setArrowStrokeAlpha(gestureProgress)
         setVerticalTranslation(yOffset)
@@ -610,12 +613,7 @@ class BackPanelController internal constructor(
 
     override fun setLongSwipeEnabled(enabled: Boolean) {
         mLongSwipeEnabled = enabled
-        mLongSwipeThreshold = if (enabled) {
-            Math.min(displaySize.x * 0.5f, layoutParams.width * 2.5f)
-        } else {
-            0f
-        }
-        setTriggerLongSwipe(mLongSwipeEnabled && mLongSwipeThreshold != 0f)
+        setTriggerLongSwipe(mLongSwipeEnabled)
     }
 
     private fun setTriggerLongSwipe(triggerLongSwipe: Boolean) {
@@ -693,6 +691,7 @@ class BackPanelController internal constructor(
     override fun setDisplaySize(displaySize: Point) {
         this.displaySize.set(displaySize.x, displaySize.y)
         fullyStretchedThreshold = min(displaySize.x.toFloat(), params.swipeProgressThreshold)
+        mLongSwipeThreshold = Math.min(displaySize.x * 0.5f, layoutParams.width * 2.5f)
     }
 
     /**
@@ -858,8 +857,9 @@ class BackPanelController internal constructor(
                 setTriggerLongSwipe(false)
             }
             GestureState.ACTIVE -> {
-                backCallback.setTriggerBack(!mIsLongSwipe)
-                if (mTriggerLongSwipe && mIsLongSwipe) {
+                var shouldTriggerLongSwipe = mTriggerLongSwipe && mIsLongSwipe
+                backCallback.setTriggerBack(!shouldTriggerLongSwipe)
+                if (shouldTriggerLongSwipe) {
                     backCallback.triggerBack(true)
                 }
             }
