@@ -218,6 +218,9 @@ class StorageManagerService extends IStorageManager.Stub
 
     @GuardedBy("mLock")
     private final Set<Integer> mCeStoragePreparedUsers = new ArraySet<>();
+    
+    @GuardedBy("mLock")
+    private final ArrayMap<Integer, ArraySet<String>> mPackagesByUid = new ArrayMap<>();
 
     public static class Lifecycle extends SystemService {
         private StorageManagerService mStorageManagerService;
@@ -2032,13 +2035,18 @@ class StorageManagerService extends IStorageManager.Stub
     private void updateLegacyStorageApps(String packageName, int uid, boolean hasLegacy) {
         synchronized (mLock) {
             if (hasLegacy) {
-                Slog.v(TAG, "Package " + packageName + " has legacy storage");
                 mUidsWithLegacyExternalStorage.add(uid);
             } else {
-                // TODO(b/149391976): Handle shared user id. Check if there's any other
-                // installed app with legacy external storage before removing
-                Slog.v(TAG, "Package " + packageName + " does not have legacy storage");
-                mUidsWithLegacyExternalStorage.remove(uid);
+                ArraySet<String> packages = mPackagesByUid.get(uid);
+                if (packages != null) {
+                    packages.remove(packageName);
+                    if (packages.isEmpty()) {
+                        mUidsWithLegacyExternalStorage.remove(uid);
+                        mPackagesByUid.remove(uid);
+                    }
+                } else {
+                    mUidsWithLegacyExternalStorage.remove(uid);
+                }
             }
         }
     }
@@ -2046,23 +2054,25 @@ class StorageManagerService extends IStorageManager.Stub
     private void snapshotAndMonitorLegacyStorageAppOp(UserHandle user) {
         int userId = user.getIdentifier();
 
-        // TODO(b/149391976): Use mIAppOpsService.getPackagesForOps instead of iterating below
-        // It should improve performance but the AppOps method doesn't return any app here :(
-        // This operation currently takes about ~20ms on a freshly flashed device
-        for (ApplicationInfo ai : mPmInternal.getInstalledApplications(MATCH_DIRECT_BOOT_AWARE
-                        | MATCH_DIRECT_BOOT_UNAWARE | MATCH_UNINSTALLED_PACKAGES | MATCH_ANY_USER,
-                        userId, Process.myUid())) {
-            try {
-                boolean hasLegacy = mIAppOpsService.checkOperation(OP_LEGACY_STORAGE, ai.uid,
-                        ai.packageName) == MODE_ALLOWED;
-                updateLegacyStorageApps(ai.packageName, ai.uid, hasLegacy);
-            } catch (RemoteException e) {
-                Slog.e(TAG, "Failed to check legacy op for package " + ai.packageName, e);
+        try {
+            List<AppOpsManager.PackageOps> packagesOps = mIAppOpsService.getPackagesForOps(new int[]{OP_LEGACY_STORAGE});
+            if (packagesOps != null) {
+                for (AppOpsManager.PackageOps packageOps : packagesOps) {
+                    String packageName = packageOps.getPackageName();
+                    int uid = packageOps.getUid();
+                    for (AppOpsManager.OpEntry entry : packageOps.getOps()) {
+                        boolean hasLegacy = entry.getMode() == MODE_ALLOWED;
+                        updateLegacyStorageApps(packageName, uid, hasLegacy);
+                    }
+                }
             }
+        } catch (RemoteException e) {
+            Slog.e(TAG, "Failed to get packages for ops", e);
         }
 
-        if (mPackageMonitorsForUser.get(userId) == null) {
-            PackageMonitor monitor = new PackageMonitor() {
+        PackageMonitor monitor = mPackageMonitorsForUser.get(userId);
+        if (monitor != null) {
+            monitor = new PackageMonitor() {
                 @Override
                 public void onPackageRemoved(String packageName, int uid) {
                     updateLegacyStorageApps(packageName, uid, false);
