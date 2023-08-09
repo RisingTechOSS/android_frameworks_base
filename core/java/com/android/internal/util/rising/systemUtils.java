@@ -68,6 +68,7 @@ import com.android.internal.R;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
 public class systemUtils {
@@ -100,21 +101,20 @@ public class systemUtils {
     }
 
     public static List<String> launchablePackages(Context context) {
-        List<String> list = new ArrayList<>();
-
-        Intent filter = new Intent(Intent.ACTION_MAIN, null);
-        filter.addCategory(Intent.CATEGORY_LAUNCHER);
-
-        List<ResolveInfo> apps = context.getPackageManager().queryIntentActivities(filter,
-                PackageManager.GET_META_DATA);
-
-        int numPackages = apps.size();
-        for (int i = 0; i < numPackages; i++) {
-            ResolveInfo app = apps.get(i);
-            list.add(app.activityInfo.packageName);
+        List<String> launchablePackages = new ArrayList<>();
+        Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
+        mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+        PackageManager packageManager = context.getPackageManager();
+        List<ResolveInfo> apps = packageManager.queryIntentActivities(mainIntent, 0);
+        for (ResolveInfo app : apps) {
+            if ((app.activityInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0) {
+                String packageName = app.activityInfo.packageName;
+                if (!launchablePackages.contains(packageName)) {
+                    launchablePackages.add(packageName);
+                }
+            }
         }
-
-        return list;
+        return launchablePackages;
     }
 
     public static void switchScreenOff(Context ctx) {

@@ -456,49 +456,46 @@ class AppLockManagerService(
         shouldProtectApp: Boolean,
         userId: Int,
     ) {
-        logD {
-            "setShouldProtectApp: packageName = $packageName, userId = $userId"
-        }
+        logD { "setShouldProtectApp: packageName = $packageName, userId = $userId" }
+        
         enforceCallingPermission("setShouldProtectApp")
-        checkPackage(packageName, userId)
+        
+        if (!checkPackage(packageName, userId)) return
+
         val actualUserId = getActualUserId(userId, "setShouldProtectApp")
-        serviceScope.launch {
-            mutex.withLock {
-                val config = userConfigMap[actualUserId] ?: run {
-                    Slog.e(TAG, "setShouldProtectApp requested by unknown " +
-                        "user id $actualUserId")
-                    return@withLock
-                }
-                if (!config.setShouldProtectApp(packageName, shouldProtectApp)) {
-                    return@withLock
-                }
-                notificationManagerInternal.updateSecureNotifications(
-                    packageName,
-                    shouldProtectApp /* isContentSecure */,
-                    shouldProtectApp /* isBubbleUpSuppressed */,
-                    actualUserId
-                )
-                withContext(Dispatchers.IO) {
-                    config.write()
-                }
-            }
-        }
+        serviceScope.launch { handleProtectionConfig(actualUserId, packageName, shouldProtectApp) }
     }
 
-    private fun checkPackage(pkg: String, userId: Int) {
-        try {
-            val aInfo = pmInternal.getApplicationInfo(
-                pkg,
-                PackageManager.MATCH_ALL.toLong(),
-                Process.myUid(),
-                userId
-            )
-            if (!aInfo.isSystemApp()) return
-            if (systemUtils.launchablePackages(context).contains(pkg)) return
-            if (!whiteListedSystemApps.contains(pkg))
-                throw IllegalArgumentException("System package $pkg is not whitelisted")
-        } catch(e: PackageManager.NameNotFoundException) {
-            throw IllegalArgumentException("Package $pkg is not installed")
+    private suspend fun handleProtectionConfig(
+        actualUserId: Int,
+        packageName: String,
+        shouldProtectApp: Boolean
+    ) = mutex.withLock {
+        userConfigMap[actualUserId]?.let { config ->
+            if (config.setShouldProtectApp(packageName, shouldProtectApp)) {
+                notificationManagerInternal.updateSecureNotifications(
+                    packageName,
+                    shouldProtectApp,
+                    shouldProtectApp,
+                    actualUserId
+                )
+                withContext(Dispatchers.IO) { config.write() }
+            }
+        } ?: Slog.e(TAG, "setShouldProtectApp requested by unknown user id $actualUserId")
+    }
+
+    private fun checkPackage(pkg: String, userId: Int): Boolean {
+        val aInfo = pmInternal.getApplicationInfo(
+            pkg,
+            PackageManager.MATCH_ALL.toLong(),
+            Process.myUid(),
+            userId
+        ) ?: return false
+        
+        return if (aInfo.isSystemApp()) {
+            whiteListedSystemApps.contains(pkg) 
+        } else {
+            systemUtils.launchablePackages(context).contains(pkg)
         }
     }
 
@@ -1092,10 +1089,16 @@ class AppLockManagerService(
 
         override fun interceptActivity(info: ActivityInterceptorInfo): Intent? {
             val packageName = info.aInfo.packageName
-            logD {
-                "interceptActivity, pkg = $packageName"
-            }
+            logD { "interceptActivity, pkg = $packageName" }
             if (!requireUnlock(packageName, info.userId)) return null
+            val aInfo = pmInternal.getApplicationInfo(
+                packageName,
+                PackageManager.MATCH_ALL.toLong(),
+                Process.myUid(),
+                info.userId
+            )
+            if (aInfo.isSystemApp() && !whiteListedSystemApps.contains(packageName)) return null
+            if (!systemUtils.launchablePackages(context).contains(packageName)) return null
             val target = IntentSender(
                 atmInternal.getIntentSender(
                     ActivityManager.INTENT_SENDER_ACTIVITY,
@@ -1114,7 +1117,7 @@ class AppLockManagerService(
                     ActivityOptions.makeBasic().toBundle()
                 )
             )
-            val intent = Intent(AppLockManager.ACTION_UNLOCK_APP)
+            return Intent(AppLockManager.ACTION_UNLOCK_APP)
                 .setPackage(SETTINGS_PACKAGE)
                 .apply {
                     putExtra(Intent.EXTRA_PACKAGE_NAME, packageName)
@@ -1123,7 +1126,6 @@ class AppLockManagerService(
                     putExtra(AppLockManager.EXTRA_PACKAGE_LABEL, info.aInfo.loadLabel(packageManager))
                     putExtra(AppLockManager.EXTRA_ALLOW_BIOMETRICS, isBiometricsAllowed(info.userId))
                 }
-            return intent
         }
 
         override fun getHiddenPackages(userId: Int): Set<String> {
