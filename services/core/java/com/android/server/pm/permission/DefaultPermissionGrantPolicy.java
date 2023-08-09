@@ -231,6 +231,29 @@ final class DefaultPermissionGrantPolicy {
     static {
         SUSPEND_APP_PERMISSIONS.add(Manifest.permission.SUSPEND_APPS);
     }
+    
+    private static final Set<String> INTERNET_PERMISSIONS = new ArraySet<>();
+    static {
+        INTERNET_PERMISSIONS.add(Manifest.permission.ACCESS_NETWORK_STATE);
+        INTERNET_PERMISSIONS.add(Manifest.permission.INTERNET);
+    }
+    
+    private static final Set<String> DEEPLINK_PERMISSIONS = new ArraySet<>();
+    static {
+        DEEPLINK_PERMISSIONS.add(Manifest.permission.LAUNCH_MULTI_PANE_SETTINGS_DEEP_LINK);
+    }
+    
+    private static final Set<String> WALLPAPER_PERMISSIONS = new ArraySet<>();
+    static {
+        WALLPAPER_PERMISSIONS.add(Manifest.permission.SET_WALLPAPER);
+    }
+    
+    private static final Set<String> SETTINGS_PERMISSIONS = new ArraySet<>();
+    static {
+        SETTINGS_PERMISSIONS.add(Manifest.permission.READ_DEVICE_CONFIG);
+        SETTINGS_PERMISSIONS.add(Manifest.permission.WRITE_SECURE_SETTINGS);
+    }
+
 
     private static final int MSG_READ_DEFAULT_PERMISSION_EXCEPTIONS = 1;
 
@@ -967,8 +990,8 @@ final class DefaultPermissionGrantPolicy {
 
         // Google Wallpapers
         grantSystemFixedPermissionsToSystemPackage(pm,"com.google.android.apps.wallpaper", userId, PHONE_PERMISSIONS,
-                STORAGE_PERMISSIONS);
-
+                STORAGE_PERMISSIONS, INTERNET_PERMISSIONS, DEEPLINK_PERMISSIONS, WALLPAPER_PERMISSIONS, SETTINGS_PERMISSIONS);
+    
         // Pixel Launcher
         grantSystemFixedPermissionsToSystemPackage(pm,"com.google.android.apps.nexuslauncher", userId, PHONE_PERMISSIONS,
                 STORAGE_PERMISSIONS);
@@ -998,7 +1021,12 @@ final class DefaultPermissionGrantPolicy {
         // Google App
         grantPermissionsToPackage(pm, "com.google.android.googlequicksearchbox", userId,
                 false /* ignoreSystemPackage */, true /*whitelistRestrictedPermissions*/,
-                PHONE_PERMISSIONS);
+                PHONE_PERMISSIONS, INTERNET_PERMISSIONS);
+                
+        // Google Play store
+        grantPermissionsToPackage(pm, "com.android.vending", userId,
+                false /* ignoreSystemPackage */, true /*whitelistRestrictedPermissions*/,
+                INTERNET_PERMISSIONS);
     }
 
     private String getDefaultSystemHandlerActivityPackageForCategory(PackageManagerWrapper pm,
