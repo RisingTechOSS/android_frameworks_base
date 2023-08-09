@@ -4,10 +4,10 @@
     <item
         android:id="@android:id/background"
         android:gravity="fill_horizontal|center">
-        <shape>
+        <shape android:tint="@color/volume_shape_color" android:alpha="0.8">
             <size android:height="@dimen/volume_dialog_track_width" />
             <corners android:radius="@dimen/volume_dialog_track_corner_radius" />
-            <solid android:color="?android:colorBackground" />
+            <solid android:color="@color/volume_bg_color" />
         </shape>
     </item>
     <item
