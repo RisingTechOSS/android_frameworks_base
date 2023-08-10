@@ -425,7 +425,7 @@ class BackPanelController internal constructor(
         // occurs between the screen edge and the touch start.
         val xTranslation = max(0f, if (mView.isLeftPanel) x - startX else startX - x)
         
-        val MIN_SWIPE_DURATION = 300
+        val MIN_SWIPE_DURATION = 500
         val swipeDuration = System.currentTimeMillis() - mSwipeStartTime
         mIsLongSwipe = MathUtils.abs(xTranslation) > mLongSwipeThreshold && swipeDuration > MIN_SWIPE_DURATION
 
@@ -468,7 +468,7 @@ class BackPanelController internal constructor(
             }
         }
 
-        var triggerLongSwipeCallback = mLongSwipeEnabled && mIsLongSwipe
+        val triggerLongSwipeCallback = mLongSwipeEnabled && mIsLongSwipe
         setTriggerLongSwipe(triggerLongSwipeCallback)
         mView.drawCirclePath(triggerLongSwipeCallback)
         
@@ -613,7 +613,6 @@ class BackPanelController internal constructor(
 
     override fun setLongSwipeEnabled(enabled: Boolean) {
         mLongSwipeEnabled = enabled
-        setTriggerLongSwipe(mLongSwipeEnabled)
     }
 
     private fun setTriggerLongSwipe(triggerLongSwipe: Boolean) {
