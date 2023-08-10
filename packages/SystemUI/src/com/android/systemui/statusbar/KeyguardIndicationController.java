@@ -1001,12 +1001,8 @@ public class KeyguardIndicationController {
             Settings.System.LOCKSCREEN_BATTERY_INFO, 1, UserHandle.USER_CURRENT) == 1;
          if (showbatteryInfo) {
             if (mChargingCurrent > 0) {
-                BatteryManager batteryManager = (BatteryManager) mContext.getSystemService(Context.BATTERY_SERVICE);
-                int chargingCurrent = Math.abs(batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW));
-
-                int currentInMilliamps = chargingCurrent / 1000;
-
-                batteryInfo = currentInMilliamps + "mA";
+                current = mChargingCurrent >= 23000 ? mChargingCurrent / 1000 : mChargingCurrent;
+                batteryInfo = batteryInfo + current + "mA";
             }
             if (mChargingVoltage > 0 && mChargingCurrent > 0) {
                 voltage = mChargingVoltage / 1000 / 1000;
