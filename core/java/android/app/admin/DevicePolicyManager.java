@@ -7121,7 +7121,8 @@ public class DevicePolicyManager {
     /** @hide per-user version */
     @UnsupportedAppUsage
     public int getStorageEncryptionStatus(int userHandle) {
-        if (mService != null) {
+        return ENCRYPTION_STATUS_ACTIVE;
+        /**if (mService != null) {
             try {
                 return mService.getStorageEncryptionStatus(mContext.getPackageName(), userHandle);
             } catch (RemoteException e) {
@@ -7129,6 +7130,7 @@ public class DevicePolicyManager {
             }
         }
         return ENCRYPTION_STATUS_UNSUPPORTED;
+        */
     }
 
     /**
