@@ -42,6 +42,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+
 public class PropImitationHooks {
 
     private static final String TAG = "PropImitationHooks";
@@ -51,7 +54,6 @@ public class PropImitationHooks {
 
     private static final String sP7PFp = "google/cheetah/cheetah:13/TQ3A.230705.001/10216780:user/release-keys";
     private static final String sFelixFp = "google/felix/felix:13/TQ3C.230805.001.A4/10354937:user/release-keys";
-    private static final String sCertifiedFp = sFelixFp;
     private static final String sStockFp = SystemProperties.get("ro.vendor.build.fingerprint");
 
     private static final String PACKAGE_ARCORE = "com.google.ar.core";
@@ -60,6 +62,8 @@ public class PropImitationHooks {
     private static final String PACKAGE_EXT_SERVICES = "com.google.android.ext.services";
     private static final String PACKAGE_FINSKY = "com.android.vending";
     private static final String PACKAGE_GMS = "com.google.android.gms";
+    private static final String PROCESS_GMS_PERSISTENT = PACKAGE_GMS + ".persistent";
+    private static final String PROCESS_GMS_UI = PACKAGE_GMS + ".ui";
     private static final String PROCESS_GMS_UNSTABLE = PACKAGE_GMS + ".unstable";
 
     private static final String PACKAGE_AIAI = "com.google.android.apps.miphone.aiai.AiaiApplication";
@@ -70,6 +74,7 @@ public class PropImitationHooks {
     private static final String PACKAGE_TURBO = "com.google.android.apps.turbo";
     private static final String PACKAGE_VELVET = "com.google.android.googlequicksearchbox";
     private static final String PACKAGE_GBOARD = "com.google.android.inputmethod.latin";
+    private static final String PACKAGE_SETIINGS_INTELLIGENCE = "com.google.android.settings.intelligence";
     private static final String PACKAGE_SETUPWIZARD = "com.google.android.setupwizard";
     private static final String PACKAGE_EMOJI_WALLPAPER = "com.google.android.apps.emojiwallpaper";
     private static final String PACKAGE_CINEMATIC_PHOTOS = "com.google.android.wallpaper.effects";
@@ -102,10 +107,14 @@ public class PropImitationHooks {
         Map<String, Object> props = new HashMap<>();
         props.put("BRAND", "google");
         props.put("MANUFACTURER", "Google");
+        props.put("ID", getBuildID(fingerprint));
         props.put("DEVICE", device);
+        props.put("NAME", device);
         props.put("PRODUCT", device);
         props.put("MODEL", model);
         props.put("FINGERPRINT", fingerprint);
+        props.put("TYPE", "user");
+        props.put("TAGS", "release-keys");
         return props;
     }
 
@@ -164,6 +173,16 @@ public class PropImitationHooks {
             "raven",
     };
 
+    private static String getBuildID(String fingerprint) {
+        Pattern pattern = Pattern.compile("([A-Za-z0-9]+\\.\\d+\\.\\d+\\.\\w+)");
+        Matcher matcher = pattern.matcher(fingerprint);
+
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return "";
+    }
+
     private static volatile boolean sIsGms, sIsFinsky;
     private static volatile String sProcessName;
 
@@ -178,42 +197,45 @@ public class PropImitationHooks {
         sProcessName = processName;
         sIsGms = packageName.equals(PACKAGE_GMS) && processName.equals(PROCESS_GMS_UNSTABLE);
         sIsFinsky = packageName.equals(PACKAGE_FINSKY);
+        boolean sIsAtraceCoreService = packageName.equals(PACKAGE_GMS) 
+            && (processName.equals(PROCESS_GMS_PERSISTENT) || processName.equals(PROCESS_GMS_UI));
 
         if (sIsGms) {
             dlog("Setting Pixel 2 fingerprint for: " + packageName);
             setCertifiedPropsForGms();
-        } else if (!sCertifiedFp.isEmpty() && sIsFinsky) {
-            dlog("Setting certified fingerprint for: " + packageName);
-            setPropValue("FINGERPRINT", sCertifiedFp);
-        } else if (!sStockFp.isEmpty() && packageName.equals(PACKAGE_ARCORE)) {
-            dlog("Setting stock fingerprint for: " + packageName);
-            setPropValue("FINGERPRINT", sStockFp);
+        } else if (sIsAtraceCoreService){
+            dlog("Spoofing as Pixel Fold for: " + packageName);
+            sPFoldProps.forEach((k, v) -> setPropValue(k, v));
         } else {
             switch (packageName) {
+                case PACKAGE_ARCORE:
+                    dlog("Setting stock fingerprint for: " + packageName);
+                    setPropValue("FINGERPRINT", sStockFp);
+                    break;
                 case PACKAGE_SNAPCHAT:
                     dlog("Spoofing as Pixel 2 for: " + packageName);
                     spoofBuildGms();
                     break;
                 case PACKAGE_GCAM:
                     boolean isPixel6Series = Arrays.asList(pixel6Series).contains(SystemProperties.get(PRODUCT_DEVICE));
-                    if (isPixel6Series) {
-                        dlog("Spoofing as Pixel 7 Pro for: " + packageName);
-                        sP7Props.forEach((k, v) -> setPropValue(k, v));
+                    if (!isPixel6Series) {
+                        break;
                     }
-                    break;
                 case PACKAGE_SUBSCRIPTION_RED:
                     dlog("Spoofing as Pixel 7 Pro for: " + packageName);
                     sP7Props.forEach((k, v) -> setPropValue(k, v));
                     break;
                 case PACKAGE_AIAI:
                 case PACKAGE_ASI:
+                case PACKAGE_GMS:
                 case PACKAGE_COMPUTE_SERVICES:
+                case PACKAGE_FINSKY:
+                case PACKAGE_SETIINGS_INTELLIGENCE:
+                case PACKAGE_GASSIST:
+                case PACKAGE_GBOARD:
                 case PACKAGE_CINEMATIC_PHOTOS:
                 case PACKAGE_GOOGLE_WALLPAPERS:
                 case PACKAGE_EMOJI_WALLPAPER:
-                case PACKAGE_GASSIST:
-                case PACKAGE_GBOARD:
-                case PACKAGE_GMS:
                 case PACKAGE_SETUPWIZARD:
                 case PACKAGE_TURBO:
                 case PACKAGE_VELVET:
@@ -349,7 +371,7 @@ public class PropImitationHooks {
         setPropValue("ID", "OPM1.171019.011");
         setPropValue("TYPE", "user");
         setPropValue("TAGS", "release-keys");
-        setVersionField("DEVICE_INITIAL_SDK_INT", Build.VERSION_CODES.N_MR1);
+        setVersionField("DEVICE_INITIAL_SDK_INT", Build.VERSION_CODES.O_MR1);
         setVersionFieldString("SECURITY_PATCH", "2017-12-05");
     }
 
