@@ -381,10 +381,14 @@ open class QSTileViewImpl @JvmOverloads constructor(
         if (context == null) {
             return
         }
-        labelContainer = LayoutInflater.from(context)
-                .inflate(if (isA11Style) R.layout.qs_tile_label_a11 else (if (vertical)  R.layout.qs_tile_label_vertical else R.layout.qs_tile_label), this, false) as IgnorableChildLinearLayout
+        val layoutId = if (isA11Style) R.layout.qs_tile_label_a11 else (if (vertical) R.layout.qs_tile_label_vertical else R.layout.qs_tile_label)
+        val view = LayoutInflater.from(context).inflate(layoutId, this, false)
+        if (view == null) return
+        labelContainer = view as IgnorableChildLinearLayout
         label = labelContainer.requireViewById(R.id.tile_label)
+        if (label == null) return
         secondaryLabel = labelContainer.requireViewById(R.id.app_label)
+        if (secondaryLabel == null) return
         if (isA11Style) {
             if (collapsed) {
                 labelContainer.ignoreLastView = true
