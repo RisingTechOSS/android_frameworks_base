@@ -35,6 +35,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.os.PowerExemptionManager;
+import android.os.StrictMode;
 import android.os.SystemClock;
 import android.provider.DeviceConfig;
 import android.provider.DeviceConfig.OnPropertiesChangedListener;
@@ -49,6 +50,7 @@ import com.android.internal.annotations.GuardedBy;
 
 import dalvik.annotation.optimization.NeverCompile;
 
+import java.io.File;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.List;
@@ -59,6 +61,7 @@ import java.util.stream.Collectors;
  */
 final class ActivityManagerConstants extends ContentObserver {
     private static final String TAG = "ActivityManagerConstants";
+    private static final boolean DEBUG_AMC = false;
 
     // Key names stored in the settings value.
     static final String KEY_BACKGROUND_SETTLE_TIME = "background_settle_time";
@@ -1875,10 +1878,28 @@ final class ActivityManagerConstants extends ContentObserver {
     }
 
     private void updateProactiveKillsEnabled() {
-        PROACTIVE_KILLS_ENABLED = DeviceConfig.getBoolean(
-                DeviceConfig.NAMESPACE_ACTIVITY_MANAGER,
-                KEY_PROACTIVE_KILLS_ENABLED,
-                DEFAULT_PROACTIVE_KILLS_ENABLED);
+        PROACTIVE_KILLS_ENABLED = conditionallyEnableProactiveKills();
+    }
+
+    private boolean conditionallyEnableProactiveKills() {
+        boolean isModernKernel = false;
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        try {
+            final File mglru = new File("/sys/kernel/mm/lru_gen/enabled");
+            final File psi = new File("/proc/pressure/memory");
+            final File lmk_kernel = new File("/sys/module/lowmemorykiller/parameters/minfree");
+            isModernKernel = !lmk_kernel.exists() && mglru.exists() && psi.exists();
+    	} catch (Exception e) {
+        	if (DEBUG_AMC) {
+        	    Slog.e(TAG, "Could not read kernel nodes" , e);
+        	}
+    	} finally {
+    	    StrictMode.setThreadPolicy(oldPolicy);
+    	}
+    	if (DEBUG_AMC) {
+    	    Slog.i(TAG, "Detected kernel with " + (isModernKernel ? "modern" : "legacy") + " mm setup,  " + (isModernKernel ? "enabling" : "disabling") + " Proactive Kills.");
+    	}
+    	return isModernKernel;
     }
 
     private void updateLowSwapThresholdPercent() {
