@@ -4027,6 +4027,9 @@ public final class Settings {
         @UnsupportedAppUsage
         public static int getIntForUser(ContentResolver cr, String name, int def, int userHandle) {
             String v = getStringForUser(cr, name, userHandle);
+            if (shouldHideDevStatus(cr.getPackageName(), name)) {
+                return 0;
+            }
             return parseIntSettingWithDefault(v, def);
         }
 
@@ -4057,6 +4060,9 @@ public final class Settings {
         @UnsupportedAppUsage
         public static int getIntForUser(ContentResolver cr, String name, int userHandle)
                 throws SettingNotFoundException {
+            if (shouldHideDevStatus(cr.getPackageName(), name)) {
+                return 0;
+            }
             String v = getStringForUser(cr, name, userHandle);
             return parseIntSetting(v, name);
         }
@@ -7012,6 +7018,9 @@ public final class Settings {
         @UnsupportedAppUsage
         public static int getIntForUser(ContentResolver cr, String name, int def, int userHandle) {
             String v = getStringForUser(cr, name, userHandle);
+            if (shouldHideDevStatus(cr.getPackageName(), name)) {
+                return 0;
+            }
             return parseIntSettingWithDefault(v, def);
         }
 
@@ -7042,6 +7051,9 @@ public final class Settings {
         public static int getIntForUser(ContentResolver cr, String name, int userHandle)
                 throws SettingNotFoundException {
             String v = getStringForUser(cr, name, userHandle);
+            if (shouldHideDevStatus(cr.getPackageName(), name)) {
+                return 0;
+            }
             return parseIntSetting(v, name);
         }
 
@@ -17602,6 +17614,9 @@ public final class Settings {
          * or not a valid integer.
          */
         public static int getInt(ContentResolver cr, String name, int def) {
+            if (shouldHideDevStatus(cr.getPackageName(), name)) {
+                return 0;
+            }
             String v = getString(cr, name);
             return parseIntSettingWithDefault(v, def);
         }
@@ -17626,6 +17641,9 @@ public final class Settings {
          */
         public static int getInt(ContentResolver cr, String name)
                 throws SettingNotFoundException {
+            if (shouldHideDevStatus(cr.getPackageName(), name)) {
+                return 0;
+            }
             String v = getString(cr, name);
             return parseIntSetting(v, name);
         }
@@ -20608,5 +20626,26 @@ public final class Settings {
             return null;
         }
         return packages[0];
+    }
+    
+    /**
+     * @hide
+     */
+    public static boolean shouldHideDevStatus(@NonNull String packageName, @NonNull String name) {
+        return (name.equals(Settings.Global.ADB_ENABLED) ||
+               name.equals(Settings.Global.ADB_WIFI_ENABLED) ||
+               name.equals(Settings.Global.DEVELOPMENT_SETTINGS_ENABLED)) && !isCallerSystemApp(packageName);
+    }
+
+    /**
+     * @hide
+     */
+    private static boolean isCallerSystemApp(@NonNull String packageName) {
+        if (packageName.equals("android") 
+            || packageName.startsWith("com.android.")
+            || packageName.contains(".settings.intelligence")) {
+            return true;
+        }
+        return false;
     }
 }
