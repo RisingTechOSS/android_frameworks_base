@@ -4,6 +4,15 @@ import android.view.View;
 
 public class FadeTransformer extends ABaseTransformer {
     public void onTransform(View view, float position) {
+        if (position == 0) {
+            view.setPivotX(0);
+            view.setPivotY(view.getHeight() * 0.5f);
+            view.setRotationY(0);
+            view.setScaleX(1.0f);
+            view.setScaleY(1.0f);
+            return;
+        }
+
         float f = 0.0f;
         if (position < 0.0f) {
             f = (float) view.getWidth();
@@ -20,3 +29,4 @@ public class FadeTransformer extends ABaseTransformer {
         return true;
     }
 }
+
