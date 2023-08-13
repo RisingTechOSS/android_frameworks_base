@@ -263,7 +263,6 @@ import com.android.wm.shell.startingsurface.SplashscreenContentDrawer;
 import com.android.wm.shell.startingsurface.StartingSurface;
 
 import lineageos.providers.LineageSettings;
-import com.android.systemui.power.PowerNotificationWarnings;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -3672,7 +3671,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces, Tune
                 systemManager.initSystemManager(mContext);
                 isSysManagerInstantiated = true;
             }
-            performSystemManagerService(1);
+            performSystemManagerService(true);
 
         }
 
@@ -3743,45 +3742,19 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces, Tune
 
             });
             DejankUtils.stopDetectingBlockingIpcs(tag);
-            performSystemManagerService(0);
+            performSystemManagerService(false);
         }
 
-        public void performSystemManagerService(int trigger) {
+        public void performSystemManagerService(boolean idle) {
             if (!isSysManagerInstantiated || mContext == null) {
                 return;
             }
-
-            NotificationManager notificationManager = mContext.getSystemService(NotificationManager.class);
-            if (notificationManager == null) {
-                return;
-            }
-
-            if (trigger == 1) {
+            if (idle) {
                 systemManager.startIdleService(mContext);
                 systemManager.killBackgroundProcesses(mContext);
             } else {
-                systemManager.cancelIdleService();
+                systemManager.cancelIdleService(mContext);
             }
-
-            int userId = mLockscreenUserManager.getCurrentUserId();
-            boolean isAggressiveIdleEnabled = Settings.Secure.getIntForUser(
-                mContext.getContentResolver(),
-                Settings.Secure.SYSTEM_MANAGER_AGGRESSIVE_IDLE_MODE,
-                0,
-                userId) == 1;
-
-            if (isAggressiveIdleEnabled) {
-                Settings.Secure.putIntForUser(
-                    mContext.getContentResolver(),
-                    Settings.Secure.SYSTEM_MANAGER_AGGRESSIVE_IDLE_MODE_TRIGGER,
-                    trigger,
-                    userId);
-
-                PackageManager packageManager = CentralSurfaces.getPackageManagerForUser(mContext, userId);
-                systemManager.deepClean(mContext, packageManager, trigger == 1);
-            }
-
-            PowerNotificationWarnings.showSystemManagerNotification(mContext, notificationManager, isAggressiveIdleEnabled);
         }
 
         @Override

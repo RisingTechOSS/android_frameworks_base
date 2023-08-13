@@ -59,8 +59,8 @@ class SystemManagerUtils {
         sysManagerController = SystemManagerController(context)
         localPowerManager = LocalServices.getService(PowerManagerInternal::class.java)
         usageStatsManager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-        startManagerInstance = Runnable { idleModeHandler(true) }
-        stopManagerInstance = Runnable { cancelIdleService() }
+        startManagerInstance = Runnable { idleModeHandler(context, true) }
+        stopManagerInstance = Runnable { cancelIdleService(context) }
 
         val adaptiveChargingObserver = object : android.database.ContentObserver(handler) {
             override fun onChange(selfChange: Boolean) {
@@ -111,13 +111,27 @@ class SystemManagerUtils {
         handler.postDelayed(startManagerInstance, delay)
     }
 
-    fun idleModeHandler(idle: Boolean) {
+    fun idleModeHandler(context: Context, idle: Boolean) {
         localPowerManager?.setPowerMode(Mode.DEVICE_IDLE, idle)
+        val userId = ActivityManager.getCurrentUser()
+        val isAggressiveIdleEnabled = Settings.Secure.getIntForUser(
+                context.getContentResolver(),
+                Settings.Secure.SYSTEM_MANAGER_AGGRESSIVE_IDLE_MODE,
+                0,
+                userId) == 1
+        if (isAggressiveIdleEnabled) {
+            sysManagerController.setAMTriggerState(idle)
+            val packageManager: PackageManager = context.packageManager
+            deepClean(context, packageManager, idle)
+       }
+
+       val notificationManager = context.getSystemService(NotificationManager::class.java)
+       PowerNotificationWarnings.showSystemManagerNotification(context, notificationManager, isAggressiveIdleEnabled)
     }
 
-    fun cancelIdleService() {
+    fun cancelIdleService(context: Context) {
         handler.removeCallbacks(startManagerInstance)
-        onScreenWake()
+        onScreenWake(context)
     }
 
     fun boostingServiceHandler(enable: Boolean, boostingLevel: Int) {
@@ -133,9 +147,9 @@ class SystemManagerUtils {
         }
     }
 
-    fun onScreenWake() {
+    fun onScreenWake(context: Context) {
         handler.removeCallbacks(stopManagerInstance)
-        idleModeHandler(false)
+        idleModeHandler(context, false)
     }
 
     fun enterPowerSaveMode(context: Context, enable: Boolean) {
