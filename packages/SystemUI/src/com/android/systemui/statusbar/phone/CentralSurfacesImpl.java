@@ -3782,16 +3782,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces, Tune
             }
 
             PowerNotificationWarnings.showSystemManagerNotification(mContext, notificationManager, isAggressiveIdleEnabled);
-
-            boolean isCharging = mKeyguardIndicationController.isDeviceCharging();
-            boolean isAdaptiveChargingEnabled = Settings.Secure.getIntForUser(
-                mContext.getContentResolver(),
-                Settings.Secure.SYS_ADAPTIVE_CHARGING_ENABLED,
-                1,
-                userId) == 1;
-
-            systemManager.enterPowerSaveMode(mContext, isCharging && isAdaptiveChargingEnabled);
-            PowerNotificationWarnings.showAdaptiveChargeNotification(mContext, notificationManager, isCharging && isAdaptiveChargingEnabled);
         }
 
         @Override
