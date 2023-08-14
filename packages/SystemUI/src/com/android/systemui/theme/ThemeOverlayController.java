@@ -772,21 +772,6 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
                     }
                 },
                 UserHandle.USER_ALL);
-
-        mSystemSettings.registerContentObserverForUser(
-                Settings.System.getUriFor(Settings.System.RETICKER_STATUS),
-                false,
-                new ContentObserver(mBgHandler) {
-                    @Override
-                    public void onChange(boolean selfChange, Collection<Uri> collection, int flags,
-                            int userId) {
-                        if (mUserTracker.getUserId() != userId) {
-                            return;
-                        }
-                        restartSystemUI();
-                    }
-                },
-                UserHandle.USER_ALL);
                 
         mSystemSettings.registerContentObserverForUser(
                 Settings.System.getUriFor(Settings.System.QS_SHOW_BATTERY_PERCENT),
