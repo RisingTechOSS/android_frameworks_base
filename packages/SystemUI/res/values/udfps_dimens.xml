@@ -18,4 +18,6 @@
     <!-- Udfps fingerprint animation -->
     <dimen name="udfps_animation_size">280dp</dimen>
     <dimen name="udfps_animation_offset">0dp</dimen>
+    <dimen name="lock_icon_size">64dp</dimen>
+    <dimen name="custom_lock_icon_padding">4dp</dimen>
 </resources>

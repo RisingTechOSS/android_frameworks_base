@@ -33,9 +33,8 @@
     <!-- AOD breathing circle icon -->
     <com.airbnb.lottie.LottieAnimationView
         android:id="@+id/udfps_aod_fp"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
-        android:padding="@dimen/lock_icon_padding"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:scaleType="centerCrop"
         app:lottie_autoPlay="true"
@@ -46,8 +45,8 @@
     <!-- LockScreen fingerprint icon from 0 stroke width to full width -->
     <com.airbnb.lottie.LottieAnimationView
         android:id="@+id/udfps_lockscreen_fp"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:scaleType="centerCrop"
         app:lottie_autoPlay="true"

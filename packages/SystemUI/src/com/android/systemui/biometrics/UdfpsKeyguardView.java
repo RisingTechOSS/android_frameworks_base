@@ -30,9 +30,11 @@ import android.graphics.PorterDuffColorFilter;
 import android.graphics.RectF;
 import android.provider.Settings;
 import android.util.AttributeSet;
+import android.util.DisplayUtils;
 import android.util.MathUtils;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams; 
 import android.widget.ImageView;
 
 import androidx.annotation.IntDef;
@@ -207,13 +209,26 @@ public class UdfpsKeyguardView extends UdfpsAnimationView {
         if (mLockScreenFp == null || mAodFp == null) {
             return;
         }
+        
+        final int defaultSizePx = mContext.getResources().getDimensionPixelSize(R.dimen.lock_icon_size);
+        final int size = (int) (defaultSizePx * DisplayUtils.getScaleFactor(mContext));
 
+        ViewGroup.LayoutParams lockScreenParams = mLockScreenFp.getLayoutParams();
+        lockScreenParams.width = size;
+        lockScreenParams.height = size;
+        mLockScreenFp.setLayoutParams(lockScreenParams);
+
+        ViewGroup.LayoutParams aodParams = mAodFp.getLayoutParams();
+        aodParams.width = size;
+        aodParams.height = size;
+        mAodFp.setLayoutParams(aodParams);
 
         final int defaultPaddingPx =
-                getResources().getDimensionPixelSize(R.dimen.lock_icon_padding);
-        final int padding = (int) (defaultPaddingPx * mScaleFactor);
-        mLockScreenFp.setPadding(0, 0, 0, 0);
-        mAodFp.setPadding(0, 0, 0, 0);
+                getResources().getDimensionPixelSize(R.dimen.custom_lock_icon_padding);
+        final int padding = (int) (defaultPaddingPx * DisplayUtils.getScaleFactor(mContext));
+
+        mLockScreenFp.setPadding(padding, padding, padding, padding);
+        mAodFp.setPadding(padding, padding, padding, padding);
     }
 
     /**
