@@ -109,7 +109,6 @@ public class PropImitationHooks {
         props.put("MANUFACTURER", "Google");
         props.put("ID", getBuildID(fingerprint));
         props.put("DEVICE", device);
-        props.put("NAME", device);
         props.put("PRODUCT", device);
         props.put("MODEL", model);
         props.put("FINGERPRINT", fingerprint);
