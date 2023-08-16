@@ -304,7 +304,7 @@ public final class CachedAppOptimizer {
     @VisibleForTesting volatile long mCompactThrottleMaxOomAdj =
             DEFAULT_COMPACT_THROTTLE_MAX_OOM_ADJ;
     @GuardedBy("mPhenotypeFlagLock")
-    private volatile boolean mUseCompaction = DEFAULT_USE_COMPACTION;
+    private volatile boolean mUseCompaction = false;
     private volatile boolean mUseFreezer = false; // set to DEFAULT in init()
     @GuardedBy("this")
     private int mFreezerDisableCount = 1; // Freezer is initially disabled, until enabled
@@ -663,9 +663,7 @@ public final class CachedAppOptimizer {
      */
     @GuardedBy("mPhenotypeFlagLock")
     private void updateUseCompaction() {
-        mUseCompaction = DeviceConfig.getBoolean(DeviceConfig.NAMESPACE_ACTIVITY_MANAGER,
-                    KEY_USE_COMPACTION, DEFAULT_USE_COMPACTION);
-
+        mUseCompaction = isFreezerSupported();
         if (mUseCompaction && mCompactionHandler == null) {
             if (!mCachedAppOptimizerThread.isAlive()) {
                 mCachedAppOptimizerThread.start();
@@ -809,21 +807,7 @@ public final class CachedAppOptimizer {
      */
     @GuardedBy("mPhenotypeFlagLock")
     private void updateUseFreezer() {
-        final String configOverride = Settings.Global.getString(mAm.mContext.getContentResolver(),
-                Settings.Global.CACHED_APPS_FREEZER_ENABLED);
-
-        if ("disabled".equals(configOverride)) {
-            mUseFreezer = false;
-        } else if ("enabled".equals(configOverride)
-                || DeviceConfig.getBoolean(DeviceConfig.NAMESPACE_ACTIVITY_MANAGER_NATIVE_BOOT,
-                    KEY_USE_FREEZER, DEFAULT_USE_FREEZER)) {
-            mUseFreezer = isFreezerSupported();
-            updateFreezerDebounceTimeout();
-        } else {
-            mUseFreezer = false;
-        }
-
-        final boolean useFreezer = mUseFreezer;
+        final boolean useFreezer =  isFreezerSupported();
         // enableFreezer() would need the global ActivityManagerService lock, post it.
         mAm.mHandler.post(() -> {
             if (useFreezer) {
