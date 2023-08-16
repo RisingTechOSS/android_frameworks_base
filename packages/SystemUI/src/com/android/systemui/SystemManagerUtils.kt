@@ -34,14 +34,18 @@ import android.os.Handler
 import android.provider.Settings
 import android.os.PowerManager
 import android.os.PowerManagerInternal
-import com.android.internal.util.rising.systemUtils.SystemManagerController
-import com.android.server.LocalServices
-import java.util.*
 
 import com.android.systemui.power.PowerNotificationWarnings
 
-class SystemManagerUtils {
-    private val IDLE_TIME_NEEDED: Long = 20000
+import com.android.internal.os.BackgroundThread
+import com.android.internal.util.rising.systemUtils.SystemManagerController
+import com.android.server.LocalServices
+
+import android.util.ArraySet
+import java.util.concurrent.Executor
+
+class SystemManagerUtils(private val context: Context) {
+    private val IDLE_TIME_NEEDED: Long = 2000
     private val appIdleBlacklist: Set<String> = setOf(
         "google",
         ".gms"
@@ -53,65 +57,72 @@ class SystemManagerUtils {
     private var localPowerManager: PowerManagerInternal? = null
     private lateinit var sysManagerController: SystemManagerController
     private lateinit var usageStatsManager: UsageStatsManager
-    private val unusedAppPackages = HashSet<String>()
+    private val unusedAppPackages = ArraySet<String>()
+    private val uiBgExecutor: Executor = BackgroundThread.getExecutor()
 
-    fun initSystemManager(context: Context) {
+    init {
         sysManagerController = SystemManagerController(context)
         localPowerManager = LocalServices.getService(PowerManagerInternal::class.java)
         usageStatsManager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-        startManagerInstance = Runnable { idleModeHandler(context, true) }
-        stopManagerInstance = Runnable { cancelIdleService(context) }
-
+        startManagerInstance = Runnable { idleModeHandler(true) }
+        stopManagerInstance = Runnable { cancelIdleService() }
         val adaptiveChargingObserver = object : android.database.ContentObserver(handler) {
             override fun onChange(selfChange: Boolean) {
                 super.onChange(selfChange)
-                handleChargingUpdate(context)
+                val pluggedIntent = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+                val statusIntent = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+                val plugged = pluggedIntent?.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1) ?: -1
+                val status = statusIntent?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) ?: -1
+                val isCharging = (status == BatteryManager.BATTERY_STATUS_CHARGING || status == BatteryManager.BATTERY_STATUS_FULL) &&
+                                 (plugged == BatteryManager.BATTERY_PLUGGED_AC ||
+                                  plugged == BatteryManager.BATTERY_PLUGGED_USB ||
+                                  plugged == BatteryManager.BATTERY_PLUGGED_WIRELESS)
+               handleChargingUpdate(isCharging)
             }
         }
-
-        val adaptiveChargingUri = Settings.Secure.getUriFor(Settings.Secure.SYS_ADAPTIVE_CHARGING_ENABLED)
-        context.contentResolver.registerContentObserver(adaptiveChargingUri, false, adaptiveChargingObserver)
 
         val chargingReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                handleChargingUpdate(context!!)
+                if (intent?.action == Intent.ACTION_POWER_CONNECTED || intent?.action == Intent.ACTION_BATTERY_CHANGED || intent?.action == Intent.ACTION_POWER_DISCONNECTED) {
+                    val plugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1)
+                    val status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
+                    val isCharging = (status == BatteryManager.BATTERY_STATUS_CHARGING || status == BatteryManager.BATTERY_STATUS_FULL) &&
+                                     (plugged == BatteryManager.BATTERY_PLUGGED_AC ||
+                                      plugged == BatteryManager.BATTERY_PLUGGED_USB ||
+                                      plugged == BatteryManager.BATTERY_PLUGGED_WIRELESS)
+                    handleChargingUpdate(isCharging)
+                }
             }
         }
 
-        val filter = IntentFilter()
-        filter.addAction(Intent.ACTION_POWER_CONNECTED)
-        filter.addAction(Intent.ACTION_POWER_DISCONNECTED)
+        val filter = IntentFilter().apply {
+            addAction(Intent.ACTION_BATTERY_CHANGED)
+            addAction(Intent.ACTION_POWER_CONNECTED)
+            addAction(Intent.ACTION_POWER_DISCONNECTED)
+        }
+        val adaptiveChargingUri = Settings.Secure.getUriFor(Settings.Secure.SYS_ADAPTIVE_CHARGING_ENABLED)
+        context.contentResolver.registerContentObserver(adaptiveChargingUri, false, adaptiveChargingObserver)
         context.registerReceiver(chargingReceiver, filter)
     }
 
-    fun handleChargingUpdate(context: Context) {
+    private fun handleChargingUpdate(isCharging: Boolean) {
         val userId = ActivityManager.getCurrentUser()
-        val isAdaptiveChargingEnabled = Settings.Secure.getIntForUser(
-            context.contentResolver,
-            Settings.Secure.SYS_ADAPTIVE_CHARGING_ENABLED,
-            1,
-            userId) == 1
-        if (!isAdaptiveChargingEnabled) return
-        val isCharging = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
-            ?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) == BatteryManager.BATTERY_STATUS_CHARGING
-
-        enterPowerSaveMode(context, isCharging)
-
+        val isAdaptiveChargingEnabled = Settings.Secure.getIntForUser(context.contentResolver, 
+                Settings.Secure.SYS_ADAPTIVE_CHARGING_ENABLED, 1, userId) == 1
+        enterPowerSaveMode(isCharging && isAdaptiveChargingEnabled)
         val notificationManager = context.getSystemService(NotificationManager::class.java)
-        PowerNotificationWarnings.showAdaptiveChargeNotification(
-            context,
-            notificationManager,
-            isCharging
-        )
+        uiBgExecutor.execute {
+            PowerNotificationWarnings.showAdaptiveChargeNotification(context, notificationManager, isCharging && isAdaptiveChargingEnabled)
+        }
     }
 
-    fun startIdleService(context: Context) {
-        val nextAlarmTime = timeBeforeAlarm(context)
+    fun startIdleService() {
+        val nextAlarmTime = timeBeforeAlarm()
         val delay = nextAlarmTime.coerceAtMost(IDLE_TIME_NEEDED)
         handler.postDelayed(startManagerInstance, delay)
     }
 
-    fun idleModeHandler(context: Context, idle: Boolean) {
+    fun idleModeHandler(idle: Boolean) {
         localPowerManager?.setPowerMode(Mode.DEVICE_IDLE, idle)
         val userId = ActivityManager.getCurrentUser()
         val isAggressiveIdleEnabled = Settings.Secure.getIntForUser(
@@ -122,16 +133,20 @@ class SystemManagerUtils {
         if (isAggressiveIdleEnabled) {
             sysManagerController.setAMTriggerState(idle)
             val packageManager: PackageManager = context.packageManager
-            deepClean(context, packageManager, idle)
+            uiBgExecutor.execute {
+                deepClean(packageManager, idle)
+            }
        }
 
        val notificationManager = context.getSystemService(NotificationManager::class.java)
-       PowerNotificationWarnings.showSystemManagerNotification(context, notificationManager, isAggressiveIdleEnabled)
+       uiBgExecutor.execute {
+            PowerNotificationWarnings.showSystemManagerNotification(context, notificationManager, isAggressiveIdleEnabled)
+       }
     }
 
-    fun cancelIdleService(context: Context) {
+    fun cancelIdleService() {
         handler.removeCallbacks(startManagerInstance)
-        onScreenWake(context)
+        onScreenWake()
     }
 
     fun boostingServiceHandler(enable: Boolean, boostingLevel: Int) {
@@ -147,17 +162,17 @@ class SystemManagerUtils {
         }
     }
 
-    fun onScreenWake(context: Context) {
+    fun onScreenWake() {
         handler.removeCallbacks(stopManagerInstance)
-        idleModeHandler(context, false)
+        idleModeHandler(false)
     }
 
-    fun enterPowerSaveMode(context: Context, enable: Boolean) {
+    fun enterPowerSaveMode(enable: Boolean) {
         val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager?
         powerManager?.setAdaptivePowerSaveEnabled(enable)
     }
 
-    fun timeBeforeAlarm(context: Context): Long {
+    fun timeBeforeAlarm(): Long {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager?
         return alarmManager?.nextAlarmClock?.triggerTime?.minus(System.currentTimeMillis()) ?: 0L
     }
@@ -166,7 +181,7 @@ class SystemManagerUtils {
         return appIdleBlacklist.any { packageName.contains(it) }
     }
 
-    private fun deleteUnusedAppsCacheFiles(context: Context, pm: PackageManager, packageNames: Set<String>) {
+    private fun deleteUnusedAppsCacheFiles(pm: PackageManager, packageNames: Set<String>) {
         packageNames.forEach { packageName ->
             try {
                 val appInfo = pm.getApplicationInfo(packageName, 0)
@@ -178,7 +193,7 @@ class SystemManagerUtils {
         }
     }
 
-    fun deepClean(context: Context, pm: PackageManager, idle: Boolean) {
+    fun deepClean(pm: PackageManager, idle: Boolean) {
         unusedAppPackages.clear()
 
         val currentTime = System.currentTimeMillis()
@@ -196,10 +211,10 @@ class SystemManagerUtils {
 
         unusedAppPackages.addAll(blacklistedPackages)
 
-        deleteUnusedAppsCacheFiles(context, pm, unusedAppPackages)
+        deleteUnusedAppsCacheFiles(pm, unusedAppPackages)
     }
 
-    fun killBackgroundProcesses(context: Context) {
+    fun killBackgroundProcesses() {
         val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager?
         val runningProcesses = activityManager?.runningAppProcesses ?: return
 
