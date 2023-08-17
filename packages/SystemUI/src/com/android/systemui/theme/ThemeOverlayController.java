@@ -82,6 +82,7 @@ import com.android.systemui.util.settings.SecureSettings;
 import com.android.systemui.util.settings.SystemSettings;
 
 import lineageos.providers.LineageSettings;
+import com.android.internal.util.rising.systemUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -738,7 +739,7 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
                         if (mUserTracker.getUserId() != userId) {
                             return;
                         }
-                        reevaluateSystemTheme(true /* forceReload */);
+                        systemUtils.showSystemRestartDialog(mContext);
                     }
                 },
                 UserHandle.USER_ALL);
