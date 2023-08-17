@@ -626,36 +626,6 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
                     }
                 },
                 UserHandle.USER_ALL);
-                
-        mSecureSettings.registerContentObserverForUser(
-                Settings.Secure.getUriFor(Settings.Secure.PREF_KG_USER_SWITCHER),
-                false,
-                new ContentObserver(mBgHandler) {
-                    @Override
-                    public void onChange(boolean selfChange, Collection<Uri> collection, int flags,
-                            int userId) {
-                        if (mUserTracker.getUserId() != userId) {
-                            return;
-                        }
-                        restartSystemUI();
-                    }
-                },
-                UserHandle.USER_ALL);
-                
-        mSecureSettings.registerContentObserverForUser(
-                Settings.Secure.getUriFor(Settings.Secure.ENABLE_COMBINED_SIGNAL_ICONS),
-                false,
-                new ContentObserver(mBgHandler) {
-                    @Override
-                    public void onChange(boolean selfChange, Collection<Uri> collection, int flags,
-                            int userId) {
-                        if (mUserTracker.getUserId() != userId) {
-                            return;
-                        }
-                        restartSystemUI();
-                    }
-                },
-                UserHandle.USER_ALL);
 
         mSystemSettings.registerContentObserverForUser(
                 Settings.System.getUriFor(Settings.System.QS_TILE_VERTICAL_LAYOUT),
@@ -725,36 +695,6 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
                             return;
                         }
                         reevaluateSystemTheme(true /* forceReload */);
-                    }
-                },
-                UserHandle.USER_ALL);
-
-        mSystemSettings.registerContentObserverForUser(
-                Settings.System.getUriFor(Settings.System.HIDE_IME_SPACE_ENABLE),
-                false,
-                new ContentObserver(mBgHandler) {
-                    @Override
-                    public void onChange(boolean selfChange, Collection<Uri> collection, int flags,
-                            int userId) {
-                        if (mUserTracker.getUserId() != userId) {
-                            return;
-                        }
-                        systemUtils.showSystemRestartDialog(mContext);
-                    }
-                },
-                UserHandle.USER_ALL);
-                
-        mSystemSettings.registerContentObserverForUser(
-                Settings.System.getUriFor(Settings.System.LOCKSCREEN_WEATHER_ENABLED),
-                false,
-                new ContentObserver(mBgHandler) {
-                    @Override
-                    public void onChange(boolean selfChange, Collection<Uri> collection, int flags,
-                            int userId) {
-                        if (mUserTracker.getUserId() != userId) {
-                            return;
-                        }
-                        restartSystemUI();
                     }
                 },
                 UserHandle.USER_ALL);
@@ -864,18 +804,6 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
         });
     }
 
-    private void restartSystemUI() {
-        Toast toast = Toast.makeText(mContext, R.string.restarting_systemui_msg, Toast.LENGTH_SHORT);
-        toast.show();
-
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                android.os.Process.killProcess(android.os.Process.myPid());
-            }
-        }, toast.getDuration() + 2000);
-    }
-    
     @Override
     public void onTuningChanged(String key, String newValue) {
         boolean forceReload = false;
