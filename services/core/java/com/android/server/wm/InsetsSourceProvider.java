@@ -523,6 +523,11 @@ abstract class InsetsSourceProvider {
         updateVisibility();
     }
 
+    @VisibleForTesting
+    void setVisible(boolean visbility) {
+        mSource.setVisible(visbility);
+    }
+
     protected void updateVisibility() {
         mSource.setVisible(mServerVisible && (isMirroredSource() || mClientVisible));
         ProtoLog.d(WM_DEBUG_WINDOW_INSETS,

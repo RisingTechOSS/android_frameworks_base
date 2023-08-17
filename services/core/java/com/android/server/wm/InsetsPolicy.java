@@ -194,6 +194,17 @@ class InsetsPolicy {
                 && !provider.getSource().isVisible();
     }
 
+    void setHidden(@InternalInsetsType int type) {
+        if (!isHidden(type)) {
+            final WindowContainerInsetsSourceProvider provider = mStateController.peekSourceProvider(type);
+            if (provider != null && provider.hasWindowContainer()) {
+                provider.setVisible(false);
+                provider.setServerVisible(false);
+                onInsetsModified(provider.getControlTarget());
+            }
+        }
+    }
+
     void showTransient(@InternalInsetsType int[] types, boolean isGestureOnSystemBar) {
         showTransient(types, isGestureOnSystemBar, false);
     }
