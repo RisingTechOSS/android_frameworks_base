@@ -125,43 +125,45 @@ class CurrentWeatherView @JvmOverloads constructor(context: Context, attrs: Attr
 
                         val temperature = info.temp.toDouble()
                         val units = info.tempUnits
-                        var tempC: Int
-                        var tempF: Int
+                        var tempC: Double
+                        var tempF: Double
                         if (units == "°F") {
-                            tempC = ((temperature - 32) * 5.0 / 9.0).toInt()
-                            tempF = temperature.toInt()
+                            tempC = ((temperature - 32) * 5.0 / 9.0)
+                            tempF = temperature
                         } else {
-                            tempC = temperature.toInt()
-                            tempF = (temperature * 9.0 / 5.0 + 32).toInt()
+                            tempC = temperature
+                            tempF = (temperature * 9.0 / 5.0 + 32)
                         }
+                        val finalTempC = Math.round(tempC).toInt()
+                        val finalTempF = Math.round(tempF).toInt()
                         
                         val weatherTemp = when (mWeatherStyle) {
                             1 -> "%d%s".format(
-                                if (units == "°F") tempF else tempC,
+                                if (units == "°F") finalTempF else finalTempC,
                                 units
                             )
                             2 -> "%d%s \u2022 Today %d° / %d°".format(
-                                if (units == "°F") tempF else tempC,
-                                units, tempC, tempF
+                                if (units == "°F") finalTempF else finalTempC,
+                                units, finalTempC, finalTempF
                             )
                             3 -> "%d%s \u2022 %s".format(
-                                if (units == "°F") tempF else tempC,
+                                if (units == "°F") finalTempF else finalTempC,
                                 units, info.city
                             )
                             4 -> "%d%s \u2022 %s".format(
-                                if (units == "°F") tempF else tempC,
+                                if (units == "°F") finalTempF else finalTempC,
                                 units, formattedCondition
                             )
                             5 -> "%d%s \u2022 Today %d° / %d° \u2022 %s".format(
-                                if (units == "°F") tempF else tempC,
-                                units, tempC, tempF, info.city
+                                if (units == "°F") finalTempF else finalTempC,
+                                units, finalTempC, finalTempF, info.city
                             )
                             6 -> "%d%s \u2022 Today %d° / %d° \u2022 %s".format(
-                                if (units == "°F") tempF else tempC,
-                                units, tempC, tempF, formattedCondition
+                                if (units == "°F") finalTempF else finalTempC,
+                                units, finalTempC, finalTempF, formattedCondition
                             )
                             7 -> "%d%s \u2022 %s \u2022 %s".format(
-                                if (units == "°F") tempF else tempC,
+                                if (units == "°F") finalTempF else finalTempC,
                                 units, info.city, formattedCondition
                             )
                             else -> ""
