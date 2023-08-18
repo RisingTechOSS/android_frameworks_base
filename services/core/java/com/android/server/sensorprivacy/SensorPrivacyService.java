@@ -1344,10 +1344,24 @@ public final class SensorPrivacyService extends SystemService {
 
         @GuardedBy("mListenerLock")
         private final RemoteCallbackList<ISensorPrivacyListener> mListeners =
-                new RemoteCallbackList<>();
+                new RemoteCallbackList<>() {
+                    @Override
+                    public void onCallbackDied(ISensorPrivacyListener callback) {
+                        synchronized (mListenerLock) {
+                            mDeathRecipients.remove(callback);
+                        }
+                    }
+                };
         @GuardedBy("mListenerLock")
         private final RemoteCallbackList<ISensorPrivacyListener>
-                mToggleSensorListeners = new RemoteCallbackList<>();
+                mToggleSensorListeners = new RemoteCallbackList<>() {
+            @Override
+            public void onCallbackDied(ISensorPrivacyListener callback) {
+                synchronized (mListenerLock) {
+                    mDeathRecipients.remove(callback);
+                }
+            }
+        };
         @GuardedBy("mListenerLock")
         private final ArrayMap<ISensorPrivacyListener, Pair<DeathRecipient, Integer>>
                 mDeathRecipients;
