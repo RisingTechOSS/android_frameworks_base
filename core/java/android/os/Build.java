@@ -1304,8 +1304,10 @@ public class Build {
      * @hide
      */
     public static boolean isBuildConsistent() {
+        // set to persist.sys.skip_consistency_check_for_debug_builds=true to skip check
+        final boolean skipConsistencyCheckforDebug = SystemProperties.getBoolean("persist.sys.skip_consistency_check_for_debug_builds", true);
         // Don't care on eng builds.  Incremental build may trigger false negative.
-        if (IS_ENG) return true;
+        if (IS_ENG || IS_USER || IS_USERDEBUG && skipConsistencyCheckforDebug) return true;
 
         if (IS_TREBLE_ENABLED) {
             // If we can run this code, the device should already pass AVB.
