@@ -672,10 +672,9 @@ public final class CachedAppOptimizer {
             }
 
             mCompactionHandler = new MemCompactionHandler();
-
-            Process.setThreadGroupAndCpuset(mCachedAppOptimizerThread.getThreadId(),
-                    Process.THREAD_GROUP_BACKGROUND);
         }
+        Process.setThreadGroupAndCpuset(mCachedAppOptimizerThread.getThreadId(),
+                    Process.THREAD_GROUP_BACKGROUND);
     }
 
     /**
@@ -840,7 +839,7 @@ public final class CachedAppOptimizer {
                 }
 
                 Process.setThreadGroupAndCpuset(mCachedAppOptimizerThread.getThreadId(),
-                        Process.THREAD_GROUP_SYSTEM);
+                        Process.THREAD_GROUP_BACKGROUND);
             } else {
                 Slog.d(TAG_AM, "Freezer disabled");
                 enableFreezer(false);
