@@ -27,11 +27,12 @@ import android.view.View
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
+
+import com.android.internal.os.BackgroundThread
 import com.android.internal.util.rising.OmniJawsClient
 import com.android.systemui.R
 
 import java.util.concurrent.Executor
-import java.util.concurrent.Executors
 import java.util.HashMap
 
 class CurrentWeatherView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0) : FrameLayout(context, attrs, defStyle), OmniJawsClient.OmniJawsObserver {
@@ -46,7 +47,7 @@ class CurrentWeatherView @JvmOverloads constructor(context: Context, attrs: Attr
     private var mRightText: TextView? = null
 
     private var mSettingsObserver: SettingsObserver? = null
-    private val executor: Executor = Executors.newSingleThreadExecutor()
+    private val uiBgExecutor: Executor = BackgroundThread.getExecutor()
 
     private var mWeatherStyle = 0
 
@@ -92,7 +93,7 @@ class CurrentWeatherView @JvmOverloads constructor(context: Context, attrs: Attr
     }
 
     private fun queryAndUpdateWeather() {
-        executor.execute {
+        uiBgExecutor.execute {
             try {
                 mWeatherClient?.let { client ->
                     if (!client.isOmniJawsEnabled()) {
