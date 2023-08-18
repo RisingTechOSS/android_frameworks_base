@@ -59,6 +59,7 @@ class SystemManagerUtils(private val context: Context) {
     private lateinit var usageStatsManager: UsageStatsManager
     private val unusedAppPackages = ArraySet<String>()
     private val uiBgExecutor: Executor = BackgroundThread.getExecutor()
+    private var isCurrentlyCharging = false 
 
     init {
         sysManagerController = SystemManagerController(context)
@@ -90,7 +91,10 @@ class SystemManagerUtils(private val context: Context) {
                                      (plugged == BatteryManager.BATTERY_PLUGGED_AC ||
                                       plugged == BatteryManager.BATTERY_PLUGGED_USB ||
                                       plugged == BatteryManager.BATTERY_PLUGGED_WIRELESS)
-                    handleChargingUpdate(isCharging)
+                    if (isCharging != isCurrentlyCharging) {
+                        isCurrentlyCharging = isCharging
+                        handleChargingUpdate(isCurrentlyCharging)
+                    }
                 }
             }
         }
