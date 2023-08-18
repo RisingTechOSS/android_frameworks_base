@@ -1078,31 +1078,23 @@ public class OomAdjuster {
             ProcessRecord app = lruList.get(i);
             if (app.mState.isServiceB() && app.mState.getCurAdj() == ProcessList.SERVICE_B_ADJ) {
                 numBServices++;
-
                 ServiceRecord latestService = null;
                 long minServiceLastActivity = Long.MAX_VALUE;
-
                 for (int s = app.mServices.numberOfRunningServices() - 1; s >= 0; s--) {
                     ServiceRecord sr = app.mServices.getRunningServiceAt(s);
-
                     if (SystemClock.uptimeMillis() - sr.lastActivity < (mBServiceAppThreshold * 1000)) {
                         continue;
                     }
-
                     if (sr.lastActivity < minServiceLastActivity) {
                         minServiceLastActivity = sr.lastActivity;
                         latestService = sr;
                     }
                 }
-
                 if (latestService != null) {
                     selectedAppRecord = app;
                     serviceLastActivity = minServiceLastActivity;
                 }
             }
-            if (DEBUG_OOM_ADJ && selectedAppRecord != null) Slog.d(TAG,
-                    "Identified app.processName = " + selectedAppRecord.processName
-                    + " app.pid = " + selectedAppRecord.getPid());
             final ProcessStateRecord state = app.mState;
             if (!app.isKilledByAm() && app.getThread() != null) {
                 // We don't need to apply the update for the process which didn't get computed
@@ -1209,12 +1201,8 @@ public class OomAdjuster {
         if (numBServices > mBServiceAppThreshold && mService.mAppProfiler.allowLowerMemLevelLocked() && selectedAppRecord != null) {
             int pid = selectedAppRecord.getPid();
             int uid = selectedAppRecord.info.uid;
-
             ProcessList.setOomAdj(pid, uid, ProcessList.CACHED_APP_MAX_ADJ);
             selectedAppRecord.mState.setSetAdj(selectedAppRecord.mState.getCurAdj());
-            if (mLocalPowerManager != null) {
-                mLocalPowerManager.setPowerBoost(Boost.INTERACTION, 80);
-            }
         }
 
         return mService.mAppProfiler.updateLowMemStateLSP(numCached, numEmpty, numTrimming);
