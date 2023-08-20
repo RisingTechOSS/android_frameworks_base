@@ -70,14 +70,9 @@ class SystemManagerUtils(private val context: Context) {
         val adaptiveChargingObserver = object : android.database.ContentObserver(handler) {
             override fun onChange(selfChange: Boolean) {
                 super.onChange(selfChange)
-                val pluggedIntent = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
                 val statusIntent = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
-                val plugged = pluggedIntent?.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1) ?: -1
                 val status = statusIntent?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) ?: -1
-                val isCharging = (status == BatteryManager.BATTERY_STATUS_CHARGING || status == BatteryManager.BATTERY_STATUS_FULL) &&
-                                 (plugged == BatteryManager.BATTERY_PLUGGED_AC ||
-                                  plugged == BatteryManager.BATTERY_PLUGGED_USB ||
-                                  plugged == BatteryManager.BATTERY_PLUGGED_WIRELESS)
+                val isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING
                handleChargingUpdate(isCharging)
             }
         }
@@ -85,12 +80,8 @@ class SystemManagerUtils(private val context: Context) {
         val chargingReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 if (intent?.action == Intent.ACTION_POWER_CONNECTED || intent?.action == Intent.ACTION_BATTERY_CHANGED || intent?.action == Intent.ACTION_POWER_DISCONNECTED) {
-                    val plugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1)
                     val status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
-                    val isCharging = (status == BatteryManager.BATTERY_STATUS_CHARGING || status == BatteryManager.BATTERY_STATUS_FULL) &&
-                                     (plugged == BatteryManager.BATTERY_PLUGGED_AC ||
-                                      plugged == BatteryManager.BATTERY_PLUGGED_USB ||
-                                      plugged == BatteryManager.BATTERY_PLUGGED_WIRELESS)
+                    val isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING
                     if (isCharging != isCurrentlyCharging) {
                         isCurrentlyCharging = isCharging
                         handleChargingUpdate(isCurrentlyCharging)
