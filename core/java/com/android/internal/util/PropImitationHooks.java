@@ -216,10 +216,11 @@ public class PropImitationHooks {
                     spoofBuildGms();
                     break;
                 case PACKAGE_GCAM:
-                    boolean isPixel6Series = Arrays.asList(pixel6Series).contains(SystemProperties.get(PRODUCT_DEVICE));
-                    if (!isPixel6Series) {
-                        break;
+                    if (SystemProperties.getBoolean("persist.sys.pixelprops.gcam", false)) {
+                        dlog("Spoofing as Pixel 7 Pro for: " + packageName);
+                        sP7Props.forEach((k, v) -> setPropValue(k, v));
                     }
+                    break;
                 case PACKAGE_SUBSCRIPTION_RED:
                     dlog("Spoofing as Pixel 7 Pro for: " + packageName);
                     sP7Props.forEach((k, v) -> setPropValue(k, v));
