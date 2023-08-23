@@ -45,4 +45,8 @@
 
     <!-- Whether the device supports Smart Pixels -->
     <java-symbol type="bool" name="config_supportSmartPixels" />
+    
+    <!-- Launcher restart dialog -->
+    <java-symbol type="string" name="launcher_restart_title" />
+    <java-symbol type="string" name="launcher_restart_message" />
 </resources>
