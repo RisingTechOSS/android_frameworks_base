@@ -6233,6 +6233,16 @@ public final class Settings {
         public static final String QS_HEADER_IMAGE_FILTER_COLOR = "qs_header_image_filter_color";
 
         /**
+         * @hide
+         */
+        public static final String QS_HEADER_CUSTOM_IMAGE_URI_ENABLED = "qs_header_custom_image_uri_enabled";
+        
+        /**
+         * @hide
+         */
+        public static final String QS_HEADER_CUSTOM_IMAGE_URI = "qs_header_custom_image_uri";
+
+        /**
          * Enable and Disable Dual Tone Colors QsPanel
          * @hide
          */

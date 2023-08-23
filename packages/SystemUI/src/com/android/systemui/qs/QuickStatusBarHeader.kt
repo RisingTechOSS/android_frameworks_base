@@ -18,9 +18,12 @@ package com.android.systemui.qs
 import android.app.StatusBarManager.DISABLE2_QUICK_SETTINGS
 import android.content.Context
 import android.content.res.Configuration
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.PorterDuff
 import android.provider.Settings
+import android.os.UserHandle
 import android.util.AttributeSet
 import android.util.SparseArray
 import android.view.MotionEvent
@@ -51,6 +54,7 @@ class QuickStatusBarHeader @JvmOverloads constructor(
     private var mHeaderImageHeight = 80
     private var mHeaderImageFilterColor = -1
     private var mCurrentOrientation = 0
+    private var mHeaderCustomImageEnabled = false
 
     private val tunerService = Dependency.get(TunerService::class.java)
     private val mHeaderImageResources = HashMap<Int, Int>()
@@ -77,6 +81,8 @@ class QuickStatusBarHeader @JvmOverloads constructor(
         tunerService.addTunable(this, QS_HEADER_IMAGE_OPACITY_LEVEL)
         tunerService.addTunable(this, QS_HEADER_IMAGE_HEIGHT)
         tunerService.addTunable(this, QS_HEADER_IMAGE_FILTER_COLOR)
+        tunerService.addTunable(this, QS_HEADER_CUSTOM_IMAGE_URI_ENABLED)
+        tunerService.addTunable(this, QS_HEADER_CUSTOM_IMAGE_URI)
 
         mCurrentOrientation = resources.configuration.orientation
         updateResources()
@@ -98,11 +104,18 @@ class QuickStatusBarHeader @JvmOverloads constructor(
                 updateQSHeaderImage()
             }
             QS_HEADER_IMAGE_HEIGHT -> {
-                mHeaderImageHeight = TunerService.parseInteger(newValue, 80)
+                mHeaderImageHeight = TunerService.parseInteger(newValue, 200)
                 updateQSHeaderImage()
             }
             QS_HEADER_IMAGE_FILTER_COLOR -> {
                 mHeaderImageFilterColor = TunerService.parseInteger(newValue, -1)
+                updateQSHeaderImage()
+            }
+            QS_HEADER_CUSTOM_IMAGE_URI_ENABLED -> {
+                mHeaderCustomImageEnabled = TunerService.parseIntegerSwitch(newValue, false)
+                updateQSHeaderImage()
+            }
+            QS_HEADER_CUSTOM_IMAGE_URI -> {
                 updateQSHeaderImage()
             }
         }
@@ -112,7 +125,7 @@ class QuickStatusBarHeader @JvmOverloads constructor(
         if (mQsHeaderLayout == null || mQsHeaderImageView == null) {
             return
         }
-        if (mCurrentOrientation == Configuration.ORIENTATION_LANDSCAPE || !mHeaderImageEnabled) {
+        if (mCurrentOrientation == Configuration.ORIENTATION_LANDSCAPE || !mHeaderImageEnabled && !mHeaderCustomImageEnabled) {
             mQsHeaderImageView.visibility = View.GONE
             mQsHeaderGradientView.visibility = View.GONE
             return
@@ -124,20 +137,30 @@ class QuickStatusBarHeader @JvmOverloads constructor(
         val fadeFilter = ColorUtils.blendARGB(Color.TRANSPARENT, mHeaderImageFilterColor, mHeaderImageFadeLevel / 100f)
         mQsHeaderImageView.setColorFilter(fadeFilter, PorterDuff.Mode.SRC_ATOP)
 
-        val resourceId = mHeaderImageResources.getOrPut(mHeaderImageValue) {
-            resources.getIdentifier(
-                "qs_header_image_$mHeaderImageValue", "drawable", "com.android.systemui"
+        if (mHeaderCustomImageEnabled) {
+            val customImagePath = Settings.System.getStringForUser(
+                context.contentResolver,
+                Settings.System.QS_HEADER_CUSTOM_IMAGE_URI,
+                UserHandle.USER_CURRENT
             )
+            val bitmap = BitmapFactory.decodeFile(customImagePath)
+            mQsHeaderImageView.setImageBitmap(bitmap ?: return)
+        } else {
+            val resourceId = mHeaderImageResources.getOrPut(mHeaderImageValue) {
+                resources.getIdentifier(
+                    "qs_header_image_$mHeaderImageValue", "drawable", "com.android.systemui"
+                )
+            }
+            mQsHeaderImageView.setImageResource(resourceId)
         }
-        mQsHeaderImageView.setImageResource(resourceId)
-        mQsHeaderImageView.imageAlpha = 255 * mHeaderImageOpacityLevel / 100
-        
+        mQsHeaderImageView.imageAlpha = (255 * mHeaderImageOpacityLevel / 100)
+
         val qsGradientViewlayout = mQsHeaderGradientView.layoutParams as ViewGroup.MarginLayoutParams
-        qsGradientViewlayout.height = (dpToPx(mHeaderImageHeight)).toInt()
+        qsGradientViewlayout.height = dpToPx(mHeaderImageHeight).toInt()
         mQsHeaderGradientView.layoutParams = qsGradientViewlayout
 
         val qsHeaderLayout = mQsHeaderLayout.layoutParams as ViewGroup.MarginLayoutParams
-        qsHeaderLayout.height = dpToPx(mHeaderImageHeight)
+        qsHeaderLayout.height = dpToPx(mHeaderImageHeight).toInt()
         mQsHeaderLayout.layoutParams = qsHeaderLayout
     }
 
@@ -204,5 +227,7 @@ class QuickStatusBarHeader @JvmOverloads constructor(
         private const val QS_HEADER_IMAGE_OPACITY_LEVEL = "system:" + Settings.System.QS_HEADER_IMAGE_OPACITY_LEVEL
         private const val QS_HEADER_IMAGE_HEIGHT = "system:" + Settings.System.QS_HEADER_IMAGE_HEIGHT
         private const val QS_HEADER_IMAGE_FILTER_COLOR = "system:" + Settings.System.QS_HEADER_IMAGE_FILTER_COLOR
+        private const val QS_HEADER_CUSTOM_IMAGE_URI_ENABLED = "system:" + Settings.System.QS_HEADER_CUSTOM_IMAGE_URI_ENABLED
+        private const val QS_HEADER_CUSTOM_IMAGE_URI = "system:" + Settings.System.QS_HEADER_CUSTOM_IMAGE_URI
     }
 }
