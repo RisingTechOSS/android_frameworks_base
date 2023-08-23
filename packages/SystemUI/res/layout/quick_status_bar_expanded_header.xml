@@ -15,7 +15,7 @@
 ** limitations under the License.
 -->
 
-<!-- Extends RelativeLayout -->
+<!-- Extends FrameLayout -->
 <com.android.systemui.qs.QuickStatusBarHeader
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/header"
@@ -40,14 +40,15 @@
         android:layout_height="@dimen/qs_header_height_full"
         android:layout_marginLeft="@dimen/qs_header_side_offsets"
         android:layout_marginRight="@dimen/qs_header_side_offsets"  
-        android:background="#00000000" >
+        android:background="#00000000"
+        android:elevation="0dp" >
 
         <LinearLayout
           android:id="@+id/layout_inner_header"
           android:layout_width="match_parent"          
           android:layout_height="match_parent"
           android:layout_marginLeft="0dp"
-          android:layout_marginRight="0dp"  
+          android:layout_marginRight="0dp"
           android:background="#00000000" >
 
             <FrameLayout
