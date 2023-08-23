@@ -38,6 +38,7 @@ public class NavigationHandle extends View implements ButtonInterface {
     private @ColorInt final int mLightColor;
     private @ColorInt final int mDarkColor;
     protected float mRadius;
+    protected float mWidth;
     protected final float mBottom;
     private boolean mRequiresInvalidate;
 
@@ -71,36 +72,32 @@ public class NavigationHandle extends View implements ButtonInterface {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-
         // Draw that bar
         int navHeight = getHeight();
+        int navWidth = getWidth();
         int radiusType = Settings.System.getIntForUser(getContext().getContentResolver(),
             Settings.System.GESTURE_NAVBAR_RADIUS, 3, UserHandle.USER_CURRENT);
-        switch (radiusType) {
-            case 0:
-                mRadius = getResources().getDimensionPixelSize(R.dimen.navigation_handle_radius1);
-                break;
-            case 1:
-                mRadius = getResources().getDimensionPixelSize(R.dimen.navigation_handle_radius2);
-                break;
-            case 2:
-                mRadius = getResources().getDimensionPixelSize(R.dimen.navigation_handle_radius3);
-                break;
-            case 3:
-            default:
-                mRadius = getResources().getDimensionPixelSize(R.dimen.navigation_handle_radius);
-                break;
-            case 4:
-                mRadius = getResources().getDimensionPixelSize(R.dimen.navigation_handle_radius4);
-                break;
-            case 5:
-                mRadius = getResources().getDimensionPixelSize(R.dimen.navigation_handle_radius5);
-                break;
-        }
+        int[] radiusValues = {
+            R.dimen.navigation_handle_radius1,
+            R.dimen.navigation_handle_radius2,
+            R.dimen.navigation_handle_radius3,
+            R.dimen.navigation_handle_radius,
+            R.dimen.navigation_handle_radius4,
+            R.dimen.navigation_handle_radius5,
+        };
+        mRadius = getResources().getDimensionPixelSize(radiusValues[Math.min(radiusType, radiusValues.length - 1)]);
         float height = mRadius * 2;
-        int width = getWidth();
+        int length = Settings.System.getIntForUser(getContext().getContentResolver(),
+            Settings.System.GESTURE_NAVBAR_LENGTH_MODE, 1, UserHandle.USER_CURRENT);
+        int[] widthValues = {
+            R.dimen.navigation_home_handle_width_short,
+            R.dimen.navigation_home_handle_width,
+            R.dimen.navigation_home_handle_width_long,
+        };
+        mWidth = getResources().getDimensionPixelSize(widthValues[Math.min(length, widthValues.length - 1)]);
         float y = (navHeight - mBottom - height);
-        canvas.drawRoundRect(0, y, width, y + height, mRadius, mRadius, mPaint);
+        float x = (navWidth - mWidth) / 2;
+        canvas.drawRoundRect(x, y, x + mWidth, y + height, mRadius, mRadius, mPaint);
     }
 
     @Override
