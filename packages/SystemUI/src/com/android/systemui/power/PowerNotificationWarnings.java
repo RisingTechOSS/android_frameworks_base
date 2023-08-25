@@ -77,8 +77,10 @@ import com.android.systemui.volume.Events;
 import java.io.PrintWriter;
 import java.lang.ref.WeakReference;
 import java.text.NumberFormat;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -91,6 +93,7 @@ public class PowerNotificationWarnings implements PowerUI.WarningsUI {
 
     private static final String TAG = PowerUI.TAG + ".Notification";
     private static final boolean DEBUG = PowerUI.DEBUG;
+    private static final Set<Integer> activeNotifications = new HashSet<>();
 
     private static final String TAG_BATTERY = "low_battery";
     private static final String TAG_TEMPERATURE = "high_temp";
@@ -391,7 +394,7 @@ public class PowerNotificationWarnings implements PowerUI.WarningsUI {
     }
 
     public static void showSystemManagerNotification(Context context, NotificationManager notifMan, boolean enabled) {
-    	CharSequence message = context.getString(R.string.aggressive_idle_text);
+        CharSequence message = context.getString(R.string.aggressive_idle_text);
         final Notification.Builder nb =
                 new Notification.Builder(context, NotificationChannels.SYSTEM_MANAGER)
                         .setSmallIcon(R.drawable.ic_battery_plus)
@@ -405,16 +408,17 @@ public class PowerNotificationWarnings implements PowerUI.WarningsUI {
                                 com.android.internal.R.color.system_notification_accent_color));
         SystemUIApplication.overrideNotificationAppName(context, nb, false);
         final Notification n = nb.build();
-	if (enabled) {
-	    notifMan.cancelAsUser(TAG_SYS_MANAGER, SYS_MANAGER_NOTIF_ID, UserHandle.ALL);
+        if (enabled) {
             notifMan.notifyAsUser(TAG_SYS_MANAGER, SYS_MANAGER_NOTIF_ID, n, UserHandle.ALL);
-        } else {
+            activeNotifications.add(SYS_MANAGER_NOTIF_ID);
+        } else if (activeNotifications.contains(SYS_MANAGER_NOTIF_ID)) {
             notifMan.cancelAsUser(TAG_SYS_MANAGER, SYS_MANAGER_NOTIF_ID, UserHandle.ALL);
+            activeNotifications.remove(SYS_MANAGER_NOTIF_ID);
         }
     }
 
     public static void showAdaptiveChargeNotification(Context context, NotificationManager notifMan, boolean enabled) {
-    	CharSequence message = context.getString(R.string.adaptive_charging_text);
+        CharSequence message = context.getString(R.string.adaptive_charging_text);
         final Notification.Builder nb =
                 new Notification.Builder(context, NotificationChannels.SYSTEM_ADAPTIVE_CHARGE)
                         .setSmallIcon(R.drawable.ic_charger)
@@ -428,11 +432,12 @@ public class PowerNotificationWarnings implements PowerUI.WarningsUI {
                                 com.android.internal.R.color.system_notification_accent_color));
         SystemUIApplication.overrideNotificationAppName(context, nb, false);
         final Notification n = nb.build();
-	if (enabled) {
-	    notifMan.cancelAsUser(TAG_ADAPTIVE_CHARGE, SYS_CHARGE_NOTIF_ID, UserHandle.ALL);
+        if (enabled) {
             notifMan.notifyAsUser(TAG_ADAPTIVE_CHARGE, SYS_CHARGE_NOTIF_ID, n, UserHandle.ALL);
-        } else {
+            activeNotifications.add(SYS_CHARGE_NOTIF_ID);
+        } else if (activeNotifications.contains(SYS_CHARGE_NOTIF_ID)) {
             notifMan.cancelAsUser(TAG_ADAPTIVE_CHARGE, SYS_CHARGE_NOTIF_ID, UserHandle.ALL);
+            activeNotifications.remove(SYS_CHARGE_NOTIF_ID);
         }
     }
 
