@@ -147,6 +147,7 @@ public class BootReceiver extends BroadcastReceiver {
             public void run() {
                 try {
                     logBootEvents(context);
+                    resetDropboxRateLimiter();
                 } catch (Exception e) {
                     Slog.e(TAG, "Can't log boot events", e);
                 }
