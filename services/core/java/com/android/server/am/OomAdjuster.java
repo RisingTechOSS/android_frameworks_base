@@ -1050,13 +1050,6 @@ public class OomAdjuster {
         ArrayList<ProcessRecord> lruList = mProcessList.getLruProcessesLOSP();
         final int numLru = lruList.size();
 
-        final boolean doKillExcessiveProcesses = shouldKillExcessiveProcesses(now);
-        if (!doKillExcessiveProcesses) {
-            if (mNextNoKillDebugMessageTime < now) {
-                Slog.d(TAG, "Not killing cached processes"); // STOPSHIP Remove it b/222365734
-                mNextNoKillDebugMessageTime = now + 5000; // Every 5 seconds
-            }
-        }
         final int emptyProcessLimit = mConstants.CUR_MAX_EMPTY_PROCESSES;
         final int cachedProcessLimit = mConstants.CUR_MAX_CACHED_PROCESSES - emptyProcessLimit;
         int lastCachedGroup = 0;
@@ -1185,7 +1178,6 @@ public class OomAdjuster {
         }
 
         if (proactiveKillsEnabled                               // Proactive kills enabled?
-                && doKillExcessiveProcesses                     // Should kill excessive processes?
                 && freeSwapPercent < lowSwapThresholdPercent    // Swap below threshold?
                 && lruCachedApp != null                         // If no cached app, let LMKD decide
                 // If swap is non-decreasing, give reclaim a chance to catch up
@@ -1351,25 +1343,6 @@ public class OomAdjuster {
                 mService.mServices.stopInBackgroundLocked(becameIdle.get(i).getUid());
             }
         }
-    }
-
-    /**
-     * Return true if we should kill excessive cached/empty processes.
-     */
-    private boolean shouldKillExcessiveProcesses(long nowUptime) {
-        final long lastUserUnlockingUptime = mService.mUserController.getLastUserUnlockingUptime();
-
-        if (lastUserUnlockingUptime == 0) {
-            // No users have been unlocked.
-            return !mConstants.mNoKillCachedProcessesUntilBootCompleted;
-        }
-        final long noKillCachedProcessesPostBootCompletedDurationMillis =
-                mConstants.mNoKillCachedProcessesPostBootCompletedDurationMillis;
-        if ((lastUserUnlockingUptime + noKillCachedProcessesPostBootCompletedDurationMillis)
-                > nowUptime) {
-            return false;
-        }
-        return true;
     }
 
     private final ComputeOomAdjWindowCallback mTmpComputeOomAdjWindowCallback =
