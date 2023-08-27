@@ -1596,19 +1596,7 @@ final class ActivityManagerConstants extends ContentObserver {
     }
 
     private void updateMaxCachedProcesses() {
-        String maxCachedProcessesFlag = DeviceConfig.getProperty(
-                DeviceConfig.NAMESPACE_ACTIVITY_MANAGER, KEY_MAX_CACHED_PROCESSES);
-        try {
-            CUR_MAX_CACHED_PROCESSES = mOverrideMaxCachedProcesses < 0
-                    ? (TextUtils.isEmpty(maxCachedProcessesFlag)
-                    ? mCustomizedMaxCachedProcesses : Integer.parseInt(maxCachedProcessesFlag))
-                    : mOverrideMaxCachedProcesses;
-        } catch (NumberFormatException e) {
-            // Bad flag value from Phenotype, revert to default.
-            Slog.e(TAG,
-                    "Unable to parse flag for max_cached_processes: " + maxCachedProcessesFlag, e);
-            CUR_MAX_CACHED_PROCESSES = mCustomizedMaxCachedProcesses;
-        }
+        CUR_MAX_CACHED_PROCESSES = mCustomizedMaxCachedProcesses;
         CUR_MAX_EMPTY_PROCESSES = computeEmptyProcessLimit(CUR_MAX_CACHED_PROCESSES);
 
         // Note the trim levels do NOT depend on the override process limit, we want
@@ -1682,14 +1670,12 @@ final class ActivityManagerConstants extends ContentObserver {
         mService.scheduleUpdateBinderHeavyHitterWatcherConfig();
     }
 
+    public int getMaxCachedProcesses() {
+        return mCustomizedMaxCachedProcesses;
+    }
+
     private void updateMaxPhantomProcesses() {
-        final int oldVal = MAX_PHANTOM_PROCESSES;
-        MAX_PHANTOM_PROCESSES = DeviceConfig.getInt(
-                DeviceConfig.NAMESPACE_ACTIVITY_MANAGER, KEY_MAX_PHANTOM_PROCESSES,
-                DEFAULT_MAX_PHANTOM_PROCESSES);
-        if (oldVal > MAX_PHANTOM_PROCESSES) {
-            mService.mHandler.post(mService.mPhantomProcessList::trimPhantomProcessesIfNecessary);
-        }
+        mService.mHandler.post(() -> mService.mPhantomProcessList.trimPhantomProcessesIfNecessary(getMaxCachedProcesses()));
     }
 
     @NeverCompile // Avoid size overhead of debugging code.
