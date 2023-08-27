@@ -54,4 +54,6 @@
 
     <bool name="config_skinnyNotifsInLandscape">false</bool>
 
+    <!-- Whether notification header should never show section headers. -->
+    <bool name="config_notification_never_show_section_headers">true</bool>
 </resources>
