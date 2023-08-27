@@ -1001,14 +1001,14 @@ public class KeyguardIndicationController {
                     : R.string.keyguard_plugged_in;
         }
 
-	boolean isAdaptiveCharging = Settings.Secure.getIntForUser(mContext.getContentResolver(),
-            Settings.Secure.SYSTEM_MANAGER_AGGRESSIVE_IDLE_MODE, 0, UserHandle.USER_CURRENT) == 1;
+        boolean isAdaptiveCharging = Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                                Settings.Secure.SYS_ADAPTIVE_CHARGING_ENABLED, 1, UserHandle.USER_CURRENT) == 1;
 
-	if (isAdaptiveCharging) {
+        if (isAdaptiveCharging) {
             chargingId = hasChargingTime
                             ? R.string.keyguard_indication_adaptive_charging_time
                             : R.string.keyguard_plugged_in_adaptive_charging;
-	}
+        }
 
         String batteryInfo = "";
         int current = 0;
