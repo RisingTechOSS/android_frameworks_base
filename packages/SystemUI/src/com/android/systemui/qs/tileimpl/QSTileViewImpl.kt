@@ -300,81 +300,49 @@ open class QSTileViewImpl @JvmOverloads constructor(
     fun updateResources() {
         FontSizeUtils.updateFontSize(label, R.dimen.qs_tile_text_size)
         FontSizeUtils.updateFontSize(secondaryLabel, R.dimen.qs_tile_secondary_label_text_size)
-
-	if (isA11Style) {
-	    updateA11StyleResources()
-        } else {
-	    updateDefaultResources()
-        }
+        if (isA11Style) updateA11StyleResources() else updateDefaultResources()
     }
 
     fun updateDefaultResources() {
-        val iconSize = context.resources.getDimensionPixelSize(R.dimen.qs_icon_size)
-        _icon.layoutParams.apply {
+        val res = context?.resources ?: return
+        val iconSize = res.getDimensionPixelSize(R.dimen.qs_icon_size)
+        val padding = res.getDimensionPixelSize(R.dimen.qs_tile_padding)
+        val labelMargin = if (vertical) 0 else res.getDimensionPixelSize(R.dimen.qs_label_container_margin)
+        val startPadding = if (vertical) padding else res.getDimensionPixelSize(R.dimen.qs_tile_start_padding)
+        _icon?.layoutParams?.apply { height = iconSize; width = iconSize }
+        orientation = if (isA11Style || vertical) LinearLayout.VERTICAL else LinearLayout.HORIZONTAL
+        gravity = when {
+            labelHide -> Gravity.CENTER
+            vertical -> Gravity.CENTER_HORIZONTAL or Gravity.CENTER_VERTICAL
+            else -> Gravity.CENTER_VERTICAL or Gravity.START
+        }
+        setPaddingRelative(startPadding, padding, padding, padding)
+        (labelContainer?.layoutParams as? MarginLayoutParams)?.marginStart = labelMargin
+        (sideView?.layoutParams as? MarginLayoutParams)?.marginStart = labelMargin
+        (chevronView?.layoutParams as? MarginLayoutParams)?.apply { height = iconSize; width = iconSize }
+        (customDrawableView?.layoutParams as? MarginLayoutParams)?.apply {
             height = iconSize
-            width = iconSize
-        }
-
-        vertical = QSLayoutUtils.getQSTileVerticalLayout(context)
-        if (isA11Style) {
-            orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER
-        } else {
-            orientation = if (vertical) LinearLayout.VERTICAL else LinearLayout.HORIZONTAL
-            gravity = if (vertical) Gravity.CENTER_HORIZONTAL or Gravity.CENTER_VERTICAL else Gravity.CENTER_VERTICAL or Gravity.START  
-        }
-        
-        if (labelHide)
-            gravity = Gravity.CENTER_HORIZONTAL or Gravity.CENTER_VERTICAL
-
-        val padding = resources.getDimensionPixelSize(R.dimen.qs_tile_padding)
-        val startPadding = if (vertical) padding else resources.getDimensionPixelSize(R.dimen.qs_tile_start_padding)
-	setPaddingRelative(startPadding, padding, padding, padding)
-        val labelMargin = if (vertical) 0 else resources.getDimensionPixelSize(R.dimen.qs_label_container_margin)
-        (labelContainer.layoutParams as MarginLayoutParams).apply {
-            marginStart = labelMargin
-        }
-        (sideView.layoutParams as MarginLayoutParams).apply {
-            marginStart = labelMargin
-        }
-        (chevronView.layoutParams as MarginLayoutParams).apply {
-            height = iconSize
-            width = iconSize
-        }
-        
-        val endMargin = resources.getDimensionPixelSize(R.dimen.qs_drawable_end_margin)
-        (customDrawableView.layoutParams as MarginLayoutParams).apply {
-            height = iconSize
-            marginEnd = endMargin
+            marginEnd = res.getDimensionPixelSize(R.dimen.qs_drawable_end_margin)
         }
     }
 
     fun updateA11StyleResources() {
-        labelContainer.invalidate()
-        labelContainer.apply {
+        labelContainer?.apply {
+            invalidate()
             ignoreLastView = collapsed
             forceUnspecifiedMeasure = collapsed
         }
-        secondaryLabel.alpha = if (collapsed) 0f else 1f
-
+        secondaryLabel?.alpha = if (collapsed) 0f else 1f
         orientation = LinearLayout.VERTICAL
         gravity = Gravity.CENTER
-
-	val iconContainerSize = context.resources.getDimensionPixelSize(R.dimen.qs_quick_tile_size)
-        iconContainer.layoutParams.apply {
-            height = iconContainerSize
-            width = iconContainerSize
-        }
-        val padding = resources.getDimensionPixelSize(R.dimen.qs_tile_padding)
-        val iconSize = context.resources.getDimensionPixelSize(R.dimen.qs_icon_size)
-        _icon.layoutParams.apply {
-            height = iconSize
-            width = iconSize
-        }
-        iconContainer.setPaddingRelative(padding, padding, padding, padding)
-        (labelContainer.layoutParams as MarginLayoutParams).apply {
-            topMargin = padding / 2
-        }
+        val res = context?.resources ?: return
+        val iconContainerSize = res.getDimensionPixelSize(R.dimen.qs_quick_tile_size)
+        val iconSize = res.getDimensionPixelSize(R.dimen.qs_icon_size)
+        val padding = res.getDimensionPixelSize(R.dimen.qs_tile_padding)
+        iconContainer?.layoutParams?.apply { height = iconContainerSize; width = iconContainerSize }
+        _icon?.layoutParams?.apply { height = iconSize; width = iconSize }
+        iconContainer?.setPaddingRelative(padding, padding, padding, padding)
+        (labelContainer?.layoutParams as? MarginLayoutParams)?.topMargin = padding / 2
     }
 
     private fun createAndAddLabels() {
