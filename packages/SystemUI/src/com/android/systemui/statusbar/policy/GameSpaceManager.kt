@@ -45,6 +45,7 @@ class GameSpaceManager @Inject constructor(
 ) {
     private val handler by lazy { GameSpaceHandler(Looper.getMainLooper()) }
     private val taskManager by lazy { ActivityTaskManager.getService() }
+    private val systemManagerUtils: SystemManagerUtils by lazy { SystemManagerUtils(context) }
 
     private var activeGame: String? = null
     private var isRegistered = false
@@ -100,7 +101,6 @@ class GameSpaceManager @Inject constructor(
             context.contentResolver,
             Settings.System.SYSTEM_MANAGER_GAME_BOOST_LEVEL, 0,
             UserHandle.USER_CURRENT)
-        val systemManagerUtils = SystemManagerUtils(context)
         systemManagerUtils.boostingServiceHandler(activeGame != null, gameBoostLvl)
         val action = if (activeGame != null) ACTION_GAME_START else ACTION_GAME_STOP
         Intent(action).apply {
