@@ -40,6 +40,8 @@ import java.io.FileDescriptor;
 import java.lang.Integer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Provides accessors and listeners for all user info.
@@ -143,16 +145,24 @@ public class SystemUserInfoHelper extends UserInfoHelper {
     @Override
     protected int[] getProfileIds(@UserIdInt int userId) {
         UserManager userManager = getUserManager();
-
-        // if you're hitting this precondition then you are invoking this before the system is ready
-        Preconditions.checkState(userManager != null);
-
+        // Check if userManager is null.
+        if (userManager == null) {
+            throw new IllegalStateException("UserManager is not initialized.");
+        }
         final long identity = Binder.clearCallingIdentity();
         try {
-            ArrayList profiles = new ArrayList<>(
-                    Arrays.asList(userManager.getEnabledProfileIds(userId)));
-            profiles.addAll(ParallelSpaceManagerService.getCurrentParallelUserIds());
-            return profiles.stream().mapToInt(i -> ((Integer) i).intValue()).toArray();
+            int[] profileIds = userManager.getEnabledProfileIds(userId);
+            if (profileIds == null) {
+                throw new IllegalStateException("Could not fetch profile IDs for user: " + userId);
+            }
+            ArrayList<Integer> profiles = new ArrayList<>(Arrays.stream(profileIds).boxed().collect(Collectors.toList()));
+            List<Integer> parallelUserIds = ParallelSpaceManagerService.getCurrentParallelUserIds();
+            if (parallelUserIds != null) {
+                profiles.addAll(parallelUserIds);
+            }
+            return profiles.stream().mapToInt(i -> i).toArray();
+        } catch (Exception e) {
+            return new int[0];
         } finally {
             Binder.restoreCallingIdentity(identity);
         }
