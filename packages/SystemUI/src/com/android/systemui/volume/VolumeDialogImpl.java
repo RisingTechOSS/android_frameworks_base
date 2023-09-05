@@ -1519,6 +1519,18 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
                 Dependency.get(ActivityStarter.class).startActivity(intent,
                         true /* dismissShade */);
             });
+            mAppVolumeIcon.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    if (mAppVolumeActivePackageName != null) {
+                        Intent launchIntent = mContext.getPackageManager().getLaunchIntentForPackage(mAppVolumeActivePackageName);
+                        if (launchIntent != null) {
+                            mContext.startActivity(launchIntent);
+                        }
+                    }
+                    return true;
+                }
+            });
             Drawable icon = mAppVolumeActivePackageName != null ?
                     getApplicationIcon(mAppVolumeActivePackageName) : null;
             if (icon != null) {
