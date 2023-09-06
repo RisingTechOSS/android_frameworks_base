@@ -62,6 +62,9 @@ public class NavigationBarInflaterView extends FrameLayout
 
     private static final String TAG = "NavBarInflater";
 
+    public static final String NAVBAR_LAYOUT_VIEWS =
+            Settings.Secure.NAVBAR_LAYOUT_VIEWS;
+
     public static final String NAV_BAR_VIEWS = "sysui_nav_bar";
     public static final String NAV_BAR_LEFT = "sysui_nav_bar_left";
     public static final String NAV_BAR_RIGHT = "sysui_nav_bar_right";
@@ -118,6 +121,7 @@ public class NavigationBarInflaterView extends FrameLayout
 
     private boolean mIsVertical;
     private boolean mAlternativeOrder;
+    private boolean mUsingCustomLayout;
 
     private OverviewProxyService mOverviewProxyService;
     private int mNavBarMode = NAV_BAR_MODE_3BUTTON;
@@ -177,6 +181,7 @@ public class NavigationBarInflaterView extends FrameLayout
     public void onNavigationModeChanged(int mode) {
         mNavBarMode = mode;
         updateHint();
+        onLikelyDefaultLayoutChange();
     }
 
     @Override
@@ -186,6 +191,7 @@ public class NavigationBarInflaterView extends FrameLayout
         Dependency.get(TunerService.class).addTunable(this, KEY_NAVIGATION_HINT);
         Dependency.get(TunerService.class).addTunable(this, GESTURE_NAVBAR_LENGTH_MODE);
         Dependency.get(TunerService.class).addTunable(this, GESTURE_NAVBAR_RADIUS);
+        Dependency.get(TunerService.class).addTunable(this, NAVBAR_LAYOUT_VIEWS);
     }
 
     @Override
@@ -209,6 +215,12 @@ public class NavigationBarInflaterView extends FrameLayout
             onLikelyDefaultLayoutChange();
         } else if (GESTURE_NAVBAR_RADIUS.equals(key)) {
             onLikelyDefaultLayoutChange();
+        } else if (NAVBAR_LAYOUT_VIEWS.equals(key)) {
+            if (newValue != null) {
+                setNavigationBarLayout(newValue);
+            } else {
+                setNavigationBarLayout("default");
+            }
         }
     }
 
@@ -218,7 +230,16 @@ public class NavigationBarInflaterView extends FrameLayout
         updateLayoutInversion();
     }
 
+    private void setNavigationBarLayout(String layoutValue) {
+        if (!Objects.equals(mCurrentLayout, layoutValue)) {
+            mUsingCustomLayout = !layoutValue.equals("default");
+            clearViews();
+            inflateLayout(layoutValue);
+        }
+    }
+
     public void onLikelyDefaultLayoutChange() {
+        if (mUsingCustomLayout) return;
         // Reevaluate new layout
         final String newValue = getDefaultLayout();
         if (!Objects.equals(mCurrentLayout, newValue)) {
