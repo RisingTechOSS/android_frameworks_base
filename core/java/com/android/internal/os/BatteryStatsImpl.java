@@ -13754,7 +13754,7 @@ public class BatteryStatsImpl extends BatteryStats {
             final SparseDoubleArray uidEstimatedConsumptionMah;
             final long dataConsumedChargeUC;
             if (consumedChargeUC > 0 && mMobileRadioPowerCalculator != null
-                    && mGlobalMeasuredEnergyStats != null) {
+                    && mGlobalMeasuredEnergyStats != null && totalRadioDurationMs != 0) {
                 // Crudely attribute power consumption. Added (totalRadioDurationMs / 2) to the
                 // numerator for long rounding.
                 final long phoneConsumedChargeUC =
