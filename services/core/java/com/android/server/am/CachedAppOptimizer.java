@@ -1036,10 +1036,16 @@ public final class CachedAppOptimizer {
 
     @GuardedBy({"mAm", "mProcLock"})
     void freezeAppAsyncLSP(ProcessRecord app) {
-        if (app.mState.hasForegroundActivities() || app.mState.hasOverlayUi()) {
-            // if the process has foreground activities, do not freeze it,
+        boolean mIsActiveApp = app.mState.hasForegroundActivities() 
+            || app.mState.hasOverlayUi()
+            || app.mState.hasTopUi();
+        if (mIsActiveApp || app.mState.isServiceHighRam()) {
+            // if the process has top-app/foreground activities (this check might be done somewhere else), do not freeze it,
             // freezing the process can result to hiccups especially when resuming 
             // heavy processes 
+            if (app.mOptRecord.isFrozen() || app.mOptRecord.isPendingFreeze()) {
+                unfreezeAppLSP(app, OomAdjuster.OOM_ADJ_REASON_NONE);
+            }
             return;
         }
         final ProcessCachedOptimizerRecord opt = app.mOptRecord;
