@@ -769,7 +769,7 @@ final class ActivityManagerConstants extends ContentObserver {
     private static final String KEY_MAX_EMPTY_TIME_MILLIS =
             "max_empty_time_millis";
 
-    private static final long DEFAULT_MAX_EMPTY_TIME_MILLIS = 30 * 60 * 1000;
+    private static final long DEFAULT_MAX_EMPTY_TIME_MILLIS = 12 * 60 * 60 * 1000;
 
     volatile long mMaxEmptyTimeMillis = DEFAULT_MAX_EMPTY_TIME_MILLIS;
 

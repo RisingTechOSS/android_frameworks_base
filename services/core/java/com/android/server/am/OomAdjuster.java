@@ -2610,7 +2610,9 @@ public class OomAdjuster {
             } else if (mService.mWakefulness.get() != PowerManagerInternal.WAKEFULNESS_AWAKE) {
                 // See if we can compact persistent and bfgs services now that screen is off
                 if (state.getSetAdj() < ProcessList.FOREGROUND_APP_ADJ
-                        && !state.isRunningRemoteAnimation()
+                        // make sure we only compact bg and frozen services
+                        && !mCachedAppOptimizer.isProcessInteractive(app) 
+                        && !mCachedAppOptimizer.isFrozenProcessInteractive(app.info.packageName)
                         // Because these can fire independent of oom_adj/procstate changes, we need
                         // to throttle the actual dispatch of these requests in addition to the
                         // processing of the requests. As a result, there is throttling both here
@@ -2619,7 +2621,9 @@ public class OomAdjuster {
                     mCachedAppOptimizer.compactAppPersistent(app);
                 } else if (state.getCurProcState()
                                 == ActivityManager.PROCESS_STATE_BOUND_FOREGROUND_SERVICE
-                        && mCachedAppOptimizer.shouldCompactBFGS(app, now)) {
+                        && mCachedAppOptimizer.shouldCompactBFGS(app, now) 
+                        && !mCachedAppOptimizer.isProcessInteractive(app) 
+                        && !mCachedAppOptimizer.isFrozenProcessInteractive(app.info.packageName)) {
                     mCachedAppOptimizer.compactAppBfgs(app);
                 }
             }
@@ -3129,9 +3133,12 @@ public class OomAdjuster {
         final ProcessStateRecord state = app.mState;
         // Use current adjustment when freezing, set adjustment when unfreezing.
         if (state.getCurAdj() >= ProcessList.CACHED_APP_MIN_ADJ && !opt.isFrozen()
-                && !opt.shouldNotFreeze()) {
+                && !opt.shouldNotFreeze() && !mCachedAppOptimizer.isProcessInteractive(app) 
+                && !mCachedAppOptimizer.isFrozenProcessInteractive(app.info.packageName)) {
             mCachedAppOptimizer.freezeAppAsyncLSP(app);
-        } else if (state.getSetAdj() < ProcessList.CACHED_APP_MIN_ADJ) {
+        } else if (state.getSetAdj() < ProcessList.CACHED_APP_MIN_ADJ 
+            || mCachedAppOptimizer.isProcessInteractive(app) 
+            || mCachedAppOptimizer.isFrozenProcessInteractive(app.info.packageName)) {
             mCachedAppOptimizer.unfreezeAppLSP(app, oomAdjReason);
         }
     }
