@@ -313,7 +313,7 @@ public class OomAdjuster {
             return true;
         });
         mTmpUidRecords = new ActiveUids(service, false);
-        mTmpQueue = new ArrayDeque<ProcessRecord>(mConstants.CUR_MAX_CACHED_PROCESSES << 1);
+        mTmpQueue = new ArrayDeque<ProcessRecord>(mConstants.getMaxCachedProcesses() << 1);
         mNumSlots = ((ProcessList.CACHED_APP_MAX_ADJ - ProcessList.CACHED_APP_MIN_ADJ + 1) >> 1)
                 / ProcessList.CACHED_APP_IMPORTANCE_LEVELS;
         mBServiceAppThreshold = (mConstants.getMaxCachedProcesses() / 4);
@@ -917,7 +917,7 @@ public class OomAdjuster {
         int nextEmptyAdj = curEmptyAdj + (ProcessList.CACHED_APP_IMPORTANCE_LEVELS * 2);
 
         final int emptyProcessLimit = mConstants.CUR_MAX_EMPTY_PROCESSES;
-        final int cachedProcessLimit = mConstants.CUR_MAX_CACHED_PROCESSES
+        final int cachedProcessLimit = mConstants.getMaxCachedProcesses()
                 - emptyProcessLimit;
         // Let's determine how many processes we have running vs.
         // how many slots we have for background processes; we may want
@@ -1051,7 +1051,7 @@ public class OomAdjuster {
         final int numLru = lruList.size();
 
         final int emptyProcessLimit = mConstants.CUR_MAX_EMPTY_PROCESSES;
-        final int cachedProcessLimit = mConstants.CUR_MAX_CACHED_PROCESSES - emptyProcessLimit;
+        final int cachedProcessLimit = mConstants.getMaxCachedProcesses() - emptyProcessLimit;
         int lastCachedGroup = 0;
         int lastCachedGroupUid = 0;
         int numCached = 0;
