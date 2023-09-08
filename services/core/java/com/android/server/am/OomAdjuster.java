@@ -1050,7 +1050,7 @@ public class OomAdjuster {
         ArrayList<ProcessRecord> lruList = mProcessList.getLruProcessesLOSP();
         final int numLru = lruList.size();
 
-        final int emptyProcessLimit = mConstants.CUR_MAX_EMPTY_PROCESSES;
+        final int emptyProcessLimit = mConstants.computeEmptyProcessLimit(mConstants.getMaxCachedProcesses());
         final int cachedProcessLimit = mConstants.getMaxCachedProcesses() - emptyProcessLimit;
         int lastCachedGroup = 0;
         int lastCachedGroupUid = 0;
