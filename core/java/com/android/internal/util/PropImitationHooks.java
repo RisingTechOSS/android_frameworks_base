@@ -206,6 +206,7 @@ public class PropImitationHooks {
             dlog("Spoofing as Pixel Fold for: " + packageName);
             sPFoldProps.forEach((k, v) -> setPropValue(k, v));
         } else {
+            setVersionFieldString("SECURITY_PATCH", "2023-09-05");
             switch (packageName) {
                 case PACKAGE_ARCORE:
                     dlog("Setting stock fingerprint for: " + packageName);
