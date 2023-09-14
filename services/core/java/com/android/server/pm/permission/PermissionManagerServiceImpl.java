@@ -3338,7 +3338,7 @@ public class PermissionManagerServiceImpl implements PermissionManagerServiceInt
             @NonNull String permission, String containingApexPackageName) {
         final SystemConfig systemConfig = SystemConfig.getInstance();
         final Set<String> permissions;
-        if (pkg.isVendor()) {
+        if (pkg.isVendor() && containingApexPackageName == null) {
             permissions = systemConfig.getVendorPrivAppPermissions(pkg.getPackageName());
         } else if (pkg.isProduct()) {
             permissions = systemConfig.getProductPrivAppPermissions(pkg.getPackageName());
@@ -3377,7 +3377,7 @@ public class PermissionManagerServiceImpl implements PermissionManagerServiceInt
             @NonNull String permission, String containingApexPackageName) {
         final SystemConfig systemConfig = SystemConfig.getInstance();
         final Set<String> permissions;
-        if (pkg.isVendor()) {
+        if (pkg.isVendor() && containingApexPackageName == null) {
             permissions = systemConfig.getVendorPrivAppDenyPermissions(pkg.getPackageName());
         } else if (pkg.isProduct()) {
             permissions = systemConfig.getProductPrivAppDenyPermissions(pkg.getPackageName());
