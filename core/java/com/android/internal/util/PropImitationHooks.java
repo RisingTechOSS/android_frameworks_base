@@ -199,9 +199,9 @@ public class PropImitationHooks {
         boolean sIsAtraceCoreService = packageName.equals(PACKAGE_GMS) 
             && (processName.equals(PROCESS_GMS_PERSISTENT) || processName.equals(PROCESS_GMS_UI));
 
-        if (sIsGms) {
+        if (packageName.equals(PACKAGE_GMS)) {
             dlog("Setting Pixel 2 fingerprint for: " + packageName);
-            setCertifiedPropsForGms();
+            setCertifiedPropsForGms(sIsGms);
         } else if (sIsAtraceCoreService){
             dlog("Spoofing as Pixel Fold for: " + packageName);
             sPFoldProps.forEach((k, v) -> setPropValue(k, v));
@@ -228,7 +228,6 @@ public class PropImitationHooks {
                     break;
                 case PACKAGE_AIAI:
                 case PACKAGE_ASI:
-                case PACKAGE_GMS:
                 case PACKAGE_COMPUTE_SERVICES:
                 case PACKAGE_FINSKY:
                 case PACKAGE_SETIINGS_INTELLIGENCE:
@@ -283,7 +282,7 @@ public class PropImitationHooks {
         }
     }
 
-    private static void setCertifiedPropsForGms() {
+    private static void setCertifiedPropsForGms(boolean isGms) {
         final boolean was = isGmsAddAccountActivityOnTop();
         final TaskStackListener taskStackListener = new TaskStackListener() {
             @Override
@@ -298,7 +297,11 @@ public class PropImitationHooks {
         };
         if (!was) {
             dlog("Spoofing build for GMS");
-            spoofBuildGms();
+            if (isGms) {
+                spoofBuildGms();
+            } else {
+                sPFoldProps.forEach((k, v) -> setPropValue(k, v));
+            }
         } else {
             dlog("Skip spoofing build for GMS, because GmsAddAccountActivityOnTop");
         }
