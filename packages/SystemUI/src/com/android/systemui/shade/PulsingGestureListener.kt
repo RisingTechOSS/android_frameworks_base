@@ -16,9 +16,13 @@
 
 package com.android.systemui.shade
 
+import android.content.Context
 import android.hardware.display.AmbientDisplayConfiguration
+import android.os.AsyncTask
 import android.os.PowerManager
 import android.os.SystemClock
+import android.os.Vibrator
+import android.os.VibrationEffect
 import android.provider.Settings
 import android.view.GestureDetector
 import android.view.MotionEvent
@@ -36,6 +40,11 @@ import com.android.systemui.tuner.TunerService.Tunable
 import java.io.PrintWriter
 import javax.inject.Inject
 
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+
 /**
  * If tap and/or double tap to wake is enabled, this gestureListener will wake the display on
  * tap/double tap when the device is pulsing (AoD2) or transitioning to AoD. Taps are gated by the
@@ -47,6 +56,7 @@ import javax.inject.Inject
  */
 @CentralSurfacesComponent.CentralSurfacesScope
 class PulsingGestureListener @Inject constructor(
+        private val context: Context,
         private val notificationShadeWindowView: NotificationShadeWindowView,
         private val falsingManager: FalsingManager,
         private val dockManager: DockManager,
@@ -57,10 +67,12 @@ class PulsingGestureListener @Inject constructor(
         userTracker: UserTracker,
         tunerService: TunerService,
         dumpManager: DumpManager
-) : GestureDetector.SimpleOnGestureListener(), Dumpable {
+) : GestureDetector.SimpleOnGestureListener(), Dumpable, CoroutineScope by CoroutineScope(Dispatchers.Main) {
     private var doubleTapEnabled = false
     private var singleTapEnabled = false
     private var doubleTapEnabledNative = false
+    private val vibratorHelper: Vibrator? = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+    private val clickVibrationEffect = VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK)
 
     init {
         val tunable = Tunable { key: String?, value: String? ->
@@ -68,17 +80,17 @@ class PulsingGestureListener @Inject constructor(
                 Settings.Secure.DOUBLE_TAP_TO_WAKE ->
                     doubleTapEnabledNative = TunerService.parseIntegerSwitch(value, false)
                 Settings.Secure.DOZE_DOUBLE_TAP_GESTURE ->
-                    doubleTapEnabled = ambientDisplayConfiguration.doubleTapGestureEnabled(
-                            userTracker.userId)
+                    doubleTapEnabled = ambientDisplayConfiguration.doubleTapGestureEnabled(userTracker.userId)
                 Settings.Secure.DOZE_TAP_SCREEN_GESTURE ->
-                    singleTapEnabled = ambientDisplayConfiguration.tapGestureEnabled(
-                            userTracker.userId)
+                    singleTapEnabled = ambientDisplayConfiguration.tapGestureEnabled(userTracker.userId)
             }
         }
-        tunerService.addTunable(tunable,
-                Settings.Secure.DOUBLE_TAP_TO_WAKE,
-                Settings.Secure.DOZE_DOUBLE_TAP_GESTURE,
-                Settings.Secure.DOZE_TAP_SCREEN_GESTURE)
+        tunerService.addTunable(
+            tunable,
+            Settings.Secure.DOUBLE_TAP_TO_WAKE,
+            Settings.Secure.DOZE_DOUBLE_TAP_GESTURE,
+            Settings.Secure.DOZE_TAP_SCREEN_GESTURE
+        )
 
         dumpManager.registerDumpable(this)
     }
@@ -91,15 +103,17 @@ class PulsingGestureListener @Inject constructor(
             val isNotAFalseTap = !falsingManager.isFalseTap(LOW_PENALTY)
             shadeLogger.logSingleTapUpFalsingState(proximityIsNotNear, isNotAFalseTap)
             if (proximityIsNotNear && isNotAFalseTap) {
-                shadeLogger.d("Single tap handled, requesting centralSurfaces.wakeUpIfDozing")
-                centralSurfaces.wakeUpIfDozing(
-                    SystemClock.uptimeMillis(),
-                    notificationShadeWindowView,
-                    "PULSING_SINGLE_TAP",
-                    PowerManager.WAKE_REASON_TAP
-                )
+                triggerVibration {
+                    shadeLogger.d("Single tap handled, requesting centralSurfaces.wakeUpIfDozing")
+                    centralSurfaces.wakeUpIfDozing(
+                        SystemClock.uptimeMillis(),
+                        notificationShadeWindowView,
+                        "PULSING_SINGLE_TAP",
+                        PowerManager.WAKE_REASON_TAP
+                    )
+                }
+                return true
             }
-            return true
         }
         shadeLogger.d("onSingleTapUp event ignored")
         return false
@@ -110,22 +124,32 @@ class PulsingGestureListener @Inject constructor(
      * motion events for a double tap.
      */
     override fun onDoubleTapEvent(e: MotionEvent): Boolean {
-        // React to the [MotionEvent.ACTION_UP] event after double tap is detected. Falsing
-        // checks MUST be on the ACTION_UP event.
         if (e.actionMasked == MotionEvent.ACTION_UP &&
-                statusBarStateController.isDozing &&
-                (doubleTapEnabled || singleTapEnabled || doubleTapEnabledNative) &&
-                !falsingManager.isProximityNear &&
-                !falsingManager.isFalseDoubleTap
+            statusBarStateController.isDozing &&
+            (doubleTapEnabled || singleTapEnabled || doubleTapEnabledNative) &&
+            !falsingManager.isProximityNear &&
+            !falsingManager.isFalseDoubleTap
         ) {
-            centralSurfaces.wakeUpIfDozing(
+            triggerVibration {
+                centralSurfaces.wakeUpIfDozing(
                     SystemClock.uptimeMillis(),
                     notificationShadeWindowView,
                     "PULSING_DOUBLE_TAP",
-                    PowerManager.WAKE_REASON_TAP)
+                    PowerManager.WAKE_REASON_TAP
+                )
+            }
             return true
         }
         return false
+    }
+
+    private fun triggerVibration(callback: () -> Unit) {
+        vibratorHelper?.let {
+            AsyncTask.execute {
+                it.vibrate(clickVibrationEffect)
+                callback()
+            }
+        }
     }
 
     override fun dump(pw: PrintWriter, args: Array<out String>) {
