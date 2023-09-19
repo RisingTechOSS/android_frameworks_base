@@ -52,8 +52,8 @@ public class PropImitationHooks {
     
     private static final String PRODUCT_DEVICE = "ro.product.device";
 
-    private static final String sP7PFp = "google/cheetah/cheetah:13/TQ3A.230705.001/10216780:user/release-keys";
-    private static final String sFelixFp = "google/felix/felix:13/TQ3C.230805.001.A4/10354937:user/release-keys";
+    private static final String sP7PFp = "google/cheetah/cheetah:13/TQ3A.230901.001.C2/10753682:user/release-keys";
+    private static final String sFelixFp = "google/felix/felix:13/TQ3C.230901.001.B1/10750989:user/release-keys";
     private static final String sStockFp = SystemProperties.get("ro.vendor.build.fingerprint");
 
     private static final String PACKAGE_ARCORE = "com.google.ar.core";
