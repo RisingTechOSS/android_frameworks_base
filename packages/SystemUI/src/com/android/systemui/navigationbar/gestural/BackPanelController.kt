@@ -162,6 +162,16 @@ class BackPanelController internal constructor(
     private var mLongSwipeThreshold = 0f
     private var mSwipeStartTime: Long = 0
     private var mTriggerLongSwipe = false
+    
+    private val vibrationEffectsMap = mapOf(
+        1 to VibrationEffect.createPredefined(VibrationEffect.EFFECT_TEXTURE_TICK),
+        2 to VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK),
+        3 to VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK),
+        4 to VibrationEffect.createPredefined(VibrationEffect.EFFECT_DOUBLE_CLICK),
+        5 to VibrationEffect.createPredefined(VibrationEffect.EFFECT_HEAVY_CLICK)
+    )
+    
+    private val fallbackVibEffect = VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK);
 
     // Whether the current gesture has moved a sufficiently large amount,
     // so that we can unambiguously start showing the ENTRY animation
@@ -961,14 +971,8 @@ class BackPanelController internal constructor(
             return
         }
 
-        val effect: VibrationEffect = when (mEdgeHapticIntensity) {
-            1 -> VibrationEffect.createPredefined(VibrationEffect.EFFECT_TEXTURE_TICK)
-            2 -> VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK)
-            3 -> VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK)
-            4 -> VibrationEffect.createPredefined(VibrationEffect.EFFECT_DOUBLE_CLICK)
-            5 -> VibrationEffect.createPredefined(VibrationEffect.EFFECT_HEAVY_CLICK)
-            else -> VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK)
-        }
+        val effect = vibrationEffectsMap[mEdgeHapticIntensity]
+            ?: fallbackVibEffect
 
         AsyncTask.execute { vibratorHelper.vibrate(effect) }
     }
