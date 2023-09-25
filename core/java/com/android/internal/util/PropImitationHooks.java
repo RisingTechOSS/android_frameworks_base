@@ -86,6 +86,7 @@ public class PropImitationHooks {
 
     private static final Map<String, Object> sP7Props = createGoogleSpoofProps("cheetah", "Pixel 7 Pro", sP7PFp);
     private static final Map<String, Object> sPFoldProps = createGoogleSpoofProps("felix", "Pixel Fold", sFelixFp);
+    private static final Map<String, Object> sPTabletProps = createGoogleSpoofProps("tangorpro", "Pixel Tablet", "google/tangorpro/tangorpro:13/TQ3A.230901.001.B1/10750577:user/release-keys");
     private static final Map<String, Object> gPhotosProps = createGoogleSpoofProps("marlin", "Pixel XL", "google/marlin/marlin:10/QP1A.191005.007.A3/5972272:user/release-keys");
     private static final Map<String, Object> redfinProps = createGoogleSpoofProps("redfin", "Pixel 5", "google/redfin/redfin:13/TQ3A.230605.011/10161073:user/release-keys");
     private static final Map<String, Object> asusROG1Props = createGameProps("ASUS_Z01QD", "Asus");
@@ -206,7 +207,7 @@ public class PropImitationHooks {
             dlog("Spoofing as Pixel Fold for: " + packageName);
             sPFoldProps.forEach((k, v) -> setPropValue(k, v));
         } else {
-            setVersionFieldString("SECURITY_PATCH", "2023-09-05");
+            setVersionFieldString("SECURITY_PATCH", "2023-09-01");
             switch (packageName) {
                 case PACKAGE_ARCORE:
                     dlog("Setting stock fingerprint for: " + packageName);
@@ -223,24 +224,26 @@ public class PropImitationHooks {
                     }
                     break;
                 case PACKAGE_SUBSCRIPTION_RED:
+                case PACKAGE_SETUPWIZARD:
+                case PACKAGE_TURBO:
                     dlog("Spoofing as Pixel 7 Pro for: " + packageName);
                     sP7Props.forEach((k, v) -> setPropValue(k, v));
+                    break;
+                case PACKAGE_GASSIST:
+                case PACKAGE_GBOARD:
+                case PACKAGE_VELVET:
+                    dlog("Spoofing as Pixel Fold for: " + packageName);
+                    sPFoldProps.forEach((k, v) -> setPropValue(k, v));
                     break;
                 case PACKAGE_AIAI:
                 case PACKAGE_ASI:
                 case PACKAGE_COMPUTE_SERVICES:
-                case PACKAGE_FINSKY:
                 case PACKAGE_SETIINGS_INTELLIGENCE:
-                case PACKAGE_GASSIST:
-                case PACKAGE_GBOARD:
                 case PACKAGE_CINEMATIC_PHOTOS:
                 case PACKAGE_GOOGLE_WALLPAPERS:
                 case PACKAGE_EMOJI_WALLPAPER:
-                case PACKAGE_SETUPWIZARD:
-                case PACKAGE_TURBO:
-                case PACKAGE_VELVET:
-                    dlog("Spoofing as Pixel Fold for: " + packageName);
-                    sPFoldProps.forEach((k, v) -> setPropValue(k, v));
+                    dlog("Spoofing as Pixel Tablet for: " + packageName);
+                    sPTabletProps.forEach((k, v) -> setPropValue(k, v));
                     break;
                 case PACKAGE_GPHOTOS:
                     if (SystemProperties.getBoolean("persist.sys.pixelprops.gphotos", false)) {
@@ -300,7 +303,7 @@ public class PropImitationHooks {
             if (isGms) {
                 spoofBuildGms();
             } else {
-                sPFoldProps.forEach((k, v) -> setPropValue(k, v));
+                sPTabletProps.forEach((k, v) -> setPropValue(k, v));
             }
         } else {
             dlog("Skip spoofing build for GMS, because GmsAddAccountActivityOnTop");
