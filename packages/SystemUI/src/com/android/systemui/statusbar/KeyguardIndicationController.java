@@ -197,7 +197,8 @@ public class KeyguardIndicationController {
     private long mChargingTimeRemaining;
     private int mChargingCurrent;
     private double mChargingVoltage;
-    private int mBatteryChargingCurrentThreshold;
+    private boolean mBatteryChargingCurrentNeedsThreshold = false;
+    private boolean mIsCached = false;
     private float mTemperature;
     private String mBiometricErrorMessageToShowOnScreenOn;
     private final Set<Integer> mCoExFaceAcquisitionMsgIdsToShow;
@@ -1019,7 +1020,7 @@ public class KeyguardIndicationController {
             Settings.System.LOCKSCREEN_BATTERY_INFO, 1, UserHandle.USER_CURRENT) == 1;
          if (showbatteryInfo) {
             if (mChargingCurrent > 0) {
-                current = mChargingCurrent >= 23000 ? mChargingCurrent / 1000 : mChargingCurrent;
+                current = mBatteryChargingCurrentNeedsThreshold ? mChargingCurrent / 1000 : mChargingCurrent;
                 batteryInfo = batteryInfo + current + "mA";
             }
             if (mChargingVoltage > 0 && mChargingCurrent > 0) {
@@ -1167,6 +1168,10 @@ public class KeyguardIndicationController {
             mPowerPluggedIn = status.isPluggedIn() && isChargingOrFull;
             mPowerCharged = status.isCharged();
             mChargingCurrent = status.maxChargingCurrent;
+            if (mChargingCurrent > 0 && String.valueOf(mChargingCurrent).length() >= 6 && !mIsCached) {
+                mBatteryChargingCurrentNeedsThreshold = true;
+                mIsCached = true;
+            }
             mChargingVoltage = status.maxChargingVoltage;
             mChargingWattage = status.maxChargingWattage;
             mChargingSpeed = status.getChargingSpeed(mContext);
