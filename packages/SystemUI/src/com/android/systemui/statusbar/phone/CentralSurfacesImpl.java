@@ -299,10 +299,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces, Tune
             "system:" + Settings.System.QS_TRANSPARENCY;
     private static final String PULSE_ON_NEW_TRACKS =
             Settings.Secure.PULSE_ON_NEW_TRACKS;
-    private static final String LESS_BORING_HEADS_UP =
-            "system:" + Settings.System.LESS_BORING_HEADS_UP;
-    private static final String RETICKER_STATUS =
-            "system:" + Settings.System.RETICKER_STATUS;
 
     private static final String BANNER_ACTION_CANCEL =
             "com.android.systemui.statusbar.banner_action_cancel";
@@ -995,8 +991,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces, Tune
         mTunerService.addTunable(this, PULSE_ON_NEW_TRACKS);
         mTunerService.addTunable(this, NOTIFICATION_MATERIAL_DISMISS_STYLE);
         mTunerService.addTunable(this, NOTIFICATION_MATERIAL_DISMISS_BGSTYLE);
-        mTunerService.addTunable(this, LESS_BORING_HEADS_UP);
-        mTunerService.addTunable(this, RETICKER_STATUS);
 
         mWindowManager = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
 
@@ -4364,16 +4358,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces, Tune
                 KeyguardSliceProvider sliceProvider = KeyguardSliceProvider.getAttachedInstance();
                 if (sliceProvider != null)
                     sliceProvider.setPulseOnNewTracks(showPulseOnNewTracks);
-                break;
-            case LESS_BORING_HEADS_UP:
-                boolean lessBoringHeadsUp =
-                        TunerService.parseIntegerSwitch(newValue, false);
-                mNotificationInterruptStateProvider.setUseLessBoringHeadsUp(lessBoringHeadsUp);
-                break;
-            case RETICKER_STATUS:
-                boolean reTicker =
-                        TunerService.parseIntegerSwitch(newValue, false);
-                mNotificationInterruptStateProvider.setUseReticker(reTicker);
                 break;
             default:
                 break;
