@@ -191,7 +191,7 @@ object Flags {
 
     // TODO(b/262780002): Tracking Bug
     @JvmField
-    val REVAMPED_WALLPAPER_UI = releasedFlag(222, "revamped_wallpaper_ui", teamfood = true)
+    val REVAMPED_WALLPAPER_UI = resourceBooleanFlag(222, R.bool.config_enableRevampedWallpaperUI, "revamped_wallpaper_ui")
 
     // flag for controlling auto pin confirmation and material u shapes in bouncer
     @JvmField

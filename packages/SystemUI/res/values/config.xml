@@ -463,6 +463,9 @@
     <!-- ThemePicker package name for overlaying icons. -->
     <string name="themepicker_overlayable_package" translatable="false">com.android.wallpaper</string>
 
+    <!-- Whether to enable the new revamped wallpaper UI -->
+    <bool name="config_enableRevampedWallpaperUI">true</bool>
+
     <!-- Default rounded corner curve (a Bezier). Must match (the curved path in) rounded.xml.
          Note that while rounded.xml includes the entire path (including the horizontal and vertical
          corner edges), this pulls out just the curve.
