@@ -839,4 +839,15 @@
     <!-- Whether the floating rotation button should be on the left/right in the device's natural
          orientation -->
     <bool name="floating_rotation_button_position_left">true</bool>
+    
+    <string-array name="heads_up_whitelist_packages">
+        <item>com.android.dialer</item>
+        <item>com.google.android.dialer</item>
+        <item>com.google.android.apps.messaging</item>
+        <item>com.android.messaging</item>
+        <item>dialer</item>
+        <item>messaging</item>
+        <item>messenger</item>
+        <item>clock</item>
+    </string-array>
 </resources>
