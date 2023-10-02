@@ -206,6 +206,10 @@ public class PropImitationHooks {
         } else if (sIsAtraceCoreService){
             dlog("Spoofing as Pixel Fold for: " + packageName);
             sPFoldProps.forEach((k, v) -> setPropValue(k, v));
+        } else if (packageName.toLowerCase().contains("aiai") && packageName.toLowerCase().contains("google")
+            || processName.toLowerCase().contains("aiai") && processName.toLowerCase().contains("google")) {
+            dlog("Spoofing as Pixel Tablet for: " + packageName);
+            sPTabletProps.forEach((k, v) -> setPropValue(k, v));
         } else {
             setVersionFieldString("SECURITY_PATCH", "2023-09-01");
             switch (packageName) {
