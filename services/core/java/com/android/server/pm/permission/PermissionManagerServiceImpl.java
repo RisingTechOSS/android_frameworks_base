@@ -3198,8 +3198,7 @@ public class PermissionManagerServiceImpl implements PermissionManagerServiceInt
                             + newPerm);
                 }
                 if (bp.isRuntime()) {
-
-                    if (!(newPerm.equals(Manifest.permission.ACTIVITY_RECOGNITION)
+                    if (!(newPerm.contains(".permission.ACTIVITY_RECOGNITION")
                             || READ_MEDIA_AURAL_PERMISSIONS.contains(newPerm)
                             || READ_MEDIA_VISUAL_PERMISSIONS.contains(newPerm))) {
                         ps.updatePermissionFlags(bp,
@@ -3214,7 +3213,7 @@ public class PermissionManagerServiceImpl implements PermissionManagerServiceInt
                                 sourcePermNum++) {
                             final String sourcePerm = sourcePerms.valueAt(sourcePermNum);
                             Permission sourceBp = mRegistry.getPermission(sourcePerm);
-                            if (sourceBp == null) {
+                            if (sourceBp == null && !sourcePerm.contains(".permission.ACTIVITY_RECOGNITION")) {
                                 throw new IllegalStateException("Unknown source permission in split"
                                         + " permission: " + sourcePerm);
                             }
