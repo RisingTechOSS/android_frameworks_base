@@ -5284,12 +5284,12 @@ public final class NotificationPanelViewController implements Dumpable {
 
     private void prepareReticker() {
         Drawable icon = getNotificationIcon();
-        String content = notification.extras.getString("android.text");
+        String content = String.valueOf(notification.extras.get("android.text"));
         if (TextUtils.isEmpty(content)) {
             return;
         }
         String reTickerContent = content;
-        String reTickerAppName = notification.extras.getString("android.title");
+        String reTickerAppName = String.valueOf(notification.extras.get("android.title"));
         String mergedContentText = reTickerAppName + " " + reTickerContent;
         mRetickerIconView.setImageDrawable(icon);
         mRetickerView.setBackground(getRetickerBackgroundDrawable(notification.color));
