@@ -373,11 +373,21 @@ public class KeyguardIndicationController {
                 @Override
                 public void onReceive(Context context, Intent intent) {
                     updateOrganizedOwnedDevice();
+                    if (Intent.ACTION_BATTERY_CHANGED.equals(intent.getAction())) {
+                        int status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
+                        mIsCharging = status == BatteryManager.BATTERY_STATUS_CHARGING;
+                        int level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+                        int scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+                        float batterylvl = (level / (float) scale) * 100;
+                        mBatteryLevel = (int) batterylvl;
+                        updateDeviceEntryIndication(false);
+                    }
                 }
             };
             IntentFilter intentFilter = new IntentFilter();
             intentFilter.addAction(DevicePolicyManager.ACTION_DEVICE_POLICY_MANAGER_STATE_CHANGED);
             intentFilter.addAction(Intent.ACTION_USER_REMOVED);
+            intentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
             mBroadcastDispatcher.registerReceiver(mBroadcastReceiver, intentFilter);
         }
     }
@@ -952,7 +962,7 @@ public class KeyguardIndicationController {
         } else if ((mPowerPluggedIn || mEnableBatteryDefender) && mIsCharging) {
             return computePowerIndication();
         } else {
-            return "";
+           return NumberFormat.getPercentInstance().format(mBatteryLevel / 100f);
         }
     }
 
@@ -961,7 +971,7 @@ public class KeyguardIndicationController {
      */
     protected String computePowerIndication() {
         if (!mIsCharging) {
-            return "";
+            return NumberFormat.getPercentInstance().format(mBatteryLevel / 100f);
         }
         int chargingId;
         if (mBatteryOverheated) {
