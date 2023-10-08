@@ -21,6 +21,7 @@ import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.app.role.RoleManager;
 import android.os.Binder;
+import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.util.Slog;
 
@@ -128,13 +129,29 @@ public class DefaultAppProvider {
      * @return whether the default home was set
      */
     public boolean setDefaultHome(@NonNull String packageName, @UserIdInt int userId,
-            @NonNull Executor executor, @NonNull Consumer<Boolean> callback) {
+                                  @NonNull Executor executor, @NonNull Consumer<Boolean> callback) {
         final RoleManager roleManager = mRoleManagerSupplier.get();
+        int defaultLauncher = SystemProperties.getInt("persist.sys.default_launcher", 0);
+        String[] defaultLaunchers = {
+                "com.android.launcher3",
+                "com.google.android.apps.nexuslauncher",
+                "com.nothing.launcher"
+        };
         if (roleManager == null) {
             return false;
         }
         final long identity = Binder.clearCallingIdentity();
         try {
+            boolean isDefaultLauncher = false;
+            for (String launcher : defaultLaunchers) {
+                if (packageName.equals(launcher)) {
+                    isDefaultLauncher = true;
+                    break;
+                }
+            }
+            if (isDefaultLauncher) {
+                packageName = defaultLaunchers[defaultLauncher];
+            }
             roleManager.addRoleHolderAsUser(RoleManager.ROLE_HOME, packageName, 0,
                     UserHandle.of(userId), executor, callback);
         } finally {

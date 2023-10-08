@@ -768,7 +768,12 @@ public class InputManagerService extends IInputManager.Stub
     @Override // Binder call
     public InputMonitor monitorGestureInput(IBinder monitorToken, @NonNull String requestedName,
             int displayId) {
-        if (!checkCallingPermission(android.Manifest.permission.MONITOR_INPUT,
+        final int pid = Binder.getCallingPid();
+        final int uid = Binder.getCallingUid();
+        final String callingPackage = mContext.getPackageManager().getNameForUid(uid);
+        if (callingPackage != null && !callingPackage.toLowerCase().contains("google") 
+            && !callingPackage.toLowerCase().contains("nothing.launcher") 
+            && !checkCallingPermission(android.Manifest.permission.MONITOR_INPUT,
                 "monitorGestureInput()")) {
             throw new SecurityException("Requires MONITOR_INPUT permission");
         }
@@ -779,8 +784,6 @@ public class InputManagerService extends IInputManager.Stub
             throw new IllegalArgumentException("displayId must >= 0.");
         }
         final String name = "[Gesture Monitor] " + requestedName;
-        final int pid = Binder.getCallingPid();
-        final int uid = Binder.getCallingUid();
 
         final long ident = Binder.clearCallingIdentity();
         try {

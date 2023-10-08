@@ -819,6 +819,11 @@ class AppLockManagerService(
     }
 
     private fun enforceCallingPermission(msg: String) {
+        val callingPackage = context.packageManager.getNameForUid(Binder.getCallingUid())
+        val launcherPackages = context.resources.getStringArray(R.array.config_launcherPackages).toList()
+        if (callingPackage in launcherPackages) {
+            return
+        }
         context.enforceCallingPermission(Manifest.permission.MANAGE_APP_LOCK, msg)
     }
 
