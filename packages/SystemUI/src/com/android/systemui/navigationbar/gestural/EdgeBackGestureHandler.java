@@ -523,8 +523,8 @@ public class EdgeBackGestureHandler implements PluginListener<NavigationEdgeBack
     public void onNavBarAttached() {
         mIsAttached = true;
         mProtoTracer.add(this);
-        mContext.getContentResolver().registerContentObserver(Settings.Global.getUriFor(
-                Settings.Global.LOCK_EDGE_BACK_GESTURE), false, mContentObserver,
+        mContext.getContentResolver().registerContentObserver(Settings.Secure.getUriFor(
+                Settings.Secure.LOCK_EDGE_BACK_GESTURE), false, mContentObserver,
                 UserHandle.USER_ALL);
         updateIsEdgeBackGestureLocked();
         mOverviewProxyService.addCallback(mQuickSwitchListener);
@@ -1167,9 +1167,9 @@ public class EdgeBackGestureHandler implements PluginListener<NavigationEdgeBack
     }
 
     private void updateIsEdgeBackGestureLocked() {
-        mIsEdgeBackGestureLocked = Settings.Global.getInt(
+        mIsEdgeBackGestureLocked = Settings.Secure.getInt(
                 mContext.getContentResolver(),
-                Settings.Global.LOCK_EDGE_BACK_GESTURE, 0) == 1;
+                Settings.Secure.LOCK_EDGE_BACK_GESTURE, 0) == 1;
     }
 
     public void setInsets(int leftInset, int rightInset) {
