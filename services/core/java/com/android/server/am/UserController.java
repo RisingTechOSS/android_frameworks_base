@@ -2845,6 +2845,12 @@ class UserController implements Handler.Callback {
     }
 
     private void checkGetCurrentUserPermissions() {
+        final int callingUid = Binder.getCallingUid();
+        final String callingPackage = mInjector.getContext().getPackageManager().getNameForUid(callingUid);
+        List<String> launcherPackages = Arrays.asList(mInjector.getContext().getResources().getStringArray(com.android.internal.R.array.config_launcherPackages));
+        if (launcherPackages.contains(callingPackage)) {
+            return;
+        }
         if ((mInjector.checkCallingPermission(INTERACT_ACROSS_USERS)
                 != PackageManager.PERMISSION_GRANTED) && (
                 mInjector.checkCallingPermission(INTERACT_ACROSS_USERS_FULL)

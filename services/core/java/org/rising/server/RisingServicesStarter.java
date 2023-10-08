@@ -22,11 +22,15 @@ public class RisingServicesStarter {
 
     private final SystemServiceManager mSystemServiceManager;
 
+    private static final String QUICKSWITCH_SERVICE_CLASS =
+            "org.rising.server.QuickSwitchService";
+
     public RisingServicesStarter(SystemServiceManager systemServiceManager) {
         this.mSystemServiceManager = systemServiceManager;
     }
 
     public void startAllServices() {
+        startService(QUICKSWITCH_SERVICE_CLASS);
     }
 
     private void startService(String serviceClassName) {

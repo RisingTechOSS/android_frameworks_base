@@ -48,6 +48,9 @@ import com.android.server.wm.ActivityTaskManagerInternal;
 
 import java.io.FileDescriptor;
 import java.util.function.Consumer;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A service used to predict app and shortcut usage.
@@ -186,7 +189,14 @@ public class AppPredictionManagerService extends
                     sessionId.getUserId(), false, ALLOW_NON_FULL, null, null);
 
             Context ctx = getContext();
+            String callerPackage = ctx.getPackageManager().getNameForUid(Binder.getCallingUid());
+
+            Set<String> allowedLauncherPackages = new HashSet<>(Arrays.asList(ctx.getResources()
+                    .getStringArray(com.android.internal.R.array.config_launcherPackages)));
+            boolean isAllowedLauncher = allowedLauncherPackages.contains(callerPackage);
+
             if (!(ctx.checkCallingPermission(PACKAGE_USAGE_STATS) == PERMISSION_GRANTED
+                    || isAllowedLauncher
                     || mServiceNameResolver.isTemporary(userId)
                     || mActivityTaskManagerInternal.isCallerRecents(Binder.getCallingUid())
                     || Binder.getCallingUid() == Process.SYSTEM_UID)) {
