@@ -955,10 +955,10 @@
 
     <!-- The padding to move status bar and navigation bar to prevent burn in when screen
          is powered on and config_enableMoveSystemBars is enabled -->
-    <dimen name="statusbar_burn_in_prevention_padding_x_max">3dp</dimen>
+    <dimen name="statusbar_burn_in_prevention_padding_x_max">1.5dp</dimen>
     <dimen name="statusbar_burn_in_prevention_padding_y_max">1dp</dimen>
-    <dimen name="navigationbar_burn_in_prevention_padding_x_max">6dp</dimen>
-    <dimen name="navigationbar_burn_in_prevention_padding_y_max">2dp</dimen>
+    <dimen name="navigationbar_burn_in_prevention_padding_x_max">3dp</dimen>
+    <dimen name="navigationbar_burn_in_prevention_padding_y_max">1.5dp</dimen>
 
     <!-- The absolute side margins of quick settings -->
     <dimen name="quick_settings_bottom_margin_media">8dp</dimen>
