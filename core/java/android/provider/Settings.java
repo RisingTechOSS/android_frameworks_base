@@ -11656,6 +11656,17 @@ public final class Settings {
          */
         public static final String LOCK_EDGE_BACK_GESTURE
                 = "lock_edge_back_gesture";
+                
+        /**
+         * Parameter for Pocket Mode
+         *
+         * The value "1", Enable Pocket Mode
+         * The value "0", Disables Pocket Mode
+         *
+         * @hide
+         */
+        public static final String POCKET_MODE_ENABLED
+                = "pocket_mode_enabled";
 
         /**
          * These entries are considered common between the personal and the managed profile,
