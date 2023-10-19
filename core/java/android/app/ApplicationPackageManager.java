@@ -812,16 +812,7 @@ public class ApplicationPackageManager extends PackageManager {
 
     private static final Set<String> googlePackages = new HashSet<>(Arrays.asList(
             "com.android.vending",
-            "com.google.android.gms",
-            "com.google.android.googlequicksearchbox",
-            "com.google.android.inputmethod.latin",
-            "com.google.android.setupwizard",
-            "com.google.android.settings.intelligence",
-            "com.google.android.apps.miphone.aiai.AiaiApplication",
-            "com.google.android.apps.googleassistant",
-            "com.google.android.as.oss",
-            "com.google.android.as",
-            "com.google.android.apps.recorder"
+            "com.google.android.gms"
     ));
 
     private static final Set<String> featuresPixelTensor = new HashSet<>(Arrays.asList(
