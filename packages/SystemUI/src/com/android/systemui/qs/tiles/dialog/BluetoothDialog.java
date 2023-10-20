@@ -178,8 +178,7 @@ public class BluetoothDialog extends SystemUIDialog implements Window.Callback {
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
+    protected void start() {
         if (DEBUG) {
             Log.d(TAG, "onStart");
         }
@@ -187,8 +186,7 @@ public class BluetoothDialog extends SystemUIDialog implements Window.Callback {
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
+    protected void stop() {
         if (DEBUG) {
             Log.d(TAG, "onStop");
         }
