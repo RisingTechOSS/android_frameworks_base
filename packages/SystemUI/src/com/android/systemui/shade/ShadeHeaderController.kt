@@ -135,6 +135,8 @@ constructor(
     private val date: TextView = header.findViewById(R.id.date)
     private val iconContainer: StatusIconContainer = header.findViewById(R.id.statusIcons)
     private val mShadeCarrierGroup: ShadeCarrierGroup = header.findViewById(R.id.carrier_group)
+    private val shadeCarrierText: TextView? = header.findViewById(R.id.shade_carrier_text)
+    private val shadeNoCarrierText: TextView? = header.findViewById(R.id.shade_carrier_text)
 
     private var roundedCorners = 0
     private var cutout: DisplayCutout? = null
@@ -526,6 +528,8 @@ constructor(
             }
             clock.setTextColor(textColorPrimary)
             date.setTextColor(textColorPrimary)
+            shadeCarrierText?.setTextColor(textColorPrimary)
+            shadeNoCarrierText?.setTextColor(textColorPrimary)
             batteryIcon.updateColors(textColorPrimary, textColorSecondary, textColorPrimary)
         }
     }
