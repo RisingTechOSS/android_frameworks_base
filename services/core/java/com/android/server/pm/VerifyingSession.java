@@ -533,6 +533,7 @@ final class VerifyingSession {
 
         if (requiredVerifierPackages.size() == 0) {
             Slog.e(TAG, "No required verifiers");
+            verificationState.passRequiredVerification();
             return;
         }
 
