@@ -197,7 +197,6 @@ public class NotificationMediaManager implements Dumpable {
     private int mAlbumArtFilter;
     private int mFadeLevel;
     private float mLSBlurRadius;
-    private RenderEffect blurEffect;
 
     private final MediaController.Callback mMediaListener = new MediaController.Callback() {
         @Override
@@ -776,6 +775,7 @@ public class NotificationMediaManager implements Dumpable {
                 }
 
                 if (mAlbumArtFilter >= 3) {
+                    final RenderEffect blurEffect = RenderEffect.createBlurEffect(mLSBlurRadius, mLSBlurRadius, Shader.TileMode.MIRROR);
                     mBackdropBack.setRenderEffect(blurEffect);
                 }
                 if (mFadeLevel != 0) {
