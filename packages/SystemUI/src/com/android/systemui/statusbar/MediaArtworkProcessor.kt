@@ -43,7 +43,7 @@ class MediaArtworkProcessor @Inject constructor() {
 
         val rect = Rect(0, 0, artwork.width, artwork.height)
         context.display?.getSize(mTmpSize)
-        MathUtils.fitRect(rect, Math.max(mTmpSize.x / DOWNSAMPLE, mTmpSize.y / DOWNSAMPLE))
+        MathUtils.fitRect(rect, Math.max(mTmpSize.x, mTmpSize.y))
 
         val options = BitmapFactory.Options()
         options.inPreferredConfig = Bitmap.Config.ARGB_8888
@@ -67,9 +67,6 @@ class MediaArtworkProcessor @Inject constructor() {
     }
 
     companion object {
-        private const val DOWNSAMPLE = 2
-        private const val COLOR_ALPHA = 255
-        private const val BLUR_RADIUS = 1f
         private const val TAG = "MediaArtworkProcessor"
 
         private fun calculateInSampleSize(
