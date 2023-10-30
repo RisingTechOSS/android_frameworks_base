@@ -514,6 +514,7 @@ constructor(
         header.setPadding(padding, header.paddingTop, padding, header.paddingBottom)
         updateQQSPaddings()
         qsBatteryModeController.updateResources()
+        privacyIconsController.updateResources(context)
 
         val fillColor = Utils.getColorAttrDefaultColor(context, android.R.attr.textColorPrimary)
         iconManager.setTint(fillColor)

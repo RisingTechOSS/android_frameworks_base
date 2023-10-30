@@ -15,6 +15,7 @@
 package com.android.systemui.privacy
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.util.AttributeSet
 import android.view.Gravity.CENTER_VERTICAL
 import android.view.Gravity.END
@@ -54,7 +55,7 @@ class OngoingPrivacyChip @JvmOverloads constructor(
         clipChildren = true
         clipToPadding = true
         iconsContainer = requireViewById(R.id.icons_container)
-        updateResources()
+        updateResources(context)
     }
 
     /**
@@ -102,17 +103,20 @@ class OngoingPrivacyChip @JvmOverloads constructor(
                 R.string.ongoing_privacy_chip_content_multiple_apps, typesText)
     }
 
-    private fun updateResources() {
-        iconMargin = context.resources
+    fun updateResources(ctx: Context) {
+        iconMargin = ctx.resources
                 .getDimensionPixelSize(R.dimen.ongoing_appops_chip_icon_margin)
-        iconSize = context.resources
+        iconSize = ctx.resources
                 .getDimensionPixelSize(R.dimen.ongoing_appops_chip_icon_size)
-        iconColor =
-                Utils.getColorAttrDefaultColor(context, android.R.attr.textColorPrimaryInverse)
+        iconColor = Utils.getColorAttrDefaultColor(ctx, com.android.internal.R.attr.textColorPrimaryInverse)
 
-        val padding = context.resources
+        val padding = ctx.resources
                 .getDimensionPixelSize(R.dimen.ongoing_appops_chip_side_padding)
         iconsContainer.setPaddingRelative(padding, 0, padding, 0)
-        iconsContainer.background = context.getDrawable(R.drawable.statusbar_privacy_chip_bg)
+        iconsContainer.background = ctx.getDrawable(R.drawable.statusbar_privacy_chip_bg)
+        
+        val backgroundTint = Utils.getColorAttrDefaultColor(ctx, com.android.internal.R.attr.colorAccent)
+        iconsContainer.backgroundTintList = ColorStateList.valueOf(backgroundTint)
+        iconsContainer.background = ctx.getDrawable(R.drawable.statusbar_privacy_chip_bg)
     }
 }

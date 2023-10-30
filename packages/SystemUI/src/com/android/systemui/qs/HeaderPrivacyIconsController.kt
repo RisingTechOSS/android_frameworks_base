@@ -155,6 +155,10 @@ class HeaderPrivacyIconsController @Inject constructor(
         // Ignore privacy icons because they show in the space above QQS
         updatePrivacyIconSlots()
     }
+    
+    fun updateResources(ctx: Context) {
+        privacyChip.updateResources(ctx)
+    }
 
     private fun showSafetyCenter() {
         backgroundExecutor.execute {
