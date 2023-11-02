@@ -178,7 +178,7 @@ public class systemUtils {
                 if (mBarService != null) {
                     try {
                         Thread.sleep(1250);
-                        mBarService.reboot(false);
+                        mBarService.reboot(false, null);
                     } catch (RemoteException | InterruptedException e) {
                         e.printStackTrace();
                     }
