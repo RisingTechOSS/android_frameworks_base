@@ -698,6 +698,19 @@ public class NotificationMediaManager implements Dumpable {
                     artworkDrawable = new BitmapDrawable(resources, bmp);
                     break;
             }
+
+            if (artworkDrawable != null && mAlbumArtFilter >= 3 && mLSBlurRadius > 2) {
+                final RenderEffect blurEffect = RenderEffect.createBlurEffect(mLSBlurRadius, mLSBlurRadius, Shader.TileMode.MIRROR);
+                mBackdropBack.setRenderEffect(blurEffect);
+            }
+
+            if (artworkDrawable != null && mFadeLevel != 0) {
+                final int fadeFilter = ColorUtils.blendARGB(Color.TRANSPARENT, Color.BLACK, mFadeLevel / 100f);
+                mBackdropBack.setColorFilter(fadeFilter, PorterDuff.Mode.SRC_ATOP);
+            }
+        } else {
+            mBackdropBack.setRenderEffect(null);
+            mBackdropBack.setColorFilter(null);
         }
         boolean hasMediaArtwork = artworkDrawable != null;
         boolean allowWhenShade = false;
@@ -772,15 +785,6 @@ public class NotificationMediaManager implements Dumpable {
                                 (LockscreenWallpaper.WallpaperDrawable) artworkDrawable;
                     }
                     mBackdropBack.setImageDrawable(artworkDrawable);
-                }
-
-                if (mAlbumArtFilter >= 3) {
-                    final RenderEffect blurEffect = RenderEffect.createBlurEffect(mLSBlurRadius, mLSBlurRadius, Shader.TileMode.MIRROR);
-                    mBackdropBack.setRenderEffect(blurEffect);
-                }
-                if (mFadeLevel != 0) {
-                    final int fadeFilter = ColorUtils.blendARGB(Color.TRANSPARENT, Color.BLACK, mFadeLevel / 100f);
-                    mBackdropBack.setColorFilter(fadeFilter, PorterDuff.Mode.SRC_ATOP);
                 }
 
                 if (mBackdropFront.getVisibility() == View.VISIBLE) {
