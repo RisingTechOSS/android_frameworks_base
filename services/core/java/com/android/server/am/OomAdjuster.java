@@ -3484,11 +3484,11 @@ public class OomAdjuster {
         final ProcessStateRecord state = app.mState;
         // Use current adjustment when freezing, set adjustment when unfreezing.
         if (state.getCurAdj() >= CACHED_APP_MIN_ADJ && !opt.isFrozen()
-                && !opt.shouldNotFreeze() && !mCachedAppOptimizer.isProcessInteractive(app) 
-                && !mCachedAppOptimizer.isFrozenProcessInteractive(app.info.packageName)) {
+                && !opt.shouldNotFreeze() && !mCachedAppOptimizer.mFreezerProcessPolicies.isProcessInteractive(app) 
+                && !mCachedAppOptimizer.isProcessFrozen(app.getPid())) {
             mCachedAppOptimizer.freezeAppAsyncLSP(app);
-        } else if (state.getSetAdj() < CACHED_APP_MIN_ADJ || mCachedAppOptimizer.isProcessInteractive(app) 
-            || mCachedAppOptimizer.isFrozenProcessInteractive(app.info.packageName)) {
+        } else if (state.getSetAdj() < CACHED_APP_MIN_ADJ || mCachedAppOptimizer.mFreezerProcessPolicies.isProcessInteractive(app) 
+            || mCachedAppOptimizer.isProcessFrozen(app.getPid())) {
             mCachedAppOptimizer.unfreezeAppLSP(app,
                     CachedAppOptimizer.getUnfreezeReasonCodeFromOomAdjReason(oomAdjReason));
         }

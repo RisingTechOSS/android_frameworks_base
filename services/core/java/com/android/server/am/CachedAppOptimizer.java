@@ -243,7 +243,7 @@ public final class CachedAppOptimizer {
     private static final int FREEZE_BINDER_TIMEOUT_MS = 100;
     private static final int FREEZE_DEADLOCK_TIMEOUT_MS = 1000;
 
-    @VisibleForTesting static final boolean ENABLE_FILE_COMPACT = false;
+    @VisibleForTesting static final boolean ENABLE_FILE_COMPACT = true;
 
     // Defaults for phenotype flags.
     @VisibleForTesting static final boolean DEFAULT_USE_COMPACTION = true;
@@ -265,7 +265,7 @@ public final class CachedAppOptimizer {
     // Format of this string should be a comma separated list of integers.
     @VisibleForTesting static final String DEFAULT_COMPACT_PROC_STATE_THROTTLE =
             String.valueOf(ActivityManager.PROCESS_STATE_RECEIVER);
-    @VisibleForTesting static final long DEFAULT_FREEZER_DEBOUNCE_TIMEOUT = 1000L;
+    @VisibleForTesting static final long DEFAULT_FREEZER_DEBOUNCE_TIMEOUT = 100;
     @VisibleForTesting static final boolean DEFAULT_FREEZER_EXEMPT_INST_PKG = true;
     @VisibleForTesting static final boolean DEFAULT_FREEZER_BINDER_ENABLED = true;
     @VisibleForTesting static final long DEFAULT_FREEZER_BINDER_DIVISOR = 4;
@@ -357,8 +357,6 @@ public final class CachedAppOptimizer {
     private final ActivityManagerGlobalLock mProcLock;
 
     public final Object mFreezerLock = new Object();
-    
-    private ArrayMap<String, ArraySet<ProcessRecord>> frozenProcessRecords = new ArrayMap<>();
 
     private final OnPropertiesChangedListener mOnFlagsChangedListener =
             new OnPropertiesChangedListener() {
@@ -637,6 +635,8 @@ public final class CachedAppOptimizer {
 
     private final ProcessDependencies mProcessDependencies;
     private final ProcLocksReader mProcLocksReader;
+    
+    FreezerProcessPolicies mFreezerProcessPolicies = new FreezerProcessPolicies();
 
     public CachedAppOptimizer(ActivityManagerService am) {
         this(am, null, new DefaultProcessDependencies());
@@ -819,7 +819,8 @@ public final class CachedAppOptimizer {
     @GuardedBy("mProcLock")
     boolean compactApp(
             ProcessRecord app, CompactProfile compactProfile, CompactSource source, boolean force) {
-        if (isProcessInteractive(app)) {
+        if (mFreezerProcessPolicies.isProcessInteractive(app)) {
+            app.mOptRecord.setHasPendingCompact(false);
             return false;
         }
         app.mOptRecord.setReqCompactSource(source);
@@ -1349,9 +1350,12 @@ public final class CachedAppOptimizer {
             synchronized (mProcLock) {
                 // Move the earliest freezable time further, if necessary
                 final long delay = updateEarliestFreezableTime(app, delayMillis);
-                if (app.mOptRecord.isFrozen() || app.mOptRecord.isPendingFreeze()) {
+                if (mFreezerProcessPolicies.isProcessInteractive(app) || app.mOptRecord.isFrozen() || app.mOptRecord.isPendingFreeze()) {
                     unfreezeAppLSP(app, reason);
-                    freezeAppAsyncLSP(app, delay);
+                    // only freeze processes that are not interactive
+                    if (!mFreezerProcessPolicies.isProcessInteractive(app)) {
+                        freezeAppAsyncLSP(app, delay);
+                    }
                 }
             }
         }
@@ -1375,7 +1379,7 @@ public final class CachedAppOptimizer {
         // Freezing the process or frozenProcesses can lead to hiccups,
         // especially when resuming heavy processes.
         synchronized (mProcLock) {
-            if (isProcessInteractive(app) || isFrozenProcessInteractive(app.info.packageName)) {
+            if (mFreezerProcessPolicies.isProcessInteractive(app) || isProcessFrozen(app.getPid())) {
                 if (opt.isFrozen() || opt.isPendingFreeze()) {
                     unfreezeAppLSP(app, UNFREEZE_REASON_NONE);
                 }
@@ -1414,7 +1418,6 @@ public final class CachedAppOptimizer {
                 mFreezeHandler.obtainMessage(SET_FROZEN_PROCESS_MSG, DO_FREEZE, 0, app),
                 delayMillis);
         opt.setPendingFreeze(true);
-        addFrozenProcess(app);
 
         if (DEBUG_FREEZER) {
             Slog.d(TAG_AM, "Async freezing " + app.getPid() + " " + app.processName);
@@ -1439,7 +1442,6 @@ public final class CachedAppOptimizer {
             // Remove pending DO_FREEZE message
             mFreezeHandler.removeMessages(SET_FROZEN_PROCESS_MSG, app);
             opt.setPendingFreeze(false);
-            removeFrozenProcess(app);
             if (DEBUG_FREEZER) {
                 Slog.d(TAG_AM, "Cancel freezing " + pid + " " + app.processName);
             }
@@ -1523,54 +1525,6 @@ public final class CachedAppOptimizer {
                         pid,
                         (int) Math.min(opt.getFreezeUnfreezeTime() - freezeTime, Integer.MAX_VALUE),
                         new Pair<String, Integer>(app.processName, reason)));
-        }
-    }
-
-    public boolean isProcessInteractive(ProcessRecord app) {
-        final ProcessStateRecord state = app.mState;
-        final int pid = app.getPid();
-        final ProcessCachedOptimizerRecord opt = app.mOptRecord;
-
-        return state.hasForegroundActivities() 
-               || state.isServiceB()
-               || state.isServiceHighRam()
-               || state.isNotCachedSinceIdle()
-               || state.hasStartedServices()
-               || state.hasRepForegroundActivities()
-               || state.hasShownUi()
-               || state.hasTopUi()
-               || state.isRunningRemoteAnimation()
-               || state.hasOverlayUi()
-               || state.getCurAdj() < ProcessList.CACHED_APP_MIN_ADJ
-               || opt.shouldNotFreeze()
-               || pid == 0;
-    }
-
-    public boolean isFrozenProcessInteractive(String packageName) {
-        ArraySet<ProcessRecord> frozenProcesses = frozenProcessRecords.get(packageName);
-        if (frozenProcesses == null) {
-            return false;
-        }
-        for (ProcessRecord frozenProcess : frozenProcesses) {
-            if (isProcessInteractive(frozenProcess)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public void addFrozenProcess(ProcessRecord app) {
-        frozenProcessRecords.computeIfAbsent(app.info.packageName, k -> new ArraySet<>()).add(app);
-    }
-
-    public void removeFrozenProcess(ProcessRecord app) {
-        ArraySet<ProcessRecord> frozenProcesses = frozenProcessRecords.get(app.info.packageName);
-        if (frozenProcesses == null) {
-            return;
-        }
-        frozenProcesses.remove(app);
-        if (frozenProcesses.isEmpty()) {
-            frozenProcessRecords.remove(app.info.packageName);
         }
     }
 
@@ -1696,11 +1650,11 @@ public final class CachedAppOptimizer {
 
     @GuardedBy({"mService", "mProcLock"})
     void onOomAdjustChanged(int oldAdj, int newAdj, ProcessRecord app) {
-        if (isProcessInteractive(app)) {
-            cancelCompactionForProcess(app, CancelCompactReason.OOM_IMPROVEMENT);
-            return;
-        }
         if (useCompaction()) {
+            if (mFreezerProcessPolicies.isProcessInteractive(app)) {
+                cancelCompactionForProcess(app, CancelCompactReason.OOM_IMPROVEMENT);
+                return;
+            }
             // Cancel any currently executing compactions
             // if the process moved out of cached state
             if (newAdj < oldAdj && (newAdj < ProcessList.CACHED_APP_MIN_ADJ || newAdj > ProcessList.CACHED_APP_MAX_ADJ)) {
@@ -1714,6 +1668,10 @@ public final class CachedAppOptimizer {
      */
     void onProcessFrozen(ProcessRecord frozenProc) {
         if (useCompaction()) {
+            if (mFreezerProcessPolicies.isProcessInteractive(frozenProc)) {
+                cancelCompactionForProcess(frozenProc, CancelCompactReason.OOM_IMPROVEMENT);
+                return;
+            }
             synchronized (mProcLock) {
                 compactApp(frozenProc, CompactProfile.FULL, CompactSource.APP, false);
             }
@@ -2303,6 +2261,10 @@ public final class CachedAppOptimizer {
             final ProcessCachedOptimizerRecord opt = proc.mOptRecord;
 
             synchronized (mProcLock) {
+                if (mFreezerProcessPolicies.isProcessInteractive(proc)) {
+                    opt.setPendingFreeze(false);
+                    return;
+                }
                 // someone has canceled this freeze
                 if (!opt.isPendingFreeze()) {
                     return;
@@ -2459,6 +2421,24 @@ public final class CachedAppOptimizer {
                 }
             }
         }
+    }
+
+    static final class FreezerProcessPolicies {
+
+        public boolean isProcessInteractive(ProcessRecord app) {
+            final ProcessStateRecord state = app.mState;
+            final boolean isUserProcess = state.getCurAdj() < state.getSetAdj() && (state.getCurAdj() < ProcessList.CACHED_APP_MIN_ADJ || state.getCurAdj() > ProcessList.CACHED_APP_MAX_ADJ);
+
+            return state.hasForegroundActivities() 
+                   || isUserProcess
+                   || state.hasRepForegroundActivities()
+                   || state.hasShownUi()
+                   || state.hasTopUi()
+                   || state.hasOverlayUi()
+                   || state.getCurAdj() < ProcessList.CACHED_APP_MIN_ADJ 
+                   || state.getCurAdj() > ProcessList.CACHED_APP_MAX_ADJ;
+        }
+
     }
 
     /**
