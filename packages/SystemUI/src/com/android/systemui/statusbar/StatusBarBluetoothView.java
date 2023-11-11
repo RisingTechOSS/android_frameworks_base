@@ -36,6 +36,7 @@ import android.widget.LinearLayout;
 import com.android.systemui.R;
 import com.android.systemui.statusbar.phone.PhoneStatusBarPolicy.BluetoothIconState;
 
+import java.util.Arrays;
 import java.util.ArrayList;
 
 public class StatusBarBluetoothView extends FrameLayout implements StatusIconDisplayable {
@@ -202,14 +203,15 @@ public class StatusBarBluetoothView extends FrameLayout implements StatusIconDis
     }
 
     private void updateBatteryIcon(int batteryLevel) {
+        mBatteryIcon.setVisibility(View.VISIBLE);
+        int batteryDrawableId;
         if (batteryLevel >= 0 && batteryLevel <= 100) {
-            mBatteryIcon.setVisibility(View.VISIBLE);
-            mBatteryIcon.setImageDrawable(mContext.getDrawable(
-                mContext.getResources().getIdentifier("ic_bluetooth_battery_"
-                + batteryLevel/10, "drawable", mContext.getPackageName())));
+            batteryDrawableId = mContext.getResources().getIdentifier(
+                "ic_bluetooth_battery_" + batteryLevel / 10, "drawable", "com.android.systemui");
         } else {
-            mBatteryIcon.setVisibility(View.GONE);
+            batteryDrawableId = R.drawable.ic_bluetooth_battery_0;
         }
+        mBatteryIcon.setImageDrawable(mContext.getDrawable(batteryDrawableId));
     }
 
     private void initViewState() {
