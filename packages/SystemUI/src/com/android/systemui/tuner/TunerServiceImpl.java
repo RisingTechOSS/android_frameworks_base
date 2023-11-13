@@ -168,7 +168,15 @@ public class TunerServiceImpl extends TunerService {
     }
 
     private String chomp(String key) {
-        return key.substring("system:".length());
+        String systemSettings = "system:";
+        String secureSettings = "secure:";
+        if (key.startsWith(systemSettings)) {
+            return key.substring(systemSettings.length());
+        } else if (key.startsWith(secureSettings)) {
+            return key.substring(secureSettings.length());
+        } else {
+            return key;
+        }
     }
 
     @Override
@@ -177,7 +185,7 @@ public class TunerServiceImpl extends TunerService {
             return Settings.System.getStringForUser(
                     mContentResolver, chomp(setting), mCurrentUser);
         } else {
-            return Settings.Secure.getStringForUser(mContentResolver, setting, mCurrentUser);
+            return Settings.Secure.getStringForUser(mContentResolver, chomp(setting), mCurrentUser);
         }
     }
 
@@ -187,7 +195,7 @@ public class TunerServiceImpl extends TunerService {
             Settings.System.putStringForUser(
                     mContentResolver, chomp(setting), value, mCurrentUser);
         } else {
-            Settings.Secure.putStringForUser(mContentResolver, setting, value, mCurrentUser);
+            Settings.Secure.putStringForUser(mContentResolver, chomp(setting), value, mCurrentUser);
         }
     }
 
@@ -197,7 +205,7 @@ public class TunerServiceImpl extends TunerService {
             return Settings.System.getIntForUser(
                     mContentResolver, chomp(setting), def, mCurrentUser);
         } else {
-            return Settings.Secure.getIntForUser(mContentResolver, setting, def, mCurrentUser);
+            return Settings.Secure.getIntForUser(mContentResolver, chomp(setting), def, mCurrentUser);
         }
     }
 
@@ -208,7 +216,7 @@ public class TunerServiceImpl extends TunerService {
             ret = Settings.System.getStringForUser(
                     mContentResolver, chomp(setting), mCurrentUser);
         } else {
-            ret = Secure.getStringForUser(mContentResolver, setting, mCurrentUser);
+            ret = Secure.getStringForUser(mContentResolver, chomp(setting), mCurrentUser);
         }
         if (ret == null) return def;
         return ret;
@@ -219,7 +227,7 @@ public class TunerServiceImpl extends TunerService {
         if (isSystem(setting)) {
             Settings.System.putIntForUser(mContentResolver, chomp(setting), value, mCurrentUser);
         } else {
-            Settings.Secure.putIntForUser(mContentResolver, setting, value, mCurrentUser);
+            Settings.Secure.putIntForUser(mContentResolver, chomp(setting), value, mCurrentUser);
         }
     }
 
@@ -243,7 +251,7 @@ public class TunerServiceImpl extends TunerService {
         if (isSystem(key)) {
             uri = Settings.System.getUriFor(chomp(key));
         } else {
-            uri = Settings.Secure.getUriFor(key);
+            uri = Settings.Secure.getUriFor(chomp(key));
         }
         if (!mListeningUris.containsKey(uri)) {
             mListeningUris.put(uri, key);
