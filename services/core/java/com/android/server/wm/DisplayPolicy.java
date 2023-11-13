@@ -2218,10 +2218,9 @@ public class DisplayPolicy {
         if (controlTarget.canShowTransient()) {
             // Show transient bars if they are hidden; restore position if they are visible.
             if (isTransientBarsLocked(swipeTarget != mStatusBar)) {
-                if (swipeTarget != mStatusBar) {
-                    Toast.makeText(mContext, com.android.internal.R.string.immersive_ui_mode_notify_locked, Toast.LENGTH_SHORT).show();
-                    Slog.d("ImmersiveUiMode", "Immersive UI mode active ignoring system bar visibility requests");
-                }
+                // prevent gestures from showing transient bars unless user swipes statusbar area
+                Toast.makeText(mContext, com.android.internal.R.string.immersive_ui_mode_notify_locked, Toast.LENGTH_SHORT).show();
+                Slog.d("ImmersiveUiMode", "Immersive UI mode active ignoring system bar visibility requests");
                 return;
             }
             mDisplayContent.getInsetsPolicy().showTransient(SHOW_TYPES_FOR_SWIPE,
@@ -2251,6 +2250,9 @@ public class DisplayPolicy {
         final long now = SystemClock.uptimeMillis();
         final long timeSinceLastUnlock = now - mLastUnlock;
         final long timeSinceLastInteraction = now - mLastInteraction;
+        if (!update) {
+            return false;
+        }
         if (!isImmersiveSysUi) {
             return false;
         }
