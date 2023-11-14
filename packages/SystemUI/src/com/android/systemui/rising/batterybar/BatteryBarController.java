@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2022 crDroid Android Project
+ * Copyright (C) 2018-2023 crDroid Android Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package com.android.systemui.rising.batterybar;
 
 import android.content.BroadcastReceiver;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -26,7 +25,6 @@ import android.os.BatteryManager;
 import android.provider.Settings;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -38,9 +36,6 @@ public class BatteryBarController extends LinearLayout implements TunerService.T
 
     private static final String TAG = "BatteryBarController";
 
-    BatteryBar mainBar;
-    BatteryBar alternateStyleBar;
-
     public static final int STYLE_REGULAR = 0;
     public static final int STYLE_SYMMETRIC = 1;
     public static final int STYLE_REVERSE = 2;
@@ -48,9 +43,6 @@ public class BatteryBarController extends LinearLayout implements TunerService.T
     int mStyle;
     int mLocation;
     int mThickness;
-
-    protected final static int CURRENT_LOC = 1;
-    int mLocationToLookFor = 0;
 
     private boolean mAttached = false;
     private int mBatteryLevel = 0;
@@ -67,11 +59,6 @@ public class BatteryBarController extends LinearLayout implements TunerService.T
 
     public BatteryBarController(Context context, AttributeSet attrs) {
         super(context, attrs);
-
-        if (attrs != null) {
-            String ns = "http://schemas.android.com/apk/res/com.android.systemui";
-            mLocationToLookFor = attrs.getAttributeIntValue(ns, "viewLocation", 0);
-        }
     }
 
     @Override
@@ -87,7 +74,7 @@ public class BatteryBarController extends LinearLayout implements TunerService.T
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_BATTERY_CHANGED);
-        getContext().registerReceiver(mIntentReceiver, filter);
+        getContext().registerReceiver(mIntentReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
 
         Dependency.get(TunerService.class).addTunable(this,
                 STATUSBAR_BATTERY_BAR,
@@ -157,7 +144,7 @@ public class BatteryBarController extends LinearLayout implements TunerService.T
     public void addBars() {
         removeAllViews();
 
-        if (mLocation == 0 || !isLocationValid(mLocation))
+        if (mLocation == 0)
             return;
 
         configThickness();
@@ -213,9 +200,5 @@ public class BatteryBarController extends LinearLayout implements TunerService.T
             default:
                 break;
         }
-    }
-
-    protected boolean isLocationValid(int location) {
-        return mLocationToLookFor == location;
     }
 }
