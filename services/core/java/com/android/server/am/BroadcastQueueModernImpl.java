@@ -590,7 +590,9 @@ class BroadcastQueueModernImpl extends BroadcastQueue {
             finishReceiverActiveLocked(mRunningColdStart, BroadcastRecord.DELIVERY_FAILURE,
                     "invalid start with re-enqueued broadcast");
         } else {
-            mRunningColdStart.reEnqueueActiveBroadcast();
+            if (mRunningColdStart.isActive()) {
+                mRunningColdStart.reEnqueueActiveBroadcast();
+            }
         }
         demoteFromRunningLocked(mRunningColdStart);
         clearRunningColdStart();
