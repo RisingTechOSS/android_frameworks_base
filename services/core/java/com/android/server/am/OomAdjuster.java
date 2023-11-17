@@ -322,7 +322,7 @@ public class OomAdjuster {
     /**
      * Service for optimizing resource usage from background apps.
      */
-    CachedAppOptimizer mCachedAppOptimizer;
+    public CachedAppOptimizer mCachedAppOptimizer;
 
     /**
      * Re-rank apps getting a cache oom adjustment from lru to weighted order

@@ -199,7 +199,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
      * The timeout to kill task processes if its activity didn't complete destruction in time
      * when there is a request to remove the task with killProcess=true.
      */
-    private static final int KILL_TASK_PROCESSES_TIMEOUT_MS = 1000;
+    private static final int KILL_TASK_PROCESSES_TIMEOUT_MS = 100;
 
     private static final int IDLE_TIMEOUT_MSG = FIRST_SUPERVISOR_TASK_MSG;
     private static final int IDLE_NOW_MSG = FIRST_SUPERVISOR_TASK_MSG + 1;
@@ -446,6 +446,8 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
     private int mDeferResumeCount;
 
     private boolean mInitialized;
+    
+    private ActivityManagerService mActivityManagerService;
 
     public ActivityTaskSupervisor(ActivityTaskManagerService service, Looper looper) {
         mService = service;
@@ -1931,11 +1933,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
     private void killTaskProcessesIfPossible(Task task) {
         task.mKillProcessesOnDestroyed = false;
         final String pkg = task.getBasePackageName();
-        if (getAppOpsManager().checkOpNoThrow(
-                AppOpsManager.OP_RUN_ANY_IN_BACKGROUND,
-                task.effectiveUid, pkg) != AppOpsManager.MODE_ALLOWED) {
-            mHandler.sendMessage(mHandler.obtainMessage(STRICT_STANDBY_KILL_MSG, task));
-        }
+        mHandler.sendMessage(mHandler.obtainMessage(STRICT_STANDBY_KILL_MSG, task));
         ArrayList<Object> procsToKill = null;
         ArrayMap<String, SparseArray<WindowProcessController>> pmap =
                 mService.mProcessNames.getMap();
@@ -2731,14 +2729,19 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
                 } break;
                 case STRICT_STANDBY_KILL_MSG: {
                     Task task = (Task) msg.obj;
+                    if (task == null) return;
                     String pkg = task.getBaseIntent().getComponent().getPackageName();
-                    try {
-                        ActivityManager.getService().forceStopPackage(pkg, task.mUserId);
-                    } catch (RemoteException e) {
-                        Slog.e(TAG, "Strict standby force stop failed...");
+                    if (pkg == null) return;
+                    if (getAppOpsManager().checkOpNoThrow(
+                            AppOpsManager.OP_RUN_ANY_IN_BACKGROUND,
+                            task.effectiveUid, pkg) != AppOpsManager.MODE_ALLOWED 
+                            || (mActivityManagerService != null 
+                            && !mActivityManagerService.mOomAdjuster.mCachedAppOptimizer.mFreezerProcessPolicies.isPkgInteractive(pkg))) {
+                            mService.mAmInternal.killProcess(pkg, task.mUserId,
+                                    "Strict standby policy");
+                            mService.mAppStandbyInternal.restrictApp(
+                                    pkg, task.mUserId, REASON_MAIN_FORCED_BY_USER, 0);
                     }
-                    mService.mAppStandbyInternal.restrictApp(
-                            pkg, task.mUserId, REASON_MAIN_FORCED_BY_USER, 0);
                 } break;
             }
         }
@@ -3077,5 +3080,9 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
             pw.println(prefix + "  mResult=");
             mResult.dump(pw, prefix + "    ");
         }
+    }
+    
+    public void setActivityManagerService(ActivityManagerService activityManagerService) {
+        mActivityManagerService = activityManagerService;
     }
 }

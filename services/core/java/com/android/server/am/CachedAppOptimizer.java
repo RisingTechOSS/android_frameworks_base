@@ -358,6 +358,8 @@ public final class CachedAppOptimizer {
 
     public final Object mFreezerLock = new Object();
 
+    public static ArrayMap<String, ArraySet<ProcessRecord>> interactiveProcessRecords = new ArrayMap<>();
+
     private final OnPropertiesChangedListener mOnFlagsChangedListener =
             new OnPropertiesChangedListener() {
                 @Override
@@ -636,7 +638,7 @@ public final class CachedAppOptimizer {
     private final ProcessDependencies mProcessDependencies;
     private final ProcLocksReader mProcLocksReader;
     
-    FreezerProcessPolicies mFreezerProcessPolicies = new FreezerProcessPolicies();
+    public FreezerProcessPolicies mFreezerProcessPolicies = new FreezerProcessPolicies();
 
     public CachedAppOptimizer(ActivityManagerService am) {
         this(am, null, new DefaultProcessDependencies());
@@ -2426,20 +2428,46 @@ public final class CachedAppOptimizer {
         }
     }
 
-    static final class FreezerProcessPolicies {
+    public static final class FreezerProcessPolicies {
 
         public boolean isProcessInteractive(ProcessRecord app) {
+            if (app == null) return false;
             final ProcessStateRecord state = app.mState;
             final boolean isUserProcess = state.getCurAdj() < state.getSetAdj() && (state.getCurAdj() < ProcessList.CACHED_APP_MIN_ADJ || state.getCurAdj() > ProcessList.CACHED_APP_MAX_ADJ);
-
-            return state.hasForegroundActivities() 
+            if (state.hasForegroundActivities() 
                    || isUserProcess
                    || state.hasRepForegroundActivities()
                    || state.hasShownUi()
                    || state.hasTopUi()
                    || state.hasOverlayUi()
                    || state.getCurAdj() < ProcessList.CACHED_APP_MIN_ADJ 
-                   || state.getCurAdj() > ProcessList.CACHED_APP_MAX_ADJ;
+                   || state.getCurAdj() > ProcessList.CACHED_APP_MAX_ADJ) {
+                interactiveProcessRecords.computeIfAbsent(app.info.packageName, k -> new ArraySet<>()).add(app);
+                return true;
+            } else {
+                ArraySet<ProcessRecord> interactiveProcess = interactiveProcessRecords.get(app.info.packageName);
+                if (interactiveProcess == null) {
+                    return false;
+                }
+                interactiveProcess.remove(app);
+                if (interactiveProcess.isEmpty()) {
+                    interactiveProcessRecords.remove(app.info.packageName);
+                }
+                return false;
+            }
+        }
+
+       public boolean isPkgInteractive(String packageName) {
+            ArraySet<ProcessRecord> interactiveProcesses = interactiveProcessRecords.get(packageName);
+            if (interactiveProcesses == null) {
+                return false;
+            }
+            for (ProcessRecord interactiveProcess : interactiveProcesses) {
+                if (isProcessInteractive(interactiveProcess)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
     }
