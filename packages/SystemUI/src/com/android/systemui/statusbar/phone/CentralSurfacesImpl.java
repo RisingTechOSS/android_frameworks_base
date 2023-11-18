@@ -3258,7 +3258,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces, Tune
                 mShadeController.makeExpandedVisible(true);
             }
             
-            if (mShowPulseOnScreenOff) {
+            if (mShowPulseOnScreenOff && mKeyguardIndicationController.isDeviceCharging()) {
                 mContext.sendBroadcastAsUser(new Intent("com.android.systemui.doze.pulse"),
                         new UserHandle(UserHandle.USER_CURRENT));
             }
