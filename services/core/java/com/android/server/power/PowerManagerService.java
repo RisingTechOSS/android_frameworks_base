@@ -2661,17 +2661,19 @@ public final class PowerManagerService extends SystemService
             return false;
         }
 
-        // On Always On Display, SystemUI shows the charging indicator
         if (mAlwaysOnEnabled && getGlobalWakefulnessLocked() == WAKEFULNESS_DOZING) {
-            mContext.sendBroadcastAsUser(new Intent("com.android.systemui.doze.pulse"),
-                    new UserHandle(UserHandle.USER_CURRENT));
+            mHandler.post(() -> {
+                mContext.sendBroadcastAsUser(new Intent("com.android.systemui.doze.pulse"),
+                        new UserHandle(UserHandle.USER_CURRENT));
+            });
             return false;
         }
 
-        // On Always On Charging, SystemUI shows the charging indicator
         if (mAlwaysOnChargingEnabled && mIsPowered && getGlobalWakefulnessLocked() == WAKEFULNESS_DOZING) {
-            mContext.sendBroadcastAsUser(new Intent("com.android.systemui.doze.pulse"),
-                    new UserHandle(UserHandle.USER_CURRENT));
+            mHandler.post(() -> {
+                mContext.sendBroadcastAsUser(new Intent("com.android.systemui.doze.pulse"),
+                        new UserHandle(UserHandle.USER_CURRENT));
+            });
             return false;
         }
 
