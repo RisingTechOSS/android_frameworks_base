@@ -47,8 +47,10 @@ import android.os.Handler;
 import android.os.PowerManager;
 import android.os.Process;
 import android.os.Trace;
+import android.os.UserHandle;
 import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -912,8 +914,8 @@ public class UdfpsController implements DozeReceiver, Dumpable {
 
         udfpsHapticsSimulator.setUdfpsController(this);
         udfpsShell.setUdfpsOverlayController(mUdfpsOverlayController);
-        mFrameworkDimming = mContext.getResources().getBoolean(R.bool.config_udfpsFrameworkDimming);
-        mFrameworkDimmingDelay = mContext.getResources().getInteger(R.integer.config_udfpsDimmingDisableDelay);
+        mFrameworkDimming = mContext.getResources().getBoolean(com.android.systemui.R.bool.config_udfpsFrameworkDimming);
+        mFrameworkDimmingDelay = mContext.getResources().getInteger(com.android.systemui.R.integer.config_udfpsDimmingDisableDelay);
         parseBrightnessAlphaArray();
     }
 
@@ -1137,7 +1139,7 @@ public class UdfpsController implements DozeReceiver, Dumpable {
     private void parseBrightnessAlphaArray() {
         if (mFrameworkDimming) {
             String[] array = mContext.getResources().getStringArray(
-                    R.array.config_udfpsDimmingBrightnessAlphaArray);
+                    com.android.systemui.R.array.config_udfpsDimmingBrightnessAlphaArray);
             mBrightnessAlphaArray = new int[array.length][2];
             for (int i = 0; i < array.length; i++) {
                 String[] s = array[i].split(",");
