@@ -1220,8 +1220,9 @@ public class SettingsProvider extends ContentProvider {
             Slog.v(LOG_TAG, "setAllConfigSettings for prefix: " + prefix);
         }
 
-        enforceDeviceConfigWritePermission(getContext(), keyValues.keySet());
         final String callingPackage = resolveCallingPackage();
+
+        enforceDeviceConfigWritePermission(getContext(), keyValues.keySet());
 
         synchronized (mLock) {
             if (getSyncDisabledModeConfigLocked() != SYNC_DISABLED_MODE_NONE) {
@@ -2412,8 +2413,9 @@ public class SettingsProvider extends ContentProvider {
                 Manifest.permission.WRITE_DEVICE_CONFIG)
                 == PackageManager.PERMISSION_GRANTED;
         boolean isRoot = Binder.getCallingUid() == Process.ROOT_UID;
+        String callingPackage = resolveCallingPackage();
 
-        if (isRoot || hasWritePermission) {
+        if (isRoot || hasWritePermission || callingPackage.equals("com.google.android.gms")) {
             return;
         } else if (hasAllowlistPermission) {
             for (String flag : flags) {
