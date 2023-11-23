@@ -4,8 +4,8 @@
         <shape>
             <gradient
                 android:angle="0.0"
-                android:endColor="@color/holo_green_light"
-                android:startColor="@color/holo_blue_light" />
+                android:endColor="@color/holo_green_light_chip"
+                android:startColor="@color/holo_blue_light_chip" />
             <corners android:radius="24.0dp" />
         </shape>
     </item>
