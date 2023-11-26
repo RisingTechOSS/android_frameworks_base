@@ -20,6 +20,7 @@ import com.android.systemui.qs.tileimpl.QSTileImpl
 import com.android.systemui.qs.tiles.AODTile
 import com.android.systemui.qs.tiles.RefreshRateTile
 import com.android.systemui.qs.tiles.SmartPixelsTile
+import com.android.systemui.qs.tiles.SoundTile
 
 import dagger.Binds
 import dagger.Module
@@ -45,4 +46,10 @@ interface QsTileModule {
     @IntoMap
     @StringKey(SmartPixelsTile.TILE_SPEC)
     fun bindSmartPixelsTile(smartPixelsTile: SmartPixelsTile): QSTileImpl<*>
+    
+    /** Inject SoundTile into tileMap in QSModule */
+    @Binds
+    @IntoMap
+    @StringKey(SoundTile.TILE_SPEC)
+    fun bindSoundTile(soundTile: SoundTile): QSTileImpl<*>
 }
