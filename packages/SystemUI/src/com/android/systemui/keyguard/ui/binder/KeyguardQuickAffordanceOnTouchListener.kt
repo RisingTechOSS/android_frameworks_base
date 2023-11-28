@@ -25,6 +25,7 @@ import android.view.ViewPropertyAnimator
 import androidx.core.animation.CycleInterpolator
 import androidx.core.animation.ObjectAnimator
 import com.android.systemui.R
+import com.android.systemui.animation.CustomBounceInterpolator
 import com.android.systemui.animation.Expandable
 import com.android.systemui.common.ui.view.rawDistanceFrom
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardQuickAffordanceViewModel
@@ -56,12 +57,11 @@ class KeyguardQuickAffordanceOnTouchListener(
                         // When not using a stylus, we require a long-press to activate the
                         // quick affordance, mostly to do "falsing" (e.g. protect from false
                         // clicks in the pocket/bag).
-                        longPressAnimator =
-                            view
-                                .animate()
-                                .scaleX(PRESSED_SCALE)
-                                .scaleY(PRESSED_SCALE)
-                                .setDuration(longPressDurationMs)
+                        longPressAnimator = view.animate()
+                            .scaleX(PRESSED_SCALE)
+                            .scaleY(PRESSED_SCALE)
+                            .setDuration(380L)
+                            .setInterpolator(CustomBounceInterpolator(0.3, 4.0))
                     }
                 }
                 false
