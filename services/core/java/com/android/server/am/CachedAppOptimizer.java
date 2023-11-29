@@ -240,7 +240,7 @@ public final class CachedAppOptimizer {
     private static final String ATRACE_COMPACTION_TRACK = "Compaction";
     private static final String ATRACE_FREEZER_TRACK = "Freezer";
 
-    private static final int FREEZE_BINDER_TIMEOUT_MS = 100;
+    private static final int FREEZE_BINDER_TIMEOUT_MS = 0;
     private static final int FREEZE_DEADLOCK_TIMEOUT_MS = 1000;
 
     @VisibleForTesting static final boolean ENABLE_FILE_COMPACT = true;
@@ -265,12 +265,12 @@ public final class CachedAppOptimizer {
     // Format of this string should be a comma separated list of integers.
     @VisibleForTesting static final String DEFAULT_COMPACT_PROC_STATE_THROTTLE =
             String.valueOf(ActivityManager.PROCESS_STATE_RECEIVER);
-    @VisibleForTesting static final long DEFAULT_FREEZER_DEBOUNCE_TIMEOUT = 100;
+    @VisibleForTesting static final long DEFAULT_FREEZER_DEBOUNCE_TIMEOUT = 0;
     @VisibleForTesting static final boolean DEFAULT_FREEZER_EXEMPT_INST_PKG = true;
     @VisibleForTesting static final boolean DEFAULT_FREEZER_BINDER_ENABLED = true;
     @VisibleForTesting static final long DEFAULT_FREEZER_BINDER_DIVISOR = 4;
-    @VisibleForTesting static final int DEFAULT_FREEZER_BINDER_OFFSET = 500;
-    @VisibleForTesting static final long DEFAULT_FREEZER_BINDER_THRESHOLD = 1_000;
+    @VisibleForTesting static final int DEFAULT_FREEZER_BINDER_OFFSET = 0;
+    @VisibleForTesting static final long DEFAULT_FREEZER_BINDER_THRESHOLD = 0;
 
     @VisibleForTesting static final Uri CACHED_APP_FREEZER_ENABLED_URI = Settings.Global.getUriFor(
                 Settings.Global.CACHED_APPS_FREEZER_ENABLED);
