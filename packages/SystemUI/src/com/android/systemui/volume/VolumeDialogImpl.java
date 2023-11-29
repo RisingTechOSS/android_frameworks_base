@@ -2451,7 +2451,7 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
         row.sliderProgressSolid.setAlpha(alpha);
         row.sliderProgressSolidBg.setAlpha(useActiveColoring
                 ? Color.alpha(colorTint.getDefaultColor())
-                : (int) (0.02 * 255));
+                : (int) (0.04 * 255));
         if (row.sliderProgressIcon != null) {
             row.sliderProgressIcon.setTintList(bgTint);
         }
