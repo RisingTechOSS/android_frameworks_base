@@ -174,7 +174,7 @@ public class PropImitationHooks {
         return "";
     }
 
-    private static volatile boolean sIsGms, sIsFinsky;
+    private static volatile boolean sIsGms, sIsFinsky, sIsSetupWizard;
     private static volatile String sProcessName;
 
     public static void setProps(Application app) {
@@ -186,6 +186,7 @@ public class PropImitationHooks {
         sProcessName = processName;
         sIsGms = packageName.equals(PACKAGE_GMS) && processName.equals(PROCESS_GMS_UNSTABLE);
         sIsFinsky = packageName.equals(PACKAGE_FINSKY);
+        sIsSetupWizard = packageName.equals(PACKAGE_SETUPWIZARD);
 
         if (sIsGms) {
             if (shouldTryToCertifyDevice()) {
@@ -261,11 +262,9 @@ public class PropImitationHooks {
     }
 
     private static boolean shouldTryToCertifyDevice() {
+        final boolean[] shouldCertify = {true};
         final boolean was = isGmsAddAccountActivityOnTop();
         final String reason = "GmsAddAccountActivityOnTop";
-        if (!was) {
-            return true;
-        }
         dlog("Skip spoofing build for GMS, because " + reason + "!");
         TaskStackListener taskStackListener = new TaskStackListener() {
             @Override
@@ -273,17 +272,16 @@ public class PropImitationHooks {
                 final boolean isNow = isGmsAddAccountActivityOnTop();
                 if (isNow ^ was) {
                     dlog(String.format("%s changed: isNow=%b, was=%b, killing myself!", reason, isNow, was));
-                    Process.killProcess(Process.myPid());
+                    shouldCertify[0] = false;
                 }
             }
         };
         try {
             ActivityTaskManager.getService().registerTaskStackListener(taskStackListener);
-            return false;
         } catch (Exception e) {
             Log.e(TAG, "Failed to register task stack listener!", e);
-            return true;
         }
+        return shouldCertify[0];
     }
 
     private static boolean isGmsAddAccountActivityOnTop() {
@@ -352,13 +350,13 @@ public class PropImitationHooks {
     }
 
     private static boolean isCallerSafetyNet() {
-        return shouldTryToCertifyDevice() && sIsGms && Arrays.stream(Thread.currentThread().getStackTrace())
+        return sIsGms && Arrays.stream(Thread.currentThread().getStackTrace())
                 .anyMatch(elem -> elem.getClassName().contains("DroidGuard"));
     }
 
     public static void onEngineGetCertificateChain() {
         // Check stack for SafetyNet or Play Integrity
-        if (isCallerSafetyNet() || sIsFinsky) {
+        if ((isCallerSafetyNet() || sIsFinsky) && !sIsSetupWizard && shouldTryToCertifyDevice()) {
             dlog("Blocked key attestation sIsGms=" + sIsGms + " sIsFinsky=" + sIsFinsky);
             throw new UnsupportedOperationException();
         }
