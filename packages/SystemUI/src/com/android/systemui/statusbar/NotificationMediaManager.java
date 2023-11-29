@@ -731,7 +731,11 @@ public class NotificationMediaManager implements Dumpable {
                     break;
             }
 
-            if (artworkDrawable != null && mAlbumArtFilter >= 3 && mLSBlurRadius > 2) {
+            if (artworkDrawable != null && mAlbumArtFilter == 5) {
+                // note: as per testing this doesnt result to "boxing". using rendereffect with mirror shader somehow produces a blur similar to ios gradients 
+                final RenderEffect blurGradient = RenderEffect.createBlurEffect(4000, 4000, Shader.TileMode.MIRROR);
+                mBackdropBack.setRenderEffect(blurGradient);
+            } else if (artworkDrawable != null && mAlbumArtFilter >= 3 && mLSBlurRadius > 2) {
                 final RenderEffect blurEffect = RenderEffect.createBlurEffect(mLSBlurRadius, mLSBlurRadius, Shader.TileMode.MIRROR);
                 mBackdropBack.setRenderEffect(blurEffect);
             }
