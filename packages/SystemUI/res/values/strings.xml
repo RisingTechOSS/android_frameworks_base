@@ -3156,4 +3156,6 @@
     [CHAR LIMIT=64].
     -->
     <string name="install_app">Install app</string>
+    
+    <string name="face_unlock_recognizing">Recognizing face...</string>
 </resources>
