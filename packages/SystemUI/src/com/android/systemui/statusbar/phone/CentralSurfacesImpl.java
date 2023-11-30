@@ -295,8 +295,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces, Tune
 
     private static final String QS_TRANSPARENCY =
             "system:" + Settings.System.QS_TRANSPARENCY;
-    private static final String DOZE_ON_CHARGE =
-            Settings.Secure.DOZE_ON_CHARGE;
     private static final String PULSE_ON_NEW_TRACKS =
             Settings.Secure.PULSE_ON_NEW_TRACKS;
 
@@ -572,7 +570,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces, Tune
     private final ActivityStarter mActivityStarter;
 
     private GameSpaceManager mGameSpaceManager;
-    private boolean mShowPulseOnScreenOff;
 
     private final PulseControllerImpl mPulseController;
     private VisualizerView mVisualizerView;
@@ -1020,9 +1017,8 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces, Tune
 
         mColorExtractor.addOnColorsChangedListener(mOnColorsChangedListener);
 
-        Dependency.get(TunerService.class).addTunable(this, QS_TRANSPARENCY,
-                PULSE_ON_NEW_TRACKS,
-                DOZE_ON_CHARGE);
+        Dependency.get(TunerService.class).addTunable(this, QS_TRANSPARENCY);
+        Dependency.get(TunerService.class).addTunable(this, PULSE_ON_NEW_TRACKS);
 
         mWindowManager = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
 
@@ -3257,11 +3253,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces, Tune
             if (mDozeParameters.shouldShowLightRevealScrim()) {
                 mShadeController.makeExpandedVisible(true);
             }
-            
-            if (mShowPulseOnScreenOff && mKeyguardIndicationController.isDeviceCharging()) {
-                mContext.sendBroadcastAsUser(new Intent("com.android.systemui.doze.pulse"),
-                        new UserHandle(UserHandle.USER_CURRENT));
-            }
 
             DejankUtils.stopDetectingBlockingIpcs(tag);
         }
@@ -3866,10 +3857,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces, Tune
             case QS_TRANSPARENCY:
                 mScrimController.setCustomScrimAlpha(
                         TunerService.parseInteger(newValue, 100));
-                break;
-           case DOZE_ON_CHARGE:
-                mShowPulseOnScreenOff =
-                        TunerService.parseIntegerSwitch(newValue, false);
                 break;
             case PULSE_ON_NEW_TRACKS:
                 boolean showPulseOnNewTracks =

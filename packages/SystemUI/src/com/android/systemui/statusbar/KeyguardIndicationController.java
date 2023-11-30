@@ -204,8 +204,6 @@ public class KeyguardIndicationController {
     private final FaceHelpMessageDeferral mFaceAcquiredMessageDeferral;
     private boolean mInited;
     
-    private boolean mIsCharging;
-    
     private boolean mFaceDetectionRunning;
 
     private KeyguardUpdateMonitorCallback mUpdateMonitorCallback;
@@ -1118,10 +1116,6 @@ public class KeyguardIndicationController {
         mRotateTextViewController.dump(pw, args);
     }
 
-    public boolean isDeviceCharging() {
-        return mIsCharging;
-    }
-
     protected class BaseKeyguardCallback extends KeyguardUpdateMonitorCallback {
         @Override
         public void onTimeChanged() {
@@ -1165,7 +1159,6 @@ public class KeyguardIndicationController {
             mKeyguardLogger.logRefreshBatteryInfo(isChargingOrFull, mPowerPluggedIn, mBatteryLevel,
                     mBatteryDefender);
             updateDeviceEntryIndication(!wasPluggedIn && mPowerPluggedInWired);
-            mIsCharging = mPowerPluggedInWired || mPowerPluggedInWireless || mPowerPluggedInDock || mPowerPluggedIn;
         }
 
         @Override
