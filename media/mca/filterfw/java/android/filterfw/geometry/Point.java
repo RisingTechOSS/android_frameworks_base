@@ -19,7 +19,7 @@ package android.filterfw.geometry;
 
 import android.compat.annotation.UnsupportedAppUsage;
 
-import java.util.HashMap;
+import android.util.SparseArray;
 import java.util.Map;
 
 /**
@@ -27,8 +27,8 @@ import java.util.Map;
  */
 public class Point {
 
-    private static final Map<Float, Float> cosCache = new HashMap<>();
-    private static final Map<Float, Float> sinCache = new HashMap<>();
+    private static final SparseArray<Float> cosCache = new SparseArray<>();
+    private static final SparseArray<Float> sinCache = new SparseArray<>();
     
     @UnsupportedAppUsage
     public float x;
@@ -108,22 +108,27 @@ public class Point {
 
     public Point rotated(float radians) {
         float cosVal, sinVal;
+        int key = toSparseArrayKey(radians);
 
-        if (cosCache.containsKey(radians)) {
-            cosVal = cosCache.get(radians);
+        if (cosCache.get(key) != null) {
+            cosVal = cosCache.get(key);
         } else {
             cosVal = (float) Math.cos(radians);
-            cosCache.put(radians, cosVal);
+            cosCache.put(key, cosVal);
         }
 
-        if (sinCache.containsKey(radians)) {
-            sinVal = sinCache.get(radians);
+        if (sinCache.get(key) != null) {
+            sinVal = sinCache.get(key);
         } else {
             sinVal = (float) Math.sin(radians);
-            sinCache.put(radians, sinVal);
+            sinCache.put(key, sinVal);
         }
 
         return new Point(cosVal * x - sinVal * y, sinVal * x + cosVal * y);
+    }
+
+    private int toSparseArrayKey(float radians) {
+        return (int)(radians * 10000);
     }
 
     public Point rotatedAround(Point center, float radians) {
