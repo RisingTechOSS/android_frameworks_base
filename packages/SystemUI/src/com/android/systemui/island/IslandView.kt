@@ -23,12 +23,14 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.Icon
 import android.graphics.Region
 import android.graphics.Typeface
+import android.media.AudioManager
 import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Handler
@@ -57,6 +59,8 @@ import com.android.systemui.R
 import com.android.systemui.statusbar.phone.HeadsUpManagerPhone
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+
+import com.android.settingslib.drawable.CircleFramedDrawable
 
 import kotlin.text.Regex
 import java.util.Locale;
@@ -113,7 +117,7 @@ class IslandView : ExtendedFloatingActionButton {
     fun setIslandEnabled(enable: Boolean) {
         this.useIslandNotification = enable
     }
-    
+
     fun setScroller(scroller: NotificationStackScrollLayout?) {
         this.notificationStackScroller = scroller
     }
@@ -133,11 +137,15 @@ class IslandView : ExtendedFloatingActionButton {
     fun animateShowIsland(expandedFraction: Float) {
         if (!useIslandNotification || expandedFraction > 0.0f) {
             return
-        } else if (isIslandAnimating) {
-            notificationStackScroller?.visibility = View.GONE
-            return
         }
         post({
+            if (isIslandAnimating) {
+                notificationStackScroller?.visibility = View.GONE
+                shrink()
+                postOnAnimationDelayed({
+                    hide()
+                }, 150L)
+            }
             setIslandContents(true)
             notificationStackScroller?.visibility = View.GONE
             show()
@@ -225,23 +233,56 @@ class IslandView : ExtendedFloatingActionButton {
         ).map { key -> getDrawableFromExtras(notification.extras, key, context) }
          .firstOrNull { it != null }
          ?: getNotificationIcon(sbn, notification) ?: return 
-        notifTitle = if (iconDrawable != null) {
-            getAppLabel(sbn, context).takeIf { it.isNotBlank() } ?: return
-        } else {
-            notificationTitle.takeIf { it.isNotBlank() } ?: return
+        val appLabel = getAppLabel(sbn, context)
+        val isNowPlaying = sbn.packageName == "com.android.systemui" && notificationTitle.contains("Now Playing")
+        val isSystem = sbn.packageName == "android" || sbn.packageName == "com.android.systemui"
+        notifTitle = when {
+            iconDrawable != null && !isSystem -> 
+                { appLabel.takeIf { it.isNotBlank() } ?: notificationTitle.takeIf { it.isNotBlank() } ?: return } // meant for messaging apps
+            isNowPlaying -> 
+                { notificationText.takeIf { it.isNotBlank() } ?: return } // island now playing 
+            isSystem && !isNowPlaying -> { "" } // USB debugging notification etc
+            else -> {
+                notificationTitle.takeIf { it.isNotBlank() } ?: return // normal apps
+            }
         }
         notifContent = when {
-            notificationTitle.isNotBlank() && notificationText.isNotBlank() -> "$notificationTitle : $notificationText"
-            else -> notificationTitle.ifBlank { notificationText }
+            isNowPlaying -> ""
+            notificationTitle.isNotBlank() && notificationText.isNotBlank() -> "$notificationTitle : $notificationText" // meant for messaging apps
+            else -> notificationText.takeIf { it.isNotBlank() } ?: "" // normal apps
         }
         notifSubContent = notification.extras.getCharSequence(Notification.EXTRA_SUB_TEXT)?.toString().orEmpty()
-        titleSpannable = SpannableString(notifTitle).apply {
-            setSpan(StyleSpan(Typeface.BOLD), 0, notifTitle.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        titleSpannable = SpannableString(notifTitle.ifEmpty { notifContent }).apply {
+            setSpan(StyleSpan(Typeface.BOLD), 0, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
-        this.icon = iconDrawable
+        val resources = context.resources
+        val bitmap = drawableToBitmap(iconDrawable)
+        val roundedIcon = CircleFramedDrawable(bitmap, this.iconSize)
+        this.icon = roundedIcon
         this.iconTint = null
         this.bringToFront()
         setOnTouchListener(sbn.notification.contentIntent, sbn.packageName)
+    }
+
+    fun getActiveAppVolumePackage(): String {
+        val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        for (av in audioManager.listAppVolumes()) {
+            if (av.isActive) {
+                return av.getPackageName()
+            }
+        }
+        return ""
+    }
+
+    fun drawableToBitmap(drawable: Drawable): Bitmap {
+        if (drawable is BitmapDrawable) {
+            return drawable.bitmap
+        }
+        val bitmap = Bitmap.createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        drawable.setBounds(0, 0, canvas.width, canvas.height)
+        drawable.draw(canvas)
+        return bitmap
     }
 
     private fun filterDupText(text: String): String {
@@ -339,7 +380,7 @@ class IslandView : ExtendedFloatingActionButton {
         if (isDeviceRinging()) {
             telecomManager?.acceptRingingCall()
         } else {
-            val appIntent = context.packageManager.getLaunchIntentForPackage(packageName)?.apply {
+            var appIntent = context.packageManager.getLaunchIntentForPackage(packageName)?.apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
             }
             try {
@@ -348,6 +389,11 @@ class IslandView : ExtendedFloatingActionButton {
                         ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED)
                 pendingIntent.send(context, 0, appIntent, null, null, null, options.toBundle())
             } catch (e: Exception) {
+                if (getActiveAppVolumePackage() != "" && packageName == "com.android.systemui") {
+                    appIntent = context.packageManager.getLaunchIntentForPackage(getActiveAppVolumePackage())?.apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                    }
+                }
                 try {
                     context.startActivityAsUser(appIntent, UserHandle.CURRENT)
                 } catch (e: Exception) {}
@@ -394,9 +440,9 @@ class IslandView : ExtendedFloatingActionButton {
     }
 
     private fun setIslandContents(singleLine: Boolean) {
+        this.iconSize = if (singleLine) resources.getDimensionPixelSize(R.dimen.island_icon_size) / 2 else resources.getDimensionPixelSize(R.dimen.island_icon_size)
         prepareIslandContent()
         this.apply {
-            this.iconSize = if (singleLine) resources.getDimensionPixelSize(R.dimen.island_icon_size) / 2 else resources.getDimensionPixelSize(R.dimen.island_icon_size)
             this.islandText = buildSpannableText(titleSpannable, notifContent, notifSubContent, singleLine)
             if (singleLine) {
                 val maxLength = 28
