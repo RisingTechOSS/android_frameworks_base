@@ -50,6 +50,7 @@ public class StatusBarWifiView extends BaseStatusBarFrameLayout implements DarkR
     private ImageView mWifiIcon;
     private ImageView mIn;
     private ImageView mOut;
+    private ImageView mWifiStandardIcon;
     private View mInoutContainer;
     private View mSignalSpacer;
     private View mAirplaneSpacer;
@@ -89,6 +90,7 @@ public class StatusBarWifiView extends BaseStatusBarFrameLayout implements DarkR
         mWifiIcon.setImageTintList(list);
         mIn.setImageTintList(list);
         mOut.setImageTintList(list);
+        mWifiStandardIcon.setImageTintList(list);
         mDotView.setDecorColor(color);
     }
 
@@ -153,6 +155,7 @@ public class StatusBarWifiView extends BaseStatusBarFrameLayout implements DarkR
         mWifiIcon = findViewById(R.id.wifi_signal);
         mIn = findViewById(R.id.wifi_in);
         mOut = findViewById(R.id.wifi_out);
+        mWifiStandardIcon = findViewById(R.id.wifi_standard);
         mSignalSpacer = findViewById(R.id.wifi_signal_spacer);
         mAirplaneSpacer = findViewById(R.id.wifi_airplane_spacer);
         mInoutContainer = findViewById(R.id.inout_container);
