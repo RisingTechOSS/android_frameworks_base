@@ -12321,7 +12321,15 @@ public final class Settings {
          * @hide
          */
         public static final String LOCKSCREEN_USE_DOUBLE_LINE_CLOCK =
-                "lockscreen_use_double_line_clock";
+                "lockscreen_use_double_line_clock";        
+        
+        /**
+         * Whether to use the lockscreen custom clock
+         *
+         * @hide
+         */
+        public static final String CLOCK_LS =
+                "clock_ls";
 
         /**
          * Whether to show the vibrate icon in the Status Bar (default off)
