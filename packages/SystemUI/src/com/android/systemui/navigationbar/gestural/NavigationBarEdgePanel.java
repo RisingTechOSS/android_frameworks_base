@@ -63,6 +63,8 @@ import java.util.concurrent.Executor;
 
 import javax.inject.Inject;
 
+import com.android.internal.util.android.VibrationUtils;
+
 public class NavigationBarEdgePanel extends View implements NavigationEdgeBackPlugin {
 
     private static final String TAG = "NavigationBarEdgePanel";
@@ -232,7 +234,7 @@ public class NavigationBarEdgePanel extends View implements NavigationEdgeBackPl
     private final Runnable mFailsafeRunnable = this::onFailsafe;
 
     private boolean mBackArrowVisibility;
-    private boolean mEdgeHapticEnabled;
+    private int mEdgeHapticIntensity;
 
     private DynamicAnimation.OnAnimationEndListener mSetGoneEndListener
             = new DynamicAnimation.OnAnimationEndListener() {
@@ -446,8 +448,8 @@ public class NavigationBarEdgePanel extends View implements NavigationEdgeBackPl
     }
 
     @Override
-    public void setEdgeHapticEnabled(boolean edgeHapticEnabled) {
-        mEdgeHapticEnabled = edgeHapticEnabled;
+    public void setEdgeHapticIntensity(int edgeHapticIntensity) {
+        mEdgeHapticIntensity = edgeHapticIntensity;
     }
 
     /**
@@ -658,9 +660,9 @@ public class NavigationBarEdgePanel extends View implements NavigationEdgeBackPl
         mVelocityTracker.computeCurrentVelocity(1000);
         // Only do the extra translation if we're not already flinging
         boolean isSlow = Math.abs(mVelocityTracker.getXVelocity()) < 500;
-        if (mEdgeHapticEnabled && (isSlow
+        if (mEdgeHapticIntensity > 0 && (isSlow
                 || SystemClock.uptimeMillis() - mVibrationTime >= GESTURE_DURATION_FOR_CLICK_MS)) {
-            mVibratorHelper.vibrate(VibrationEffect.EFFECT_CLICK);
+            VibrationUtils.triggerVibration(mContext, mEdgeHapticIntensity);
         }
 
         // Let's also snap the angle a bit
@@ -756,8 +758,8 @@ public class NavigationBarEdgePanel extends View implements NavigationEdgeBackPl
         // Apply a haptic on drag slop passed
         if (!mDragSlopPassed && touchTranslation > mSwipeTriggerThreshold) {
             mDragSlopPassed = true;
-            if (mEdgeHapticEnabled) {
-                mVibratorHelper.vibrate(VibrationEffect.EFFECT_TICK);
+            if (mEdgeHapticIntensity > 0) {
+                VibrationUtils.triggerVibration(mContext, mEdgeHapticIntensity);
                 mVibrationTime = SystemClock.uptimeMillis();
             }
 
