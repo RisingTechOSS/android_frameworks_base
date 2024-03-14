@@ -39,10 +39,10 @@ import android.text.TextUtils
 import android.util.Log
 import android.util.TypedValue
 import android.view.Gravity
-import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
@@ -68,6 +68,8 @@ import com.android.systemui.qs.tileimpl.QSIconViewImpl.QS_ANIM_LENGTH
 import com.android.systemui.res.R
 import java.util.Objects
 import java.util.Random
+
+import com.android.internal.util.android.VibrationUtils
 
 private const val TAG = "QSTileViewImpl"
 open class QSTileViewImpl @JvmOverloads constructor(
@@ -119,6 +121,14 @@ open class QSTileViewImpl @JvmOverloads constructor(
             context.contentResolver,
             Settings.System.QS_PANEL_STYLE, 0, UserHandle.USER_CURRENT
         )
+
+    private val qsTileHaptic: Int = Settings.System.getIntForUser(
+            context.contentResolver,
+            Settings.System.QS_PANEL_TILE_HAPTIC, 0, UserHandle.USER_CURRENT
+        )
+
+    private var initialX = 0f
+    private var initialY = 0f
 
     private val colorActive = Utils.getColorAttrDefaultColor(context, com.android.internal.R.attr.colorAccent)
     private val colorOffstate = Utils.getColorAttrDefaultColor(context, com.android.internal.R.attr.colorSurface) 
@@ -505,10 +515,19 @@ open class QSTileViewImpl @JvmOverloads constructor(
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-            performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-        } else if (event.getActionMasked() == MotionEvent.ACTION_UP) {
-            performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                initialX = event.x
+                initialY = event.y
+            }
+            MotionEvent.ACTION_UP -> {
+                val distanceX = Math.abs(event.x - initialX)
+                val distanceY = Math.abs(event.y - initialY)
+                val touchSlop = ViewConfiguration.get(context).scaledTouchSlop
+                if (distanceX < touchSlop && distanceY < touchSlop) {
+                    VibrationUtils.triggerVibration(context, qsTileHaptic)
+                }
+            }
         }
         return super.onTouchEvent(event)
     }
