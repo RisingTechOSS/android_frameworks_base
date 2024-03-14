@@ -7085,6 +7085,12 @@ public final class Settings {
         public static final String QS_PANEL_TILE_HAPTIC = "qs_panel_tile_haptic";
 
         /**
+         * @hide
+         */
+        @Readable
+        public static final String EDGE_SCROLLING_HAPTICS_INTENSITY = "edge_scrolling_haptics_intensity";
+
+        /**
          * Keys we no longer back up under the current schema, but want to continue to
          * process when restoring historical backup datasets.
          *
