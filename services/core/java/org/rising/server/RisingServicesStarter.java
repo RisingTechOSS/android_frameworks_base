@@ -25,12 +25,16 @@ public class RisingServicesStarter {
     private static final String QUICKSWITCH_SERVICE_CLASS =
             "org.rising.server.QuickSwitchService";
 
+    private static final String ADAPTIVE_SOUND_ENGINE_SERVICE_CLASS =
+            "org.rising.server.AdaptiveSoundEngineService";
+
     public RisingServicesStarter(SystemServiceManager systemServiceManager) {
         this.mSystemServiceManager = systemServiceManager;
     }
 
     public void startAllServices() {
         startService(QUICKSWITCH_SERVICE_CLASS);
+        startService(ADAPTIVE_SOUND_ENGINE_SERVICE_CLASS);
     }
 
     private void startService(String serviceClassName) {
