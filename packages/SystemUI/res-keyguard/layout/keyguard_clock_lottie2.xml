@@ -16,7 +16,6 @@
         app:lottie_loop="true" />
 
     <LinearLayout
-        android:layout_marginTop="75.0dip"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal|top">

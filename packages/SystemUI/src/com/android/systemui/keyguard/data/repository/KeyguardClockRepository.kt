@@ -29,6 +29,7 @@ import com.android.systemui.keyguard.shared.model.SettingsClockSize
 import com.android.systemui.plugins.clocks.ClockController
 import com.android.systemui.plugins.clocks.ClockId
 import com.android.systemui.shared.clocks.ClockRegistry
+import com.android.systemui.util.settings.SystemSettings
 import com.android.systemui.util.settings.SecureSettings
 import com.android.systemui.util.settings.SettingsProxyExt.observerFlow
 import javax.inject.Inject
@@ -69,6 +70,7 @@ interface KeyguardClockRepository {
 class KeyguardClockRepositoryImpl
 @Inject
 constructor(
+    private val systemSettings: SystemSettings,
     private val secureSettings: SecureSettings,
     private val clockRegistry: ClockRegistry,
     override val clockEventController: ClockEventController,
@@ -133,13 +135,25 @@ constructor(
     @VisibleForTesting
     suspend fun getClockSize(): SettingsClockSize {
         return withContext(backgroundDispatcher) {
-            if (
-                secureSettings.getIntForUser(
+            var isDoubleLineClock = secureSettings.getIntForUser(
                     Settings.Secure.LOCKSCREEN_USE_DOUBLE_LINE_CLOCK,
                     1,
                     UserHandle.USER_CURRENT
                 ) == 1
-            ) {
+            val clockStyleEnabled = systemSettings.getIntForUser(
+                    "clock_style",
+                    0,
+                    UserHandle.USER_CURRENT
+                ) != 0
+            val widgetsEnabled = systemSettings.getIntForUser(
+                    "lockscreen_widgets_enabled",
+                    0,
+                    UserHandle.USER_CURRENT
+                ) != 0
+            if (clockStyleEnabled || widgetsEnabled) {
+                isDoubleLineClock = false
+            }
+            if (isDoubleLineClock) {
                 SettingsClockSize.DYNAMIC
             } else {
                 SettingsClockSize.SMALL
