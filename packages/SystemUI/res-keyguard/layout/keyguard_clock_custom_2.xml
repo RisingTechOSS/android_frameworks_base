@@ -5,7 +5,6 @@
     android:orientation="vertical"
     android:layout_width="fill_parent"
     android:layout_height="220.0dip"
-    android:layout_marginTop="50.0dip"
     android:layout_marginHorizontal="16.0dip"
     xmlns:android="http://schemas.android.com/apk/res/android">
     <LinearLayout

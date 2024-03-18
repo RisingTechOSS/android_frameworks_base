@@ -13,7 +13,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:foregroundGravity="center"
-        android:layout_marginTop="40dp"
         android:orientation="vertical">
 
         <!-- Text for Date -->

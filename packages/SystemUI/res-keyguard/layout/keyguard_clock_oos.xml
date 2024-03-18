@@ -10,7 +10,6 @@
         android:orientation="vertical"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="90.0dip"
         android:layout_marginStart="@dimen/below_clock_padding_start">
         <TextClock
             android:textSize="36.0dip"

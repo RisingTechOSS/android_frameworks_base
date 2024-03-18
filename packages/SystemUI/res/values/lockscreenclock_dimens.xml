@@ -18,4 +18,5 @@
 <resources>
     <dimen name="custom_clock_2_avatar_radius">16dp</dimen>
     <dimen name="custom_clock_2_avatar_width">70dp</dimen>
+    <dimen name="custom_clock_frame_margin_top">28dp</dimen>
 </resources>

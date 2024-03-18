@@ -124,6 +124,8 @@ public class LockScreenWidgets extends LinearLayout implements TunerService.Tuna
     private boolean mMediaActive = false;
     
     private boolean mDozing;
+    
+    private boolean mIsInflated = false;
 
     final ConfigurationListener mConfigurationListener = new ConfigurationListener() {
         @Override
@@ -377,6 +379,7 @@ public class LockScreenWidgets extends LinearLayout implements TunerService.Tuna
         for (int i = 0; i < mSecondaryWidgetViews.length; i++) {
             mSecondaryWidgetViews[i] = findViewById(WIDGETS_VIEW_IDS[i]);
         }
+        mIsInflated = true;
         updateWidgetViews();
     }
 
@@ -427,6 +430,11 @@ public class LockScreenWidgets extends LinearLayout implements TunerService.Tuna
         final boolean isSecondaryWidgetsEmpty = TextUtils.isEmpty(mSecondaryLockscreenWidgetsList) 
         	|| mSecondaryLockscreenWidgetsList == null;
         final boolean isEmpty = isMainWidgetsEmpty && isSecondaryWidgetsEmpty;
+        final boolean lockscreenWidgetsEnabled = Settings.System.getIntForUser(
+                mContext.getContentResolver(),
+                "lockscreen_widgets_enabled",
+                0,
+                UserHandle.USER_CURRENT) != 0;
         final View mainWidgetsContainer = findViewById(R.id.main_widgets_container);
         if (mainWidgetsContainer != null) {
             mainWidgetsContainer.setVisibility(isMainWidgetsEmpty ? View.GONE : View.VISIBLE);
@@ -435,11 +443,12 @@ public class LockScreenWidgets extends LinearLayout implements TunerService.Tuna
         if (secondaryWidgetsContainer != null) {
             secondaryWidgetsContainer.setVisibility(isSecondaryWidgetsEmpty ? View.GONE : View.VISIBLE);
         }
-        final boolean shouldHideContainer = isEmpty || mDozing;
+        final boolean shouldHideContainer = isEmpty || mDozing || !lockscreenWidgetsEnabled;
         setVisibility(shouldHideContainer ? View.GONE : View.VISIBLE);
     }
 
-    private void updateWidgetViews() {
+    public void updateWidgetViews() {
+        if (!mIsInflated) return;
         if (mMainWidgetViews != null && mMainWidgetsList != null) {
             for (int i = 0; i < mMainWidgetViews.length; i++) {
                 if (mMainWidgetViews[i] != null) {
