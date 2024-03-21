@@ -48,6 +48,8 @@ import com.android.systemui.statusbar.notification.shared.NotificationIconContai
 import com.android.systemui.statusbar.notification.stack.AnimationFilter;
 import com.android.systemui.statusbar.notification.stack.AnimationProperties;
 import com.android.systemui.statusbar.notification.stack.ViewState;
+import com.android.systemui.Dependency;
+import com.android.systemui.tuner.TunerService;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,6 +60,9 @@ import java.util.function.Consumer;
  * correctly on the screen.
  */
 public class NotificationIconContainer extends ViewGroup {
+
+    public static final String MAX_NOTIFICATIONS = "system:" + "statusbar_max_notifications";
+
     private static final int NO_VALUE = Integer.MIN_VALUE;
     private static final String TAG = "NotificationIconContainer";
     private static final boolean DEBUG = false;
@@ -175,10 +180,15 @@ public class NotificationIconContainer extends ViewGroup {
     private Runnable mIsolatedIconAnimationEndRunnable;
     private boolean mUseIncreasedIconScale;
 
+    private int mMaxStatusIcons;
+    private TunerService mTunerService;
+
     public NotificationIconContainer(Context context, AttributeSet attrs) {
         super(context, attrs);
         initResources();
         setWillNotDraw(!(DEBUG || DEBUG_OVERFLOW));
+        mTunerService = Dependency.get(TunerService.class);
+        mTunerService.addTunable(mTunable, MAX_NOTIFICATIONS);
     }
 
     private void initResources() {
@@ -195,6 +205,20 @@ public class NotificationIconContainer extends ViewGroup {
         mThemedTextColorPrimary = Utils.getColorAttr(themedContext,
                 com.android.internal.R.attr.textColorPrimary).getDefaultColor();
     }
+
+    private final TunerService.Tunable mTunable = new TunerService.Tunable() {
+        @Override
+        public void onTuningChanged(String key, String newValue) {
+            switch (key) {
+                case MAX_NOTIFICATIONS:
+                    mMaxStatusIcons = TunerService.parseInteger(newValue, mMaxStaticIcons);
+                    updateState();
+                    break;
+                default:
+                    break;
+            }
+        }
+    };
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -609,9 +633,9 @@ public class NotificationIconContainer extends ViewGroup {
 
     private int getMaxVisibleIcons(int childCount) {
         if (NotificationIconContainerRefactor.isEnabled()) {
-            return mMaxIcons;
+            return mMaxStatusIcons;
         } else {
-            return mOnLockScreen ? mMaxIconsOnAod : mIsStaticLayout ? mMaxStaticIcons : childCount;
+            return mOnLockScreen ? mMaxIconsOnAod : mIsStaticLayout ? mMaxStatusIcons : childCount;
         }
     }
 
