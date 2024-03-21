@@ -697,30 +697,49 @@ public class KeyguardClockSwitchController extends ViewController<KeyguardClockS
     }
     
     private void updateCustomClock() {
-        ViewGroup.LayoutParams params = mSmallClockFrame.getLayoutParams();
-        ViewGroup.LayoutParams params2 = mLargeClockFrame.getLayoutParams();
-        RelativeLayout.LayoutParams params4 = new RelativeLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT);
-    	params4.addRule(RelativeLayout.BELOW, mEnableCustomClock ? R.id.clock_ls : R.id.lockscreen_clock_view);
-    	if (mStatusArea != null) {
-    	    mStatusArea.setLayoutParams(params4);
-    	}
+        ViewGroup.LayoutParams smallClockParams = mSmallClockFrame.getLayoutParams();
+        ViewGroup.LayoutParams largeClockParams = mLargeClockFrame.getLayoutParams();
+        RelativeLayout.LayoutParams newStatusAreaParams = new RelativeLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        newStatusAreaParams.addRule(RelativeLayout.BELOW, mEnableCustomClock ? R.id.clock_ls : R.id.lockscreen_clock_view);
+        if (mStatusArea != null 
+            && !paramsEquals(mStatusArea.getLayoutParams(), ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, mEnableCustomClock ? R.id.clock_ls : R.id.lockscreen_clock_view)) {
+            mStatusArea.setLayoutParams(newStatusAreaParams);
+        }
         if (mEnableCustomClock) {
-            params.width = 0;
-            params.height = 0;
-            mSmallClockFrame.setLayoutParams(params);
-            params2.width = 0;
-            params2.height = 0;
-            mLargeClockFrame.setLayoutParams(params2);
+            if (!paramsEquals(smallClockParams, 0, 0, 0)) {
+                smallClockParams.width = 0;
+                smallClockParams.height = 0;
+                mSmallClockFrame.setLayoutParams(smallClockParams);
+            }
+            if (!paramsEquals(largeClockParams, 0, 0, 0)) {
+                largeClockParams.width = 0;
+                largeClockParams.height = 0;
+                mLargeClockFrame.setLayoutParams(largeClockParams);
+            }
             mCustomClockFrame.setVisibility(View.VISIBLE);
         } else {
-        	params.width = ViewGroup.LayoutParams.WRAP_CONTENT;
-            params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
-            mSmallClockFrame.setLayoutParams(params);
-            params2.width = ViewGroup.LayoutParams.MATCH_PARENT;
-            params2.height = ViewGroup.LayoutParams.MATCH_PARENT;
-            mLargeClockFrame.setLayoutParams(params2);
+            if (!paramsEquals(smallClockParams, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0)) {
+                smallClockParams.width = ViewGroup.LayoutParams.WRAP_CONTENT;
+                smallClockParams.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+                mSmallClockFrame.setLayoutParams(smallClockParams);
+            }
+            if (!paramsEquals(largeClockParams, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, 0)) {
+                largeClockParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
+                largeClockParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
+                mLargeClockFrame.setLayoutParams(largeClockParams);
+            }
             mCustomClockFrame.setVisibility(View.GONE);
+        }
+    }
+
+    private boolean paramsEquals(ViewGroup.LayoutParams params1, int width, int height, int belowRule) {
+        if (params1 instanceof RelativeLayout.LayoutParams) {
+            RelativeLayout.LayoutParams relativeParams = (RelativeLayout.LayoutParams) params1;
+            return relativeParams.width == width && relativeParams.height == height &&
+                   relativeParams.getRules()[RelativeLayout.BELOW] == belowRule;
+        } else {
+            return params1.width == width && params1.height == height;
         }
     }
 
