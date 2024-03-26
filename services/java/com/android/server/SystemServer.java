@@ -242,6 +242,8 @@ import com.android.server.wm.WindowManagerService;
 
 import dalvik.system.VMRuntime;
 
+import org.rising.server.RisingServicesStarter;
+
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.IOException;
@@ -3076,6 +3078,9 @@ public final class SystemServer implements Dumpable {
         t.traceBegin("HealthConnectManagerService");
         mSystemServiceManager.startService(HEALTHCONNECT_MANAGER_SERVICE_CLASS);
         t.traceEnd();
+
+        RisingServicesStarter risingServiceStarter = new RisingServicesStarter(mSystemServiceManager);
+        risingServiceStarter.startAllServices();
 
         if (mPackageManager.hasSystemFeature(PackageManager.FEATURE_DEVICE_LOCK)) {
             t.traceBegin("DeviceLockService");
