@@ -294,7 +294,7 @@ public final class ServiceManager {
     public static boolean isDeclared(@NonNull String name) {
         try {
             return getIServiceManager().isDeclared(name);
-        } catch (RemoteException | SecurityException e) {
+        } catch (Exception e) {
             Log.e(TAG, "error in isDeclared", e);
             return false;
         }
@@ -349,7 +349,12 @@ public final class ServiceManager {
      */
     @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
     @Nullable public static IBinder waitForDeclaredService(@NonNull String name) {
-        return isDeclared(name) ? waitForService(name) : null;
+        try {
+            if (isDeclared(name)) {
+                return waitForService(name);
+            }
+        } catch (Exception e) {}
+        return null;
     }
 
     /**
