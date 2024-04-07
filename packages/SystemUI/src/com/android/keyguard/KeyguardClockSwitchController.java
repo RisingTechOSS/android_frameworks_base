@@ -304,12 +304,12 @@ public class KeyguardClockSwitchController extends ViewController<KeyguardClockS
             mCurrentWeatherView = mView.findViewById(R.id.weather_container);
             mCustomClock = mView.findViewById(R.id.clock_ls);
             mCustomClockFrame = mView.findViewById(R.id.clock_frame);
-            View kgWidgets = mView.findViewById(R.id.keyguard_widgets);
-            mLsWidgets = (LockScreenWidgets) kgWidgets;
-            mLsWidgets.setActivityStarter(mActivityStarter);
-            mLsWidgets.setConfigurationController(mConfigurationController);
-            mLsWidgets.setFlashLightController(mFlashlightController);
-            mLsWidgets.setStatusBarStateController(mStatusBarStateController);
+            mLsWidgets = (LockScreenWidgets) mView.findViewById(R.id.keyguard_widgets);
+            mLsWidgets.initDependencies(
+                mActivityStarter, 
+                mConfigurationController, 
+                mFlashlightController,
+                mStatusBarStateController);
         }
 
         if (!mOnlyClock) {
