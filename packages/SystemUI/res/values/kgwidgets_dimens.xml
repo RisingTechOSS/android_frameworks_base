@@ -22,4 +22,6 @@
     <dimen name="kg_widget_circle_size">72dp</dimen>
     <dimen name="kg_widgets_icon_padding">24dp</dimen>
     <dimen name="kg_main_widgets_icon_padding">20dp</dimen>
+    <dimen name="kg_widget_main_height">65dp</dimen>
+    <dimen name="kg_widget_main_width">175dp</dimen>
 </resources>
