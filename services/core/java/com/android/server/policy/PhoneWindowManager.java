@@ -268,6 +268,8 @@ import lineageos.providers.LineageSettings;
 import org.lineageos.internal.buttons.LineageButtons;
 import org.lineageos.internal.util.ActionUtils;
 
+import org.rising.server.ShakeGestureService;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -678,6 +680,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
     private SwipeToScreenshotListener mSwipeToScreenshot;
     private boolean haveEnableGesture = false;
+    private ShakeGestureService mShakeGestures;
 
     // Tracks user-customisable behavior for certain key events
     private Action mBackLongPressAction;
@@ -911,7 +914,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                             AssistUtils.INVOCATION_TYPE_ASSIST_BUTTON);
                     break;
                 case MSG_LAUNCH_VOICE_ASSIST_WITH_WAKE_LOCK:
-                    launchVoiceAssistWithWakeLock(true);
+                    launchVoiceAssistWithWakeLock();
                     break;
                 case MSG_SHOW_PICTURE_IN_PICTURE_MENU:
                     showPictureInPictureMenuInternal();
@@ -2294,7 +2297,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 logKeyboardSystemsEvent(event, KeyboardLogEvent.LAUNCH_ASSISTANT);
                 break;
             case VOICE_SEARCH:
-                launchVoiceAssistWithWakeLock(true);
+                launchVoiceAssistWithWakeLock();
                 break;
             case IN_APP_SEARCH:
                 triggerVirtualKeypress(KeyEvent.KEYCODE_SEARCH);
@@ -6231,7 +6234,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
             mHandler.removeMessages(MSG_DISPATCH_MEDIA_KEY_REPEAT_WITH_WAKE_LOCK);
             mHavePendingMediaKeyRepeatWithWakeLock = false;
-            mBroadcastWakeLock.release(); // pending repeat was holding onto the wake lock
+            if (mBroadcastWakeLock != null && mBroadcastWakeLock.isHeld()) {
+                mBroadcastWakeLock.release(); // pending repeat was holding onto the wake lock
+            }
         }
 
         dispatchMediaKeyWithWakeLockToAudioService(event);
@@ -6245,7 +6250,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             msg.setAsynchronous(true);
             mHandler.sendMessageDelayed(msg, ViewConfiguration.getKeyRepeatTimeout());
         } else {
-            mBroadcastWakeLock.release();
+            if (mBroadcastWakeLock != null && mBroadcastWakeLock.isHeld()) {
+                mBroadcastWakeLock.release();
+            }
         }
     }
 
@@ -6259,7 +6266,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
 
         dispatchMediaKeyWithWakeLockToAudioService(repeatEvent);
-        mBroadcastWakeLock.release();
+        if (mBroadcastWakeLock != null && mBroadcastWakeLock.isHeld()) {
+            mBroadcastWakeLock.release();
+        }
     }
 
     void dispatchMediaKeyWithWakeLockToAudioService(KeyEvent event) {
@@ -6268,7 +6277,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
     }
 
-    void launchVoiceAssistWithWakeLock(boolean withWakelock) {
+    void launchVoiceAssistWithWakeLock() {
         sendCloseSystemWindows(SYSTEM_DIALOG_REASON_ASSIST);
 
         final Intent voiceIntent;
@@ -6283,7 +6292,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             voiceIntent.putExtra(RecognizerIntent.EXTRA_SECURE, true);
         }
         startActivityAsUser(voiceIntent, UserHandle.CURRENT_OR_SELF);
-        if (withWakelock) {
+        if (mBroadcastWakeLock != null && mBroadcastWakeLock.isHeld()) {
             mBroadcastWakeLock.release();
         }
     }
@@ -6368,6 +6377,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             mPocketMode.setDozeState(isDozeMode());
             mPocketMode.onInteractiveChanged(false);
         }
+        if (mShakeGestures != null) {
+            mShakeGestures.onInteractiveChanged(false);
+        }
     }
 
     // Called on the PowerManager's Notifier thread.
@@ -6447,6 +6459,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         if (mPocketMode != null) {
             mPocketMode.setDozeState(isDozeMode());
             mPocketMode.onInteractiveChanged(true);
+        }
+        if (mShakeGestures != null) {
+            mShakeGestures.onInteractiveChanged(true);
         }
     }
 
@@ -6966,6 +6981,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         if (mVrManagerInternal != null) {
             mVrManagerInternal.addPersistentVrModeStateListener(mPersistentVrModeListener);
         }
+        
+        GestureCallbacks gestureCallbacks = new GestureCallbacks(mContext, mCurrentUserId);
 
         mSwipeToScreenshot = new SwipeToScreenshotListener(mContext, new SwipeToScreenshotListener.Callbacks() {
             @Override
@@ -6973,6 +6990,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 interceptScreenshotChord(TAKE_SCREENSHOT_FULLSCREEN, SCREENSHOT_KEY_OTHER, 0 /*pressDelay*/);
             }
         });
+        
+        mShakeGestures = ShakeGestureService.getInstance(mContext, (ShakeGestureService.ShakeGesturesCallbacks) gestureCallbacks);
+        mShakeGestures.onStart();
 
         mLineageHardware = LineageHardwareManager.getInstance(mContext);
 
@@ -7002,7 +7022,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         mPocketMode.onStart();
     }
 
-    class GestureCallbacks implements SwipeToScreenshotListener.Callbacks, ShakeGestureService.ShakeGesturesCallbacks {
+    public class GestureCallbacks implements SwipeToScreenshotListener.Callbacks, ShakeGestureService.ShakeGesturesCallbacks {
         private Context mContext;
         private int mCurrentUserId;
 
@@ -7013,7 +7033,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
         @Override
         public void onVoiceLaunch() {
-            launchVoiceAssistWithWakeLock(false);
+            launchVoiceAssistWithWakeLock();
         }
 
         @Override
@@ -8169,6 +8189,18 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             case AudioManager.RINGER_MODE_SILENT:
                 am.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
                 break;
+        }
+    }
+
+    private void turnScreenOnOrOff() {
+        if (mPowerManager.isInteractive()) {
+            mPowerManager.goToSleep(SystemClock.uptimeMillis());
+        } else {
+            mBroadcastWakeLock.acquire();
+            mWindowWakeUpPolicy.wakeUpFromWakeGesture();
+            if (mBroadcastWakeLock != null && mBroadcastWakeLock.isHeld()) {
+                mBroadcastWakeLock.release();
+            }
         }
     }
 
