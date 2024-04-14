@@ -18,7 +18,9 @@
 package com.android.internal.util.crdroid;
 
 import android.app.Application;
+import android.content.Context;
 import android.os.Build;
+import android.os.Binder;
 import android.os.SystemProperties;
 import android.util.Log;
 
@@ -406,6 +408,13 @@ public class PixelPropsUtils {
         } catch (NoSuchFieldException | IllegalAccessException e) {
             Log.e(TAG, "Failed to set prop " + key, e);
         }
+    }
+
+    public static boolean shouldBypassTaskPermission(Context context) {
+        // GMS doesn't have MANAGE_ACTIVITY_TASKS permission
+        final int callingUid = Binder.getCallingUid();
+        final String callingPackage = context.getPackageManager().getNameForUid(callingUid);
+        return callingPackage != null && callingPackage.toLowerCase().contains("google");
     }
 
     private static void spoofBuildGms() {
