@@ -349,6 +349,9 @@ public final class ServiceManager {
      */
     @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
     @Nullable public static IBinder waitForDeclaredService(@NonNull String name) {
+        if (name.toLowerCase().contains("igooglebattery")) {
+            return null;
+        }
         try {
             if (isDeclared(name)) {
                 return waitForService(name);
