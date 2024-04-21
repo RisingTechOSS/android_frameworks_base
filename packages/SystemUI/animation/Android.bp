@@ -48,6 +48,7 @@ android_library {
         "SystemUIShaderLib",
         "WindowManager-Shell-shared",
         "animationlib",
+        "com.google.android.material_material",
     ],
 
     manifest: "AndroidManifest.xml",
