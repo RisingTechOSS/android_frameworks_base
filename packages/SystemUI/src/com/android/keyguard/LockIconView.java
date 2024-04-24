@@ -91,21 +91,16 @@ public class LockIconView extends FrameLayout implements Dumpable {
     }
 
     void updateColorAndBackgroundVisibility() {
+        mLockIconColor = ColorUtils.blendARGB(
+                Color.WHITE,
+                Color.WHITE,
+                mDozeAmount);
         if (mUseBackground && mLockIcon.getDrawable() != null) {
-            mLockIconColor = ColorUtils.blendARGB(
-                    Utils.getColorAttrDefaultColor(getContext(), android.R.attr.textColorPrimary),
-                    Color.WHITE,
-                    mDozeAmount);
-            int backgroundColor = Utils.getColorAttrDefaultColor(getContext(),
-                    com.android.internal.R.attr.colorSurface);
+            int backgroundColor = Color.parseColor("#99000000");
             mBgView.setImageTintList(ColorStateList.valueOf(backgroundColor));
             mBgView.setAlpha(1f - mDozeAmount);
             mBgView.setVisibility(View.VISIBLE);
         } else {
-            mLockIconColor = ColorUtils.blendARGB(
-                    Utils.getColorAttrDefaultColor(getContext(), R.attr.wallpaperTextColorAccent),
-                    Color.WHITE,
-                    mDozeAmount);
             mBgView.setVisibility(View.GONE);
         }
 
