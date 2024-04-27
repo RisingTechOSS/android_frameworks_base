@@ -221,7 +221,7 @@ public class FeatureFlagUtils {
         DEFAULT_FLAGS.put("settings_contextual_home", "false");
         DEFAULT_FLAGS.put(SETTINGS_USE_NEW_BACKUP_ELIGIBILITY_RULES, "true");
         DEFAULT_FLAGS.put(SETTINGS_ENABLE_SECURITY_HUB, "true");
-        DEFAULT_FLAGS.put(SETTINGS_SUPPORT_LARGE_SCREEN, "true");
+        DEFAULT_FLAGS.put(SETTINGS_SUPPORT_LARGE_SCREEN, "false");
         DEFAULT_FLAGS.put("settings_search_always_expand", "true");
         DEFAULT_FLAGS.put(SETTINGS_APP_LOCALE_OPT_IN_ENABLED, "true");
         DEFAULT_FLAGS.put(SETTINGS_VOLUME_PANEL_IN_SYSTEMUI, "false");
