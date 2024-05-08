@@ -25,7 +25,6 @@ package com.android.systemui.pulse;
 import android.animation.ValueAnimator;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.res.Configuration;
 import android.database.ContentObserver;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -144,7 +143,7 @@ public class SolidLineRenderer extends Renderer {
         if (mView.getWidth() > 0 && mView.getHeight() > 0) {
             mWidth = mView.getWidth();
             mHeight = mView.getHeight();
-            mVertical = mContext.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+            mVertical = mKeyguardShowing ? mHeight < mWidth : mHeight > mWidth;
             loadValueAnimators();
             if (mVertical) {
                 setVerticalPoints();
@@ -165,11 +164,8 @@ public class SolidLineRenderer extends Renderer {
 
     @Override
     public void onFFTUpdate(byte[] fft) {
-        if (fft == null || fft.length < mUnits * 2 + 2) {
-            return;
-        }
         int fudgeFactor = mKeyguardShowing ? mDbFuzzFactor * 4 : mDbFuzzFactor;
-        for (int i = 0; i < mUnits && i * 2 + 3 < fft.length; i++) {
+        for (int i = 0; i < mUnits; i++) {
             if (mValueAnimators[i] == null) continue;
             mValueAnimators[i].cancel();
             rfk = fft[i * 2 + 2];
@@ -200,7 +196,6 @@ public class SolidLineRenderer extends Renderer {
 
     @Override
     public void draw(Canvas canvas) {
-        canvas.scale(1, 1, mWidth / 2f, mHeight / 2f);
         canvas.drawLines(mFFTPoints, mPaint);
     }
 
@@ -291,8 +286,6 @@ public class SolidLineRenderer extends Renderer {
                     UserHandle.USER_CURRENT);
 
             mPaint.setColor(ColorUtils.setAlphaComponent(mColor, mUnitsOpacity));
-
-            onSizeChanged(0, 0, 0, 0);
         }
     }
 
