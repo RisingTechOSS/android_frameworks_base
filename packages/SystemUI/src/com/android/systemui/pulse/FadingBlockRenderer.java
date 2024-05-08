@@ -18,7 +18,6 @@ package com.android.systemui.pulse;
 
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.ContentObserver;
 import android.graphics.Bitmap;
@@ -86,49 +85,46 @@ public class FadingBlockRenderer extends Renderer {
 
     @Override
     public void onFFTUpdate(byte[] bytes) {
-        if (bytes == null || mDivisions <= 0) return;
         int fudgeFactor = mKeyguardShowing ? mDbFuzzFactor * 4 : mDbFuzzFactor;
         mFFTBytes = bytes;
-        if (mFFTPoints == null || mFFTPoints.length < mFFTBytes.length * 4) {
-            mFFTPoints = new float[mFFTBytes.length * 4];
-        }
-        int divisionLength = mFFTBytes.length / mDivisions;
-        if (divisionLength < 2) return;
-        if (mSmoothingEnabled) {
-            if (mFFTAverage == null || mFFTAverage.length != divisionLength) {
-                setupFFTAverage(divisionLength);
+        if (mFFTBytes != null) {
+            if (mFFTPoints == null || mFFTPoints.length < mFFTBytes.length * 4) {
+                mFFTPoints = new float[mFFTBytes.length * 4];
             }
-        } else {
-            mFFTAverage = null;
-        }
-        int i = 0;
-        for (; i < divisionLength; i++) {
-            if (mVertical) {
-                mFFTPoints[i * 4 + 1] = i * 4 * mDivisions;
-                mFFTPoints[i * 4 + 3] = i * 4 * mDivisions;
+            int divisionLength = mFFTBytes.length / mDivisions;
+            if (mSmoothingEnabled) {
+                if (mFFTAverage == null || mFFTAverage.length != divisionLength) {
+                    setupFFTAverage(divisionLength);
+                }
             } else {
-                mFFTPoints[i * 4] = i * 4 * mDivisions;
-                mFFTPoints[i * 4 + 2] = i * 4 * mDivisions;
+                mFFTAverage = null;
             }
-            if ((mDivisions * i + 1) < mFFTBytes.length) {
-                byte rfk = mFFTBytes[mDivisions * i];
-                byte ifk = mFFTBytes[mDivisions * i + 1];
-                float magnitude = (rfk * rfk + ifk * ifk);
-                int dbValue = magnitude > 0 ? (int) (10 * Math.log10(magnitude)) : 0;
+            for (int i = 0; i < divisionLength; i++) {
+                if (mVertical) {
+                    mFFTPoints[i * 4 + 1] = i * 4 * mDivisions;
+                    mFFTPoints[i * 4 + 3] = i * 4 * mDivisions;
+                } else {
+                    mFFTPoints[i * 4] = i * 4 * mDivisions;
+                    mFFTPoints[i * 4 + 2] = i * 4 * mDivisions;
+                }
+                rfk = mFFTBytes[mDivisions * i];
+                ifk = mFFTBytes[mDivisions * i + 1];
+                magnitude = (rfk * rfk + ifk * ifk);
+                dbValue = magnitude > 0 ? (int) (10 * Math.log10(magnitude)) : 0;
                 if (mSmoothingEnabled) {
                     dbValue = mFFTAverage[i].average(dbValue);
                 }
                 if (mVertical) {
                     mFFTPoints[i * 4] = mLeftInLandscape ? 0 : mWidth;
                     mFFTPoints[i * 4 + 2] = mLeftInLandscape ? (dbValue * fudgeFactor + DBFUZZ)
-                            : (mWidth - 1 * (dbValue * fudgeFactor + DBFUZZ));
+                            : (mWidth - (dbValue * fudgeFactor + DBFUZZ));
                 } else {
                     mFFTPoints[i * 4 + 1] = mHeight;
-                    mFFTPoints[i * 4 + 3] = mHeight - 1 * (dbValue * fudgeFactor + DBFUZZ);
+                    mFFTPoints[i * 4 + 3] = mHeight - (dbValue * fudgeFactor + DBFUZZ);
                 }
             }
         }
-        if (mCanvas != null && mFFTPoints != null) {
+        if (mCanvas != null) {
             mCanvas.drawLines(mFFTPoints, mPaint);
             mCanvas.drawPaint(mFadePaint);
         }
@@ -147,7 +143,7 @@ public class FadingBlockRenderer extends Renderer {
         if (mView.getWidth() > 0 && mView.getHeight() > 0) {
             mWidth = mView.getWidth();
             mHeight = mView.getHeight();
-            mVertical = mContext.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+            mVertical = mKeyguardShowing ? mHeight < mWidth : mHeight > mWidth;
             mCanvasBitmap = Bitmap.createBitmap(mWidth, mHeight, Config.ARGB_8888);
             mCanvas = new Canvas(mCanvasBitmap);
         }
@@ -182,9 +178,14 @@ public class FadingBlockRenderer extends Renderer {
 
     @Override
     public void draw(Canvas canvas) {
-        canvas.scale(1, 1, mWidth / 2f, mHeight / 2f);
         canvas.drawBitmap(mCanvasBitmap, mMatrix, null);
     }
+
+    /*private int applyPaintAlphaToColor(int color) {
+        int opaqueColor = Color.rgb(Color.red(color),
+                Color.green(color), Color.blue(color));
+        return (DEF_PAINT_ALPHA << 24) | (opaqueColor & 0x00ffffff);
+    }*/
 
     private class LegacySettingsObserver extends ContentObserver {
         public LegacySettingsObserver(Handler handler) {
