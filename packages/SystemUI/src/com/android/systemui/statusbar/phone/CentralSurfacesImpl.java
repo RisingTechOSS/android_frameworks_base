@@ -249,6 +249,7 @@ import com.android.systemui.statusbar.window.StatusBarWindowController;
 import com.android.systemui.statusbar.window.StatusBarWindowStateController;
 import com.android.systemui.surfaceeffects.ripple.RippleShader.RippleShape;
 import com.android.systemui.tuner.TunerService;
+import com.android.systemui.util.BatteryHealthNotification;
 import com.android.systemui.util.DumpUtilsKt;
 import com.android.systemui.util.WallpaperController;
 import com.android.systemui.util.WallpaperDepthUtils;
@@ -472,7 +473,8 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces,
     private final StatusBarSignalPolicy mStatusBarSignalPolicy;
     private final StatusBarHideIconsForBouncerManager mStatusBarHideIconsForBouncerManager;
     private final Lazy<LightRevealScrimViewModel> mLightRevealScrimViewModelLazy;
-    
+
+    private final BatteryHealthNotification mBatteryHealthNotification;
     private final WallpaperDepthUtils mWallpaperDepthUtils;
 
     /** Controller for the Shade. */
@@ -921,6 +923,9 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces,
             mContext.getApplicationInfo().setEnableOnBackInvokedCallback(true);
         }
         mWallpaperDepthUtils = WallpaperDepthUtils.getInstance(mContext);
+        
+        mBatteryHealthNotification = new BatteryHealthNotification(mContext);
+        mBatteryHealthNotification.start();
     }
 
     private void initBubbles(Bubbles bubbles) {
