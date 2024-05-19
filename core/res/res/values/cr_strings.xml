@@ -21,6 +21,9 @@
     <string name="url_copy_success">URL copied successfully</string>
     <string name="url_copy_failed">An error occured while uploading the log to Pasty</string>
 
+    <!-- Immersive UI mode toast messages -->
+    <string name="immersive_ui_mode_notify_locked">Swipe again to disable gesture lock</string>
+
     <!-- Pocket Lock -->
     <string name="pocket_lock_message_long_press">Press and hold power button to unlock</string>
     <string name="pocket_view_title">Pocket mode is on</string>
