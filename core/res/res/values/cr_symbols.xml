@@ -15,6 +15,8 @@
      limitations under the License.
 -->
 <resources>
+    <!-- Immersive UI mode toast messages -->
+    <java-symbol type="string" name="immersive_ui_mode_notify_locked" />
 
     <!-- StatusBarUtils default values -->
     <java-symbol type="dimen" name="status_bar_padding_start" />

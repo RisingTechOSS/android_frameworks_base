@@ -106,6 +106,7 @@ import android.os.SystemClock;
 import android.os.SystemProperties;
 import android.os.Trace;
 import android.os.UserHandle;
+import android.provider.Settings;
 import android.util.ArraySet;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -125,6 +126,7 @@ import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.view.WindowManagerGlobal;
 import android.view.accessibility.AccessibilityManager;
+import android.widget.Toast;
 import android.window.ClientWindowFrames;
 
 import com.android.internal.R;
@@ -384,6 +386,9 @@ public class DisplayPolicy {
 
     private final ForceShowNavBarSettingsObserver mForceShowNavBarSettingsObserver;
     private boolean mForceShowNavigationBarEnabled;
+
+    private long mLastInteraction = 0;
+    private long mLastUnlock = 0;
 
     private class PolicyHandler extends Handler {
 
@@ -2255,6 +2260,7 @@ public class DisplayPolicy {
                     + "request");
             return;
         }
+
         final InsetsSourceProvider provider = swipeTarget.getControllableInsetProvider();
         final InsetsControlTarget controlTarget = provider != null
                 ? provider.getControlTarget() : null;
@@ -2288,6 +2294,12 @@ public class DisplayPolicy {
 
         if (controlTarget.canShowTransient()) {
             // Show transient bars if they are hidden; restore position if they are visible.
+            if (isTransientBarsLocked(swipeTarget != mStatusBar)) {
+                // prevent gestures from showing transient bars unless user swipes statusbar area
+                Toast.makeText(mContext, com.android.internal.R.string.immersive_ui_mode_notify_locked, Toast.LENGTH_SHORT).show();
+                Slog.d("ImmersiveUiMode", "Immersive UI mode active ignoring system bar visibility requests");
+                return;
+            }
             mDisplayContent.getInsetsPolicy().showTransient(SHOW_TYPES_FOR_SWIPE,
                     isGestureOnSystemBar);
             controlTarget.showInsets(restorePositionTypes, false /* fromIme */,
@@ -2311,6 +2323,32 @@ public class DisplayPolicy {
         } else {
             mImmersiveModeConfirmation.confirmCurrentPrompt();
         }
+    }
+
+    boolean isTransientBarsLocked(boolean update) {
+        boolean isImmersiveSysUi = Settings.Secure.getInt(mContext.getContentResolver(),
+                "lock_immersive_sysui", 0) == 1;
+        final long now = SystemClock.uptimeMillis();
+        final long timeSinceLastUnlock = now - mLastUnlock;
+        final long timeSinceLastInteraction = now - mLastInteraction;
+        if (!isImmersiveSysUi) {
+            return false;
+        }
+        if (!update) {
+            return false;
+        }
+        if (timeSinceLastUnlock <= 3500) {
+            mLastUnlock = now;
+            return false;
+        }
+        if (timeSinceLastInteraction > 2500) {
+            if (update) {
+                mLastInteraction = now;
+            }
+            return true;
+        }
+        mLastUnlock = now;
+        return false;
     }
 
     boolean isKeyguardShowing() {
