@@ -911,7 +911,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                             AssistUtils.INVOCATION_TYPE_ASSIST_BUTTON);
                     break;
                 case MSG_LAUNCH_VOICE_ASSIST_WITH_WAKE_LOCK:
-                    launchVoiceAssistWithWakeLock();
+                    launchVoiceAssistWithWakeLock(true);
                     break;
                 case MSG_SHOW_PICTURE_IN_PICTURE_MENU:
                     showPictureInPictureMenuInternal();
@@ -2294,7 +2294,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 logKeyboardSystemsEvent(event, KeyboardLogEvent.LAUNCH_ASSISTANT);
                 break;
             case VOICE_SEARCH:
-                launchVoiceAssistWithWakeLock();
+                launchVoiceAssistWithWakeLock(true);
                 break;
             case IN_APP_SEARCH:
                 triggerVirtualKeypress(KeyEvent.KEYCODE_SEARCH);
@@ -6268,7 +6268,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
     }
 
-    void launchVoiceAssistWithWakeLock() {
+    void launchVoiceAssistWithWakeLock(boolean withWakelock) {
         sendCloseSystemWindows(SYSTEM_DIALOG_REASON_ASSIST);
 
         final Intent voiceIntent;
@@ -6283,7 +6283,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             voiceIntent.putExtra(RecognizerIntent.EXTRA_SECURE, true);
         }
         startActivityAsUser(voiceIntent, UserHandle.CURRENT_OR_SELF);
-        mBroadcastWakeLock.release();
+        if (withWakelock) {
+            mBroadcastWakeLock.release();
+        }
     }
 
     BroadcastReceiver mDockReceiver = new BroadcastReceiver() {
@@ -6998,6 +7000,76 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         
         mPocketMode = PocketModeService.getInstance(mContext);
         mPocketMode.onStart();
+    }
+
+    class GestureCallbacks implements SwipeToScreenshotListener.Callbacks, ShakeGestureService.ShakeGesturesCallbacks {
+        private Context mContext;
+        private int mCurrentUserId;
+
+        public GestureCallbacks(Context context, int currentUserId) {
+            this.mContext = context;
+            this.mCurrentUserId = currentUserId;
+        }
+
+        @Override
+        public void onVoiceLaunch() {
+            launchVoiceAssistWithWakeLock(false);
+        }
+
+        @Override
+        public void onLaunchSearch() {
+            long eventTime = System.currentTimeMillis();
+            KeyEvent downEvent = new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_SEARCH, 0);
+            launchAssistAction(null, INVALID_INPUT_DEVICE_ID, SystemClock.uptimeMillis(),
+                   AssistUtils.INVOCATION_TYPE_ASSIST_BUTTON);
+            logKeyboardSystemsEvent(downEvent, KeyboardLogEvent.LAUNCH_ASSISTANT);
+        }
+
+        @Override
+        public void onScreenshotTaken() {
+            interceptScreenshotChord(TAKE_SCREENSHOT_FULLSCREEN, SCREENSHOT_KEY_OTHER, 0 /*pressDelay*/);
+        }
+
+        @Override
+        public void onClearAllNotifications() {
+            clearAllNotifications();
+        }
+
+        @Override
+        public void onToggleRingerModes() {
+            toggleRingerModes();
+        }
+
+        @Override
+        public void onToggleTorch() {
+            toggleTorch();
+        }
+
+        @Override
+        public void onMediaKeyDispatch() {
+            AudioManager am = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
+            int keyCode = am.isMusicActive() ? KeyEvent.KEYCODE_MEDIA_NEXT : KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE;
+            long eventTime = System.currentTimeMillis();
+            KeyEvent downEvent = new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_DOWN, keyCode, 0);
+            KeyEvent upEvent = new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_UP, keyCode, 0);
+            dispatchMediaKeyWithWakeLock(downEvent);
+            dispatchMediaKeyWithWakeLock(upEvent);
+        }
+
+        @Override
+        public void onToggleVolumePanel() {
+            toggleVolumePanel();
+        }
+
+        @Override
+        public void onKillApp() {
+            ActionUtils.killForegroundApp(mContext, mCurrentUserId);
+        }
+
+        @Override
+        public void onTurnScreenOnOrOff() {
+            turnScreenOnOrOff();
+        }
     }
 
     /** {@inheritDoc} */
