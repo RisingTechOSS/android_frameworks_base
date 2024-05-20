@@ -44,6 +44,7 @@ import android.media.AudioManager;
 import android.metrics.LogMaker;
 import android.os.SystemClock;
 import android.os.UserHandle;
+import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
@@ -1119,7 +1120,9 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
     }
 
     private boolean canDisplayUserSwitcher() {
-        return getContext().getResources().getBoolean(R.bool.config_enableBouncerUserSwitcher);
+        return Settings.System.getIntForUser(getContext().getContentResolver(),
+                        "kg_user_switcher_enabled", 0,
+                        UserHandle.USER_CURRENT) == 1;
     }
 
     private void configureMode() {
