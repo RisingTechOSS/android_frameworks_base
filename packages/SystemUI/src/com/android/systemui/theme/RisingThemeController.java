@@ -34,8 +34,21 @@ public class RisingThemeController {
         this.mBackgroundHandler = backgroundHandler;
     }
 
-    public void observe(String key, boolean isSystemSetting, Runnable reevaluateSystemThemeCallback) {
-        Uri uri = isSystemSetting ? Settings.System.getUriFor(key) : Settings.Secure.getUriFor(key);
+    public void observeSystemSettings(Runnable reevaluateSystemThemeCallback, String... keys) {
+        for (String key : keys) {
+            Uri uri = Settings.System.getUriFor(key);
+            observe(uri, reevaluateSystemThemeCallback);
+        }
+    }
+
+    public void observeSecureSettings(Runnable reevaluateSystemThemeCallback, String... keys) {
+        for (String key : keys) {
+            Uri uri = Settings.Secure.getUriFor(key);
+            observe(uri, reevaluateSystemThemeCallback);
+        }
+    }
+
+    private void observe(Uri uri, Runnable reevaluateSystemThemeCallback) {
         if (uri != null) {
             ContentObserver contentObserver = new ContentObserver(mBackgroundHandler) {
                 @Override
@@ -45,8 +58,7 @@ public class RisingThemeController {
             };
             mContentResolver.registerContentObserver(uri, false, contentObserver);
         } else {
-            Log.e(TAG, "Failed to get URI for key: " + key);
+            Log.e(TAG, "Failed to get URI for key");
         }
     }
 }
-
