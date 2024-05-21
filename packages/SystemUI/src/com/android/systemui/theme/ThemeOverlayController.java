@@ -497,7 +497,8 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
                 "lockscreen_widgets_enabled",
                 "lockscreen_widgets",
                 "lockscreen_widgets_extras",
-                "user_selected_resolution"
+                "user_selected_resolution",
+                "show_multi_user_avatar_on_homepage"
         );
         mBroadcastDispatcher.registerReceiver(mBroadcastReceiver, filter, mMainExecutor,
                 UserHandle.ALL);
