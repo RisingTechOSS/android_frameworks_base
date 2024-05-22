@@ -16,6 +16,9 @@
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
+    <!-- System Theme Re-evaluation Toast -->
+    <string name="reevaluating_system_theme">Re-evaluating system theme.. Please wait for a few seconds</string>
+
     <!-- Battery Health Notification -->
     <string name="notification_channel_battery_health">Healthy Charge</string>
     <string name="notification_channel_description">Notifications for battery health</string>

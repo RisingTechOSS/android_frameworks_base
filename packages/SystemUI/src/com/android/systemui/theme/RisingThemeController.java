@@ -16,21 +16,27 @@
 
 package com.android.systemui.theme;
 
+import android.content.Context;
 import android.content.ContentResolver;
 import android.database.ContentObserver;
 import android.net.Uri;
 import android.os.Handler;
 import android.provider.Settings;
 import android.util.Log;
+import android.widget.Toast;
+
+import com.android.systemui.res.R;
 
 public class RisingThemeController {
 
     private static final String TAG = "RisingThemeController";
     private final ContentResolver mContentResolver;
     private final Handler mBackgroundHandler;
+    private Context mContext;
 
-    public RisingThemeController(ContentResolver contentResolver, Handler backgroundHandler) {
-        this.mContentResolver = contentResolver;
+    public RisingThemeController(Context context, Handler backgroundHandler) {
+        this.mContext = context;
+        this.mContentResolver = mContext.getContentResolver();
         this.mBackgroundHandler = backgroundHandler;
     }
 
@@ -53,7 +59,14 @@ public class RisingThemeController {
             ContentObserver contentObserver = new ContentObserver(mBackgroundHandler) {
                 @Override
                 public void onChange(boolean selfChange, Uri uri) {
-                    reevaluateSystemThemeCallback.run();
+                    Toast toast = Toast.makeText(mContext, R.string.reevaluating_system_theme, Toast.LENGTH_SHORT);
+                    toast.show();
+                    mBackgroundHandler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                             reevaluateSystemThemeCallback.run();
+                        }
+                    }, toast.getDuration() + 1250);
                 }
             };
             mContentResolver.registerContentObserver(uri, false, contentObserver);
