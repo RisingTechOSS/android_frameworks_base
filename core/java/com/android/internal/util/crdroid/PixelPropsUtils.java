@@ -42,6 +42,7 @@ public class PixelPropsUtils {
     private static final String SPOOF_PIXEL_GAMES = "persist.sys.pixelprops.games";
     private static final String SPOOF_PIXEL_GPHOTOS = "persist.sys.pixelprops.gphotos";
     private static final String SPOOF_PIXEL_NETFLIX = "persist.sys.pixelprops.netflix";
+    private static final String ENABLE_PROP_OPTIONS = "persist.sys.pixelprops.all";
 
     private static final Map<String, Object> propsToChangeGeneric;
     private static final Map<String, Object> propsToChangePixel8Pro;
@@ -132,6 +133,9 @@ public class PixelPropsUtils {
     }
 
     public static void setProps(String packageName) {
+        if (!SystemProperties.getBoolean(ENABLE_PROP_OPTIONS, true)) {
+            return;
+        }
         propsToChangeGeneric.forEach((k, v) -> setPropValue(k, v));
 
         if (packageName == null || packageName.isEmpty()) {
