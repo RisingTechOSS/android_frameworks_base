@@ -60,18 +60,29 @@ public class RisingThemeController {
                 @Override
                 public void onChange(boolean selfChange, Uri uri) {
                     Toast toast = Toast.makeText(mContext, R.string.reevaluating_system_theme, Toast.LENGTH_SHORT);
-                    toast.show();
+                    if (isDeviceSetupComplete()) {
+                        toast.show();
+                    }
                     mBackgroundHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
                              reevaluateSystemThemeCallback.run();
                         }
-                    }, toast.getDuration() + 1250);
+                    }, isDeviceSetupComplete() ? toast.getDuration() + 1250 : 0);
                 }
             };
             mContentResolver.registerContentObserver(uri, false, contentObserver);
         } else {
             Log.e(TAG, "Failed to get URI for key");
+        }
+    }
+
+    private boolean isDeviceSetupComplete() {
+        try {
+            return Settings.Secure.getInt(mContentResolver, Settings.Secure.USER_SETUP_COMPLETE) == 1;
+        } catch (Settings.SettingNotFoundException e) {
+            Log.e(TAG, "USER_SETUP_COMPLETE setting not found", e);
+            return false;
         }
     }
 }
