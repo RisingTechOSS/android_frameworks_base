@@ -4968,7 +4968,7 @@ public class AudioService extends IAudioService.Stub
         }
         mVolumeController.postVolumeChanged(streamType, flags);
         // skip updating the volume group index if stream type is music
-        if (mIsSingleVolume && streamType == AudioSystem.STREAM_MUSIC) {
+        if (mIsSingleVolume || streamType == AudioSystem.STREAM_MUSIC) {
             if ((flags & AudioManager.FLAG_FIXED_VOLUME) == 0) {
                 oldIndex = (oldIndex + 5) / 10;
                 index = (index + 5) / 10;
