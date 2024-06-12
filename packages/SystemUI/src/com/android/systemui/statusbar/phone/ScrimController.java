@@ -1166,6 +1166,7 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
             });
         }
         com.android.systemui.util.WallpaperDepthUtils.getInstance(mScrimBehind.getContext()).updateDepthWallpaper();
+        com.android.systemui.util.MediaArtUtils.getInstance(mScrimBehind.getContext()).updateMediaArtVisibility();
     }
 
     /**
