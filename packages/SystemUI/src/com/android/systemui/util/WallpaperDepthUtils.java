@@ -189,7 +189,7 @@ public class WallpaperDepthUtils {
                 && mScrimController.getState().toString().equals("KEYGUARD")
                 && mQS.isFullyCollapsed() && !mDozing
                 && mContext.getResources().getConfiguration().orientation
-                != Configuration.ORIENTATION_LANDSCAPE;
+                != Configuration.ORIENTATION_LANDSCAPE && !MediaArtUtils.getInstance(mContext).albumArtVisible();
     }
 
     public void updateDepthWallpaperVisibility() {
