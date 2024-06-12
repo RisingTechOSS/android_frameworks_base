@@ -807,6 +807,7 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
             mView.startAppearAnimation(mCurrentSecurityMode);
             getCurrentSecurityController(controller -> controller.startAppearAnimation());
             com.android.systemui.util.WallpaperDepthUtils.getInstance(getContext()).hideDepthWallpaper();
+            com.android.systemui.util.MediaArtUtils.getInstance(getContext()).hideMediaArt();
         }
     }
 
@@ -825,6 +826,7 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
                         if (!didRunAnimation && onFinishRunnable != null) {
                             onFinishRunnable.run();
                             com.android.systemui.util.WallpaperDepthUtils.getInstance(getContext()).updateDepthWallpaperVisibility();
+                            com.android.systemui.util.MediaArtUtils.getInstance(getContext()).updateMediaArtVisibility();
                         }
                     });
         }
