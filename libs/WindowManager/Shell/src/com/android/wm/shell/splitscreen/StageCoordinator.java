@@ -1948,7 +1948,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             // the new rotation config.  Don't reset the IME state since those updates are not in
             // sync with task info changes.
             mIsDividerRemoteAnimating = false;
-            mSplitLayout.update(null /* t */, false /* resetImePosition */);
+            mSplitLayout.update(mSplitTransitions.getFinishTransaction(), false);
             onLayoutSizeChanged(mSplitLayout);
         }
     }
