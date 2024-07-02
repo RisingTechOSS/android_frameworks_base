@@ -22,10 +22,12 @@
             android:layout_marginBottom="-30.0dip"
             android:singleLine="true"
             android:layout_alignParentStart="true"
+            android:fontFamily="@*android:string/config_clockFontFamily"
             android:format12Hour="hh"
             android:format24Hour="HH"/>
         <TextClock
             android:textSize="90.0dip"
+            android:fontFamily="@*android:string/config_clockFontFamily"
             android:textColor="@android:color/system_accent1_100"
             android:gravity="start|center"
             android:layout_gravity="start|center"
@@ -49,6 +51,7 @@
                 android:layout_gravity="start|center"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:fontFamily="@*android:string/config_clockFontFamily"
                 android:singleLine="true"
                 android:format12Hour="MMMM dd"
                 android:format24Hour="MMMM dd"/>
@@ -59,6 +62,7 @@
                 android:layout_gravity="start|center"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:fontFamily="@*android:string/config_clockFontFamily"
                 android:singleLine="true"
                 android:format12Hour=", yyy"
                 android:format24Hour=", yyy"/>
@@ -66,6 +70,7 @@
         <TextClock
             android:textSize="20.0dip"
             android:textColor="@android:color/white"
+            android:fontFamily="@*android:string/config_clockFontFamily"
             android:gravity="start|center"
             android:layout_gravity="start|center"
             android:layout_width="wrap_content"

@@ -15,6 +15,9 @@
      limitations under the License.
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    
+    <!-- Clock Weather -->
+    <string name="clock_ide_weather_data_unavailable">null</string>
 
     <!-- System Theme Re-evaluation Toast -->
     <string name="reevaluating_system_theme">Re-evaluating system theme.. Please wait for a few seconds</string>
