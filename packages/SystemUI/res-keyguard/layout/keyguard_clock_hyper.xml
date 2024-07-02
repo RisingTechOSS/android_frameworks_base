@@ -10,8 +10,7 @@
         android:layout_gravity="center_horizontal"
         android:orientation="horizontal"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="13dp">
+        android:layout_height="wrap_content">
         <TextClock
             android:textSize="160.0dp"
             android:textColor="@android:color/system_accent1_400"
@@ -35,7 +34,6 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:textAllCaps="true"
-        android:layout_marginStart="26dp"
         android:singleLine="true"
         android:textAlignment="viewStart"
         android:layout_marginTop="-15dp"
