@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.android.systemui.afterlife.ClockStyle
+<com.android.systemui.clocks.ClockStyle
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:android="http://schemas.android.com/apk/res/android">
@@ -7,159 +7,11 @@
         android:id="@+id/clock_frame"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/custom_clock_frame_margin_top"
-        android:visibility="gone">
-        <LinearLayout
-            android:gravity="start"
-            android:id="@+id/keyguard_clock_style_oos"
-            android:visibility="gone"
+        android:layout_marginHorizontal="@dimen/below_clock_padding_start"
+        android:layout_marginTop="@dimen/custom_clock_frame_margin_top">
+        <ViewStub
+            android:id="@+id/clock_view_stub"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <include layout="@layout/keyguard_clock_oos" />
-        </LinearLayout>
-        <LinearLayout
-            android:gravity="center"
-            android:id="@+id/keyguard_clock_style_ios"
-            android:visibility="gone"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <include layout="@layout/keyguard_clock_ios" />
-        </LinearLayout>
-        <LinearLayout
-            android:gravity="center"
-            android:id="@+id/keyguard_clock_style_cos"
-            android:visibility="gone"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <include layout="@layout/keyguard_clock_cos" />
-        </LinearLayout>
-        <LinearLayout
-            android:gravity="center"
-            android:id="@+id/keyguard_clock_style_custom"
-            android:visibility="gone"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <include layout="@layout/keyguard_clock_custom" />
-        </LinearLayout>
-        <LinearLayout
-            android:gravity="center"
-            android:id="@+id/keyguard_clock_style_custom1"
-            android:visibility="gone"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <include layout="@layout/keyguard_clock_custom_1" />
-        </LinearLayout>
-        <LinearLayout
-            android:gravity="center"
-            android:id="@+id/keyguard_clock_style_custom2"
-            android:visibility="gone"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <include layout="@layout/keyguard_clock_custom_2" />
-        </LinearLayout>
-        <LinearLayout
-            android:gravity="center|top"
-            android:id="@+id/keyguard_clock_style_custom3"
-            android:visibility="gone"
-            android:layout_width="match_parent"
-            android:layout_height="320.0dip">
-            <include layout="@layout/keyguard_clock_custom_3" />
-        </LinearLayout>
-        <LinearLayout
-            android:gravity="start"
-            android:id="@+id/keyguard_clock_style_miui"
-            android:visibility="gone"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content">
-            <include layout="@layout/keyguard_clock_miui" />
-        </LinearLayout>
-        <LinearLayout
-            android:gravity="start"
-            android:id="@+id/keyguard_clock_style_ide"
-            android:visibility="gone"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content">
-            <include layout="@layout/keyguard_clock_ide" />
-        </LinearLayout>
-        <LinearLayout
-            android:gravity="center"
-            android:id="@+id/keyguard_clock_style_lottie"
-            android:visibility="gone"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content">
-            <include layout="@layout/keyguard_clock_lottie" />
-        </LinearLayout>
-        <LinearLayout
-            android:gravity="center"
-            android:id="@+id/keyguard_clock_style_lottie2"
-            android:visibility="gone"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content">
-            <include layout="@layout/keyguard_clock_lottie2" />
-        </LinearLayout>
-        <LinearLayout
-            android:gravity="center"
-            android:id="@+id/keyguard_clock_style_fluid"
-            android:visibility="gone"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content">
-            <include layout="@layout/keyguard_clock_fluid" />
-        </LinearLayout>
-        <LinearLayout
-            android:gravity="center"
-            android:id="@+id/keyguard_clock_style_hyper"
-            android:visibility="gone"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content">
-            <include layout="@layout/keyguard_clock_hyper" />
-        </LinearLayout>
-        <LinearLayout
-            android:gravity="center"
-            android:id="@+id/keyguard_clock_style_dual"
-            android:visibility="gone"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content">
-            <include layout="@layout/keyguard_clock_dual" />
-        </LinearLayout>
-        <LinearLayout
-            android:gravity="center"
-            android:id="@+id/keyguard_clock_style_stylish"
-            android:visibility="gone"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content">
-            <include layout="@layout/keyguard_clock_stylish" />
-        </LinearLayout>
-        <LinearLayout
-            android:gravity="start"
-            android:id="@+id/keyguard_clock_style_sidebar"
-            android:visibility="gone"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content">
-            <include layout="@layout/keyguard_clock_sidebar" />
-        </LinearLayout>
-        <LinearLayout
-            android:gravity="center"
-            android:id="@+id/keyguard_clock_style_minimal"
-            android:visibility="gone"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content">
-            <include layout="@layout/keyguard_clock_minimal" />
-        </LinearLayout>
-        <LinearLayout
-            android:gravity="center"
-            android:id="@+id/keyguard_clock_style_minimal2"
-            android:visibility="gone"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content">
-            <include layout="@layout/keyguard_clock_minimal2" />
-        </LinearLayout>
-        <LinearLayout
-            android:gravity="center"
-            android:id="@+id/keyguard_clock_style_minimal3"
-            android:visibility="gone"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content">
-            <include layout="@layout/keyguard_clock_minimal3" />
-        </LinearLayout>
+            android:layout_height="wrap_content"/>
     </RelativeLayout>
-</com.android.systemui.afterlife.ClockStyle>
+</com.android.systemui.clocks.ClockStyle>

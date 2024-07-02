@@ -9,15 +9,14 @@
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="25dp">
+        android:layout_height="wrap_content">
         <TextClock
             android:textSize="100.0dip"
             android:textColor="@android:color/white"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:singleLine="true"
-            android:fontFamily="@font/slim"
+            android:fontFamily="@*android:string/config_clockFontFamily"
             android:format12Hour="hh:mm"
             android:format24Hour="HH:mm"/>
         <TextClock
@@ -28,7 +27,7 @@
             android:layout_marginTop="-15.0dip"
             android:singleLine="true"
             android:textAlignment="viewStart"
-            android:fontFamily="@font/slim"
+            android:fontFamily="@*android:string/config_clockFontFamily"
             android:textAllCaps="true"
     	    android:format12Hour="EEE"
     	    android:format24Hour="EEE"/>      
@@ -40,7 +39,7 @@
             android:layout_marginTop="-10.0dip"
             android:singleLine="true"
             android:textAlignment="viewStart"
-            android:fontFamily="@font/slim"
+            android:fontFamily="@*android:string/config_clockFontFamily"
             android:format12Hour="MM/dd "
             android:format24Hour="MM/dd "/>
     </LinearLayout>

@@ -502,7 +502,8 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
                 Settings.System.STATUS_BAR_BATTERY_STYLE,
                 Settings.System.QS_BATTERY_STYLE,
                 Settings.System.QS_SHOW_BATTERY_PERCENT,
-                Settings.System.QS_TILE_UI_STYLE
+                Settings.System.QS_TILE_UI_STYLE,
+                "clock_style"
         );
         mBroadcastDispatcher.registerReceiver(mBroadcastReceiver, filter, mMainExecutor,
                 UserHandle.ALL);
