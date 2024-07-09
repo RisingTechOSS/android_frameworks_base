@@ -2488,10 +2488,10 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
                         mRingerIcon.setTag(Events.ICON_STATE_UNMUTE);
                         final VolumeRow ringer = findRow(STREAM_RING);
                         final VolumeRow notif = findRow(STREAM_NOTIFICATION);
-                        if (ringer != null && ringer.header.getVisibility() == View.VISIBLE) {
+                        if (ringer != null && mShowVolumePercent) {
                             Util.setText(ringer.header, Utils.formatPercentage(ss.level, ss.levelMax));
                         }
-                        if (notif != null && notif.header.getVisibility() == View.VISIBLE) {
+                        if (notif != null && mShowVolumePercent) {
                             Util.setText(notif.header, Utils.formatPercentage(notif.ss.level, notif.ss.levelMax));
                         }
                     }
@@ -2511,7 +2511,7 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
             } else {
                 ringer.slider.setProgress(ringerLevel);
             }
-            if (ringer.header.getVisibility() == View.VISIBLE) {
+            if (mShowVolumePercent) {
                 Util.setText(ringer.header, Utils.formatPercentage(ringer.ss.levelMin,
                         ringer.ss.levelMax));
             }
@@ -2523,7 +2523,7 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
             } else {
                 notif.slider.setProgress(notifLevel);
             }
-            if (notif.header.getVisibility() == View.VISIBLE) {
+            if (mShowVolumePercent) {
                 Util.setText(notif.header, Utils.formatPercentage(notif.ss.levelMin,
                         notif.ss.levelMax));
             }
@@ -2893,7 +2893,7 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
             }
         }
         row.header.setVisibility(mShowVolumePercent ? View.VISIBLE : View.GONE);
-        if (row.header.getVisibility() == View.VISIBLE) {
+        if (mShowVolumePercent) {
             // update header text
             Util.setText(row.header, Utils.formatPercentage((enable && !row.ss.muted)
                             ? vlevel : 0, row.ss.levelMax));
@@ -3370,7 +3370,7 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
             if ((mRow.stream == STREAM_RING || mRow.stream == STREAM_NOTIFICATION)) {
                 if (mRow.ss.level > mRow.ss.levelMin && userLevel == 0) {
                     seekBar.setProgress((mRow.ss.levelMin + 1) * 100);
-                    if (mRow.header.getVisibility() == View.VISIBLE) {
+                    if (mShowVolumePercent) {
                         Util.setText(mRow.header,
                                 Utils.formatPercentage(mRow.ss.levelMin + 1, mRow.ss.levelMax));
                     }
@@ -3378,7 +3378,7 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
                 }
             }
 
-            if (mRow.header.getVisibility() == View.VISIBLE) {
+            if (mShowVolumePercent) {
                 Util.setText(mRow.header, Utils.formatPercentage(userLevel, mRow.ss.levelMax));
             }
 
