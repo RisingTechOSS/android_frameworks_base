@@ -124,6 +124,10 @@ public class VolumeUtils implements TunerService.Tunable {
         return inflater.inflate(layoutResId, null);
     }
     
+    public int getVolumeStyle() {
+        return customVolumeStyles;
+    }
+    
     public int getRowDrawable() {
         return seekbarDrawables[customVolumeStyles];
     }
