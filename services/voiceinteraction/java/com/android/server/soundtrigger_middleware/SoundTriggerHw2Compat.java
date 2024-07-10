@@ -212,7 +212,7 @@ final class SoundTriggerHw2Compat implements ISoundTriggerHal {
 
     @Override
     public int loadSoundModel(SoundModel soundModel, ModelCallback callback) {
-        android.hardware.soundtrigger.V2_3.ISoundTriggerHw.SoundModel hidlModel =
+        android.hardware.soundtrigger.V2_1.ISoundTriggerHw.SoundModel hidlModel =
                 ConversionUtil.aidl2hidlSoundModel(soundModel);
         try {
             AtomicInteger retval = new AtomicInteger(-1);
