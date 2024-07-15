@@ -264,6 +264,7 @@ public class LockIconViewController implements Dumpable {
     public void setLockIconView(LockIconView lockIconView) {
         mView = lockIconView;
         mView.setAccessibilityDelegate(mAccessibilityDelegate);
+        mView.setUseBackground(true);
 
         if (mFeatureFlags.isEnabled(DOZING_MIGRATION_1)) {
             collectFlow(mView, mTransitionInteractor.getDozeAmountTransition(),
@@ -518,7 +519,6 @@ public class LockIconViewController implements Dumpable {
         boolean wasUdfpsEnrolled = mUdfpsEnrolled;
 
         mUdfpsSupported = mKeyguardUpdateMonitor.isUdfpsSupported();
-        mView.setUseBackground(mUdfpsSupported);
 
         mUdfpsEnrolled = mKeyguardUpdateMonitor.isUdfpsEnrolled();
         if (wasUdfpsSupported != mUdfpsSupported || wasUdfpsEnrolled != mUdfpsEnrolled) {
