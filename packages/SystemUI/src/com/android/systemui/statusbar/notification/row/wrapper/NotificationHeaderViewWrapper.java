@@ -22,6 +22,8 @@ import android.app.Notification;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
+import android.os.UserHandle;
+import android.provider.Settings;
 import android.util.ArraySet;
 import android.view.NotificationHeaderView;
 import android.view.NotificationTopLineView;
@@ -40,7 +42,6 @@ import com.android.app.animation.Interpolators;
 import com.android.internal.widget.CachingIconView;
 import com.android.internal.widget.NotificationExpandButton;
 import com.android.systemui.res.R;
-import com.android.systemui.Dependency;
 import com.android.systemui.statusbar.TransformableView;
 import com.android.systemui.statusbar.ViewTransformationHelper;
 import com.android.systemui.statusbar.notification.CustomInterpolatorTransformation;
@@ -51,17 +52,12 @@ import com.android.systemui.statusbar.notification.RoundableState;
 import com.android.systemui.statusbar.notification.TransformState;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 
-import com.android.systemui.tuner.TunerService;
-
 import java.util.Stack;
 
 /**
  * Wraps a notification view which may or may not include a header.
  */
-public class NotificationHeaderViewWrapper extends NotificationViewWrapper implements Roundable, TunerService.Tunable {
-
-    private static final String QS_COLORED_ICONS =
-            "system:" + "qs_colored_icons";
+public class NotificationHeaderViewWrapper extends NotificationViewWrapper implements Roundable {
 
     private final RoundableState mRoundableState;
     private static final Interpolator LOW_PRIORITY_HEADER_CLOSE
@@ -123,18 +119,8 @@ public class NotificationHeaderViewWrapper extends NotificationViewWrapper imple
                 TRANSFORMING_VIEW_TITLE);
         resolveHeaderViews();
         addFeedbackOnClickListener(row);
-        Dependency.get(TunerService.class).addTunable(this, QS_COLORED_ICONS);
-    }
-
-    @Override
-    public void onTuningChanged(String key, String newValue) {
-        switch (key) {
-            case QS_COLORED_ICONS:
-                mQsColoredIconsEnabled = TunerService.parseIntegerSwitch(newValue, false);
-                break;
-            default:
-                break;
-        }
+        mQsColoredIconsEnabled = Settings.System.getIntForUser(
+            mContext.getContentResolver(), "qs_colored_icons", 0, UserHandle.USER_CURRENT) != 0;
     }
 
     @Override
