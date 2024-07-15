@@ -42,6 +42,7 @@ import android.os.Bundle;
 import android.os.SystemProperties;
 import android.os.Trace;
 import android.os.UserHandle;
+import android.provider.Settings;
 import android.util.AttributeSet;
 import android.util.FloatProperty;
 import android.util.IndentingPrintWriter;
@@ -82,7 +83,6 @@ import com.android.systemui.plugins.statusbar.NotificationMenuRowPlugin;
 import com.android.systemui.plugins.statusbar.NotificationMenuRowPlugin.MenuItem;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.res.R;
-import com.android.systemui.Dependency;
 import com.android.systemui.statusbar.RemoteInputController;
 import com.android.systemui.statusbar.SmartReplyController;
 import com.android.systemui.statusbar.StatusBarIconView;
@@ -119,7 +119,6 @@ import com.android.systemui.statusbar.policy.dagger.RemoteInputViewSubcomponent;
 import com.android.systemui.util.Compile;
 import com.android.systemui.util.DumpUtilsKt;
 import com.android.systemui.wmshell.BubblesManager;
-import com.android.systemui.tuner.TunerService;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -137,12 +136,7 @@ import java.util.function.Consumer;
  */
 public class ExpandableNotificationRow extends ActivatableNotificationView
         implements PluginListener<NotificationMenuRowPlugin>, SwipeableView,
-        NotificationFadeAware.FadeOptimizedNotification, TunerService.Tunable {
-
-    private static final String QS_COLORED_ICONS =
-            "system:" + "qs_colored_icons";
-            
-    private boolean mInflated = false;
+        NotificationFadeAware.FadeOptimizedNotification {
 
     private static final String TAG = "ExpandableNotifRow";
     private static final boolean DEBUG = Compile.IS_DEBUG && Log.isLoggable(TAG, Log.DEBUG);
@@ -1356,30 +1350,12 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         reInflateViews();
     }
 
-    @Override
-    public void onTuningChanged(String key, String newValue) {
-        switch (key) {
-            case QS_COLORED_ICONS:
-                if (mInflated) {
-                    reInflateViews();
-                }
-                break;
-            default:
-                break;
-        }
-    }
-
     private void reInflateViews() {
         Trace.beginSection("ExpandableNotificationRow#reInflateViews");
-
         // Let's update our childrencontainer. This is intentionally not guarded with
         // mIsSummaryWithChildren since we might have had children but not anymore.
         if (mChildrenContainer != null) {
-            if (mEntry != null && mEntry.getSbn() != null) {
-                mChildrenContainer.reInflateViews(mExpandClickListener, mEntry.getSbn());
-            } else {
-                Log.d("ExpandableNotificationRow", "mEntry or mEntry.getSbn() is null in reInflateViews");
-            }
+            mChildrenContainer.reInflateViews(mExpandClickListener, mEntry.getSbn());
         }
         if (mGuts != null) {
             NotificationGuts oldGuts = mGuts;
@@ -1394,29 +1370,19 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         if (oldMenu != null) {
             int menuIndex = indexOfChild(oldMenu);
             removeView(oldMenu);
-            if (mEntry != null && mEntry.getSbn() != null) {
-                mMenuRow.createMenu(ExpandableNotificationRow.this, mEntry.getSbn());
-            } else {
-                Log.d("ExpandableNotificationRow", "mEntry or mEntry.getSbn() is null in reInflateViews (menu)");
-            }
+            mMenuRow.createMenu(ExpandableNotificationRow.this, mEntry.getSbn());
             mMenuRow.setAppName(mAppName);
             addView(mMenuRow.getMenuView(), menuIndex);
         }
-        if (mLayouts != null) {
-            for (NotificationContentView l : mLayouts) {
-                l.reinflate();
-                l.reInflateViews();
-            }
+        for (NotificationContentView l : mLayouts) {
+            l.reinflate();
+            l.reInflateViews();
         }
-        if (mEntry != null && mEntry.getSbn() != null) {
-            mEntry.getSbn().clearPackageContext();
-            // TODO: Move content inflation logic out of this call
-            RowContentBindParams params = mRowContentBindStage.getStageParams(mEntry);
-            params.setNeedsReinflation(true);
-            mRowContentBindStage.requestRebind(mEntry, null /* callback */);
-        } else {
-            Log.d("ExpandableNotificationRow", "mEntry or mEntry.getSbn() is null in reInflateViews (bind stage)");
-        }
+        mEntry.getSbn().clearPackageContext();
+        // TODO: Move content inflation logic out of this call
+        RowContentBindParams params = mRowContentBindStage.getStageParams(mEntry);
+        params.setNeedsReinflation(true);
+        mRowContentBindStage.requestRebind(mEntry, null /* callback */);
 
         Trace.endSection();
     }
@@ -1835,7 +1801,6 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         float radius = getResources().getDimension(R.dimen.notification_corner_radius_small);
         mSmallRoundness = radius / getMaxRadius();
         initDimens();
-        Dependency.get(TunerService.class).addTunable(this, QS_COLORED_ICONS);
     }
 
     /**
@@ -2105,7 +2070,6 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         // Remove views that don't translate
         mTranslateableViews.remove(mChildrenContainerStub);
         mTranslateableViews.remove(mGutsStub);
-        mInflated = true;
     }
 
     /**
