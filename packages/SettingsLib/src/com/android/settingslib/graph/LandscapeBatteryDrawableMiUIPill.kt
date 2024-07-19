@@ -382,34 +382,34 @@ open class LandscapeBatteryDrawableMiUIPill(private val context: Context, frameC
 
     private fun loadPaths() {
         val pathString = context.resources.getString(
-                com.android.internal.R.string.config_batterymeterLandPerimeterPathiOS15)
+                com.android.internal.R.string.config_batterymeterLandPerimeterPathMiUIPill)
         perimeterPath.set(PathParser.createPathFromPathData(pathString))
         perimeterPath.computeBounds(RectF(), true)
 
         val errorPathString = context.resources.getString(
-                com.android.internal.R.string.config_batterymeterLandErrorPerimeterPathiOS15)
+                com.android.internal.R.string.config_batterymeterLandErrorPerimeterPathMiUIPill)
         errorPerimeterPath.set(PathParser.createPathFromPathData(errorPathString))
         errorPerimeterPath.computeBounds(RectF(), true)
 
         val fillMaskString = context.resources.getString(
-                com.android.internal.R.string.config_batterymeterLandFillMaskiOS15)
+                com.android.internal.R.string.config_batterymeterLandFillMaskMiUIPill)
         fillMask.set(PathParser.createPathFromPathData(fillMaskString))
         // Set the fill rect so we can calculate the fill properly
         fillMask.computeBounds(fillRect, true)
 
         val boltPathString = context.resources.getString(
-                com.android.internal.R.string.config_batterymeterLandBoltPathiOS15)
+                com.android.internal.R.string.config_batterymeterLandBoltPathMiUIPill)
         boltPath.set(PathParser.createPathFromPathData(boltPathString))
 
         val plusPathString = context.resources.getString(
-                com.android.internal.R.string.config_batterymeterLandPowersavePathiOS15)
+                com.android.internal.R.string.config_batterymeterLandPowersavePathMiUIPill)
         plusPath.set(PathParser.createPathFromPathData(plusPathString))
 
         dualTone = true
     }
 
     companion object {
-        private const val TAG = "LandscapeBatteryDrawableiOS15"
+        private const val TAG = "LandscapeBatteryDrawableMiUIPill"
         private const val WIDTH = 24f
         private const val HEIGHT = 12f
         private const val CRITICAL_LEVEL = 15
