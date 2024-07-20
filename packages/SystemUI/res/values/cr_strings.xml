@@ -16,6 +16,8 @@
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     
+    <string name="no_media_playing">No Media Playing</string>
+
     <!-- Clock Weather -->
     <string name="clock_ide_weather_data_unavailable">null</string>
 

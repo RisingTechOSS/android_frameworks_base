@@ -41,6 +41,7 @@ import com.android.systemui.model.SysUiState;
 import com.android.systemui.navigationbar.NavigationBarController;
 import com.android.systemui.navigationbar.NavigationModeController;
 import com.android.systemui.plugins.ActivityStarter;
+import com.android.systemui.plugins.FalsingManager;
 import com.android.systemui.plugins.DarkIconDispatcher;
 import com.android.systemui.plugins.PluginManager;
 import com.android.systemui.plugins.VolumeDialogController;
@@ -145,6 +146,7 @@ public class Dependency {
 
     @Inject Lazy<AccessPointController> mAccessPointController;
     @Inject Lazy<ActivityStarter> mActivityStarter;
+    @Inject Lazy<FalsingManager> mFalsingManager;
     @Inject Lazy<BroadcastDispatcher> mBroadcastDispatcher;
     @Inject Lazy<BluetoothController> mBluetoothController;
     @Inject Lazy<BluetoothTileDialogViewModel> mBluetoothTileDialogViewModel;
@@ -212,6 +214,7 @@ public class Dependency {
         mProviders.put(MAIN_HANDLER, mMainHandler::get);
         mProviders.put(AccessPointController.class, mAccessPointController::get);
         mProviders.put(ActivityStarter.class, mActivityStarter::get);
+        mProviders.put(FalsingManager.class, mFalsingManager::get);
         mProviders.put(BroadcastDispatcher.class, mBroadcastDispatcher::get);
         mProviders.put(BluetoothController.class, mBluetoothController::get);
         mProviders.put(BluetoothTileDialogViewModel.class, mBluetoothTileDialogViewModel::get);

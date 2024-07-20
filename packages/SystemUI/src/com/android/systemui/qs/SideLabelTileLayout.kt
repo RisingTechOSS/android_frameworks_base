@@ -41,12 +41,15 @@ open class SideLabelTileLayout(
                     isSmallLandscapeLockscreenEnabled &&
                     mContext.resources.getBoolean(R.bool.is_small_screen_landscape)
 
-            val maxAllowedRows = if (useSmallLandscapeLockscreenResources) {
+            var maxAllowedRows = if (useSmallLandscapeLockscreenResources) {
                 context.resources.getInteger(
                         R.integer.small_land_lockscreen_quick_settings_max_rows)
                 } else {
                     context.resources.getInteger(R.integer.quick_settings_max_rows)
                 }
+            if (TileUtils.canShowQsWidgets(mContext)) {
+                maxAllowedRows = 2
+            }
             mMaxAllowedRows = Math.max(TileUtils.getQSRowsCount(context), maxAllowedRows)
         }
     }

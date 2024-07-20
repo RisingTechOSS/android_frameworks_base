@@ -98,4 +98,15 @@ public class TileUtils {
                 Settings.System.QS_TILE_UI_STYLE,
                 0, UserHandle.USER_CURRENT);
    }
+
+   public static boolean isQsWidgetsEnabled(Context context) {
+        return Settings.System.getIntForUser(context.getContentResolver(), 
+            "qs_widgets_enabled",0, UserHandle.USER_CURRENT) != 0;
+   }
+
+   public static boolean canShowQsWidgets(Context context) {
+        return isQsWidgetsEnabled(context)
+            && context.getResources().getConfiguration().orientation 
+            != Configuration.ORIENTATION_LANDSCAPE;
+   }
 }
