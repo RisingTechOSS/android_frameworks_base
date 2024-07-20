@@ -872,7 +872,7 @@ public class LockScreenWidgets extends LinearLayout implements TunerService.Tuna
         helper.sendMediaButtonEvent(event, true);
     }
 
-    private void updateMediaPlaybackState() {;
+    private void updateMediaPlaybackState() {
         boolean isPlaying = isMediaPlaying();
         int stateIcon = isPlaying ? R.drawable.ic_media_pause : R.drawable.ic_media_play;
         if (mediaButton != null) {

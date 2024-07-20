@@ -70,6 +70,9 @@ public class QSAnimator implements QSHost.Callback, PagedTileLayout.PageListener
 
     public static final String QS_TILE_UI_STYLE =
             "system:" + Settings.System.QS_TILE_UI_STYLE;
+            
+    public static final String QS_WIDGETS_ENABLED =
+            "system:" + "qs_widgets_enabled";
 
     private static final int ANIMATORS_UPDATE_DELAY_MS = 100;
     private static final float EXPANDED_TILE_DELAY = .86f;
@@ -146,6 +149,7 @@ public class QSAnimator implements QSHost.Callback, PagedTileLayout.PageListener
     private boolean mShowCollapsedOnKeyguard;
     private int mQQSTop;
     private boolean isA11Style;
+    private boolean mQsWidgetsEnabled;
 
     private int[] mTmpLoc1 = new int[2];
     private int[] mTmpLoc2 = new int[2];
@@ -225,7 +229,7 @@ public class QSAnimator implements QSHost.Callback, PagedTileLayout.PageListener
 
     @Override
     public void onViewAttachedToWindow(@NonNull View view) {
-        mTunerService.addTunable(this, QS_TILE_UI_STYLE);
+        mTunerService.addTunable(this, QS_TILE_UI_STYLE, QS_WIDGETS_ENABLED);
         updateAnimators();
         setCurrentPosition();
         mQuickQSPanelController.mMediaHost.addVisibilityChangeListener(mMediaHostVisibilityListener);
@@ -243,6 +247,10 @@ public class QSAnimator implements QSHost.Callback, PagedTileLayout.PageListener
             case QS_TILE_UI_STYLE:
                 isA11Style =
                      TunerService.parseInteger(newValue, 0) != 0;
+                break;
+            case QS_WIDGETS_ENABLED:
+                mQsWidgetsEnabled =
+                     TunerService.parseIntegerSwitch(newValue, false);
                 break;
             default:
                 break;
@@ -473,14 +481,18 @@ public class QSAnimator implements QSHost.Callback, PagedTileLayout.PageListener
                 .setListener(this)
                 .build();
 
-        // Fade in the media player as we reach the final position
         Builder builder = new Builder().setStartDelay(EXPANDED_TILE_DELAY);
-        if (mQsPanelController.shouldUseHorizontalLayout()
-                && mQsPanelController.mMediaHost.hostView != null) {
-            builder.addFloat(mQsPanelController.mMediaHost.hostView, "alpha", 0, 1);
+        // Fade in the media player as we reach the final position
+        if (mQsWidgetsEnabled) {
+            mQsPanelController.mMediaHost.hostView.setAlpha(0f);
         } else {
-            // In portrait, media view should always be visible
-            mQsPanelController.mMediaHost.hostView.setAlpha(1.0f);
+            if (mQsPanelController.shouldUseHorizontalLayout()
+                    && mQsPanelController.mMediaHost.hostView != null) {
+                builder.addFloat(mQsPanelController.mMediaHost.hostView, "alpha", 0, 1);
+            } else {
+                // In portrait, media view should always be visible
+                mQsPanelController.mMediaHost.hostView.setAlpha(1.0f);
+            }
         }
         mAllPagesDelayedAnimator = builder.build();
         translationYBuilder.setInterpolator(mQSExpansionPathInterpolator.getYInterpolator());

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/qs_controls_tile_access">
+
+    <LinearLayout
+        android:id="@+id/qs_controls_access_layout"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/qs_controls_slider_margin_top"
+        android:layout_marginBottom="@dimen/qs_controls_slider_margin_bottom"
+        android:layout_marginEnd="@dimen/qs_controls_tile_margin_end"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/access_container"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/qs_controls_tile_height">
+
+            <com.android.systemui.animation.view.LaunchableImageView
+                android:id="@+id/wifi_btn"
+                android:layout_width="@dimen/qs_controls_circle_size"
+                android:layout_height="@dimen/qs_controls_circle_size"
+                android:background="@drawable/qs_controls_tile_background"
+                android:padding="@dimen/qs_controls_tile_icon_padding"
+                android:src="@drawable/ic_wifi_off_24"
+                android:tint="?android:attr/textColorPrimary"
+                android:layout_marginTop="@dimen/qs_controls_tile_top_margin"
+                android:layout_marginStart="@dimen/qs_controls_tile_icon_margin_start"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:focusable="true"
+                android:clickable="true"/>
+
+            <com.android.systemui.animation.view.LaunchableImageView
+                android:id="@+id/data_btn"
+                android:layout_width="@dimen/qs_controls_circle_size"
+                android:layout_height="@dimen/qs_controls_circle_size"
+                android:background="@drawable/qs_controls_tile_background"
+                android:padding="@dimen/qs_controls_tile_icon_padding"
+                android:src="@drawable/ic_mobiledata_off_24"
+                android:tint="?android:attr/textColorPrimary"
+                android:contentDescription="@string/accessibility_quick_settings_edit"
+                android:layout_marginTop="@dimen/qs_controls_tile_top_margin"
+                android:layout_marginEnd="@dimen/qs_controls_tile_icon_margin_end"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:focusable="true"
+                android:clickable="true"/>
+
+            <com.android.systemui.animation.view.LaunchableImageView
+                android:id="@+id/bt_btn"
+                android:layout_width="@dimen/qs_controls_circle_size"
+                android:layout_height="@dimen/qs_controls_circle_size"
+                android:background="@drawable/qs_controls_tile_background"
+                android:padding="@dimen/qs_controls_tile_icon_padding"
+                android:src="@drawable/qs_bluetooth_icon_off"
+                android:tint="?android:attr/textColorPrimary"
+                android:layout_marginStart="@dimen/qs_controls_tile_icon_margin_start"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/wifi_btn"
+                android:layout_marginTop="@dimen/qs_controls_tile_top_margin_secondary"
+                android:focusable="true"
+                android:clickable="true"/>
+
+            <com.android.systemui.animation.view.LaunchableImageView
+                android:id="@+id/airplane_btn"
+                android:layout_width="@dimen/qs_controls_circle_size"
+                android:layout_height="@dimen/qs_controls_circle_size"
+                android:background="@drawable/qs_controls_tile_background"
+                android:padding="@dimen/qs_controls_tile_icon_padding"
+                android:src="@drawable/qs_airplane_icon_off"
+                android:tint="?android:attr/textColorPrimary"
+                android:layout_marginEnd="@dimen/qs_controls_tile_icon_margin_end"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/data_btn"
+                android:layout_marginTop="@dimen/qs_controls_tile_top_margin_secondary"
+                android:focusable="true"
+                android:clickable="true"/>
+
+            <com.android.systemui.qs.QsControlsPageIndicator
+                android:id="@+id/access_page_indicator"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:visibility="invisible"
+                app:layout_constraintTop_toBottomOf="@id/airplane_btn"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
