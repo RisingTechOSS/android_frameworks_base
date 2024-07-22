@@ -135,6 +135,7 @@ public class DefaultAppProvider {
         String[] defaultLaunchers = {
                 "com.android.launcher3",
                 "com.google.android.apps.nexuslauncher",
+                "app.lawnchair",
                 "com.nothing.launcher"
         };
         if (roleManager == null) {

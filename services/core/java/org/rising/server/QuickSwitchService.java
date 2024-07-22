@@ -48,6 +48,7 @@ public final class QuickSwitchService extends SystemService {
     private static final List<String> LAUNCHER_PACKAGES = List.of(
         "com.android.launcher3",
         "com.google.android.apps.nexuslauncher",
+        "app.lawnchair",
         "com.nothing.launcher"
     );
 
@@ -180,7 +181,7 @@ public final class QuickSwitchService extends SystemService {
                 ActivityManager am = (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
                 String nothingLauncherPackageName = "com.nothing.launcher";
                 int defaultLauncher = SystemProperties.getInt("persist.sys.default_launcher", 0);
-                if (defaultLauncher == 2) {
+                if (defaultLauncher == 3) {
                     am.forceStopPackage(nothingLauncherPackageName);
                 }
             }
