@@ -50,7 +50,8 @@ public class ExecutorUtils {
 
         final RemoteCallable<T> controller = controllerInstance;
         if (callingPackage != null && !callingPackage.toLowerCase().contains("google")
-            && !callingPackage.toLowerCase().contains("nothing.launcher")) {
+            && !callingPackage.toLowerCase().contains("nothing.launcher")
+            && !callingPackage.toLowerCase().contains("lawnchair")) {
             controllerInstance.getContext().enforceCallingPermission(
                     Manifest.permission.MANAGE_ACTIVITY_TASKS, log);
         }
