@@ -65,12 +65,16 @@ public class TileUtils {
             value = Settings.System.getIntForUser(
                     context.getContentResolver(), Settings.System.QQS_LAYOUT_ROWS,
                     2, UserHandle.USER_CURRENT);
-        } else {
-            value = Settings.System.getIntForUser(
-                    context.getContentResolver(), Settings.System.QQS_LAYOUT_ROWS_LANDSCAPE,
-                    1, UserHandle.USER_CURRENT);
         }
         return Math.max(QS_ROWS_MIN, value);
+    }
+    
+    public static int getMaxRowCount(Context context) {
+        final boolean isLandscape = context.getResources().getConfiguration().orientation 
+            == Configuration.ORIENTATION_LANDSCAPE;
+        return Settings.System.getIntForUser(
+                    context.getContentResolver(), isLandscape ? "qs_panel_row_count_landscape" : "qs_panel_row_count",
+                    isLandscape ? 2 : 4, UserHandle.USER_CURRENT);
     }
 
     public static boolean getQSTileLabelHide(Context context) {
