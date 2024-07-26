@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.android.systemui.theme;
 
-import android.content.Context;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.database.ContentObserver;
 import android.net.Uri;
 import android.os.Handler;
@@ -40,7 +39,11 @@ public class RisingThemeController {
         this.mBackgroundHandler = backgroundHandler;
     }
 
-    public void observeSystemSettings(Runnable reevaluateSystemThemeCallback, String... keys) {
+    public void observeSystemSettings(Runnable reevaluateSystemThemeCallback) {
+        observeSystemSettings(reevaluateSystemThemeCallback, RisingSettingsConstants.SYSTEM_SETTINGS_KEYS);
+    }
+
+    private void observeSystemSettings(Runnable reevaluateSystemThemeCallback, String... keys) {
         for (String key : keys) {
             Uri uri = Settings.System.getUriFor(key);
             observe(uri, reevaluateSystemThemeCallback);
@@ -63,12 +66,8 @@ public class RisingThemeController {
                     if (isDeviceSetupComplete()) {
                         toast.show();
                     }
-                    mBackgroundHandler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                             reevaluateSystemThemeCallback.run();
-                        }
-                    }, isDeviceSetupComplete() ? toast.getDuration() + 1250 : 0);
+                    mBackgroundHandler.postDelayed(() -> reevaluateSystemThemeCallback.run(),
+                            isDeviceSetupComplete() ? toast.getDuration() + 1250 : 0);
                 }
             };
             mContentResolver.registerContentObserver(uri, false, contentObserver);

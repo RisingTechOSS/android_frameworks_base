@@ -491,21 +491,7 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
         final IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_PROFILE_ADDED);
         filter.addAction(Intent.ACTION_WALLPAPER_CHANGED);
-        mThemeController.observeSystemSettings(() -> reevaluateSystemTheme(true),
-                "settings_theme_style",
-                "qs_panel_tile_haptic",
-                "lockscreen_widgets_enabled",
-                "lockscreen_widgets",
-                "lockscreen_widgets_extras",
-                "user_selected_resolution",
-                "show_multi_user_avatar_on_homepage",
-                Settings.System.STATUS_BAR_BATTERY_STYLE,
-                Settings.System.QS_BATTERY_STYLE,
-                Settings.System.QS_SHOW_BATTERY_PERCENT,
-                Settings.System.QS_TILE_UI_STYLE,
-                "qs_colored_icons",
-                "clock_style"
-        );
+        mThemeController.observeSystemSettings(() -> reevaluateSystemTheme(true));
         mBroadcastDispatcher.registerReceiver(mBroadcastReceiver, filter, mMainExecutor,
                 UserHandle.ALL);
         mSecureSettings.registerContentObserverForUser(
