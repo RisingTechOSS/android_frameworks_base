@@ -6926,11 +6926,13 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
         @Override
         public void onVoiceLaunch() {
+            if (isDeviceInPocket()) return;
             launchVoiceAssistWithWakeLock();
         }
 
         @Override
         public void onLaunchSearch() {
+            if (isDeviceInPocket()) return;
             long eventTime = System.currentTimeMillis();
             KeyEvent downEvent = new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_SEARCH, 0);
             launchAssistAction(null, INVALID_INPUT_DEVICE_ID, SystemClock.uptimeMillis(),
@@ -6940,26 +6942,31 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
         @Override
         public void onScreenshotTaken() {
+            if (isDeviceInPocket()) return;
             interceptScreenshotChord(TAKE_SCREENSHOT_FULLSCREEN, SCREENSHOT_KEY_OTHER, 0 /*pressDelay*/);
         }
 
         @Override
         public void onClearAllNotifications() {
+            if (isDeviceInPocket()) return;
             clearAllNotifications();
         }
 
         @Override
         public void onToggleRingerModes() {
+            if (isDeviceInPocket()) return;
             toggleRingerModes();
         }
 
         @Override
         public void onToggleTorch() {
+            if (isDeviceInPocket()) return;
             toggleTorch();
         }
 
         @Override
         public void onMediaKeyDispatch() {
+            if (isDeviceInPocket()) return;
             AudioManager am = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
             int keyCode = am.isMusicActive() ? KeyEvent.KEYCODE_MEDIA_NEXT : KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE;
             long eventTime = System.currentTimeMillis();
@@ -6971,18 +6978,26 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
         @Override
         public void onToggleVolumePanel() {
+            if (isDeviceInPocket()) return;
             toggleVolumePanel();
         }
 
         @Override
         public void onKillApp() {
+            if (isDeviceInPocket()) return;
             ActionUtils.killForegroundApp(mContext, mCurrentUserId);
         }
 
         @Override
         public void onTurnScreenOnOrOff() {
+            if (isDeviceInPocket()) return;
             turnScreenOnOrOff();
         }
+    }
+    
+    public boolean isDeviceInPocket() {
+        return mPocketMode != null && mPocketMode.isDeviceInPocket() 
+                && mPocketMode.isOverlayShowing();    
     }
 
     /** {@inheritDoc} */
