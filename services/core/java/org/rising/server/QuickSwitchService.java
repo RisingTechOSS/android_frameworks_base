@@ -63,8 +63,6 @@ public final class QuickSwitchService extends SystemService {
 
     private ServiceThread mWorker;
     private Handler mHandler;
-    
-    private boolean forceStopExecuted = false;
 
     private static List<String> disabledLaunchersCache = null;
     private static int lastDefaultLauncher = -1;
@@ -159,9 +157,7 @@ public final class QuickSwitchService extends SystemService {
     public void onBootPhase(int phase) {
         super.onBootPhase(phase);
         if (phase == SystemService.PHASE_BOOT_COMPLETED) {
-            forceStopConflictingLaunchers();
             IntentFilter filter = new IntentFilter(Intent.ACTION_USER_PRESENT);
-            mContext.registerReceiver(new UnlockReceiver(), filter);
         }
     }
 
@@ -174,37 +170,12 @@ public final class QuickSwitchService extends SystemService {
         mOpPackageName = context.getOpPackageName();
     }
 
-    private void forceStopConflictingLaunchers() {
-        mHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                ActivityManager am = (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
-                String nothingLauncherPackageName = "com.nothing.launcher";
-                int defaultLauncher = SystemProperties.getInt("persist.sys.default_launcher", 0);
-                if (defaultLauncher == 3) {
-                    am.forceStopPackage(nothingLauncherPackageName);
-                }
-            }
-        }, 5000); 
-    }
-
     private final class UserReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             int userId = intent.getIntExtra(Intent.EXTRA_USER_HANDLE, -1);
             if (Intent.ACTION_USER_ADDED.equals(intent.getAction())) {
                 initForUser(userId);
-                forceStopConflictingLaunchers();
-            }
-        }
-    }
-    
-    private class UnlockReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (Intent.ACTION_USER_PRESENT.equals(intent.getAction()) && !forceStopExecuted) {
-                forceStopConflictingLaunchers();
-                forceStopExecuted = true;
             }
         }
     }
