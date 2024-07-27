@@ -89,8 +89,8 @@ public class ClockStyle extends RelativeLayout implements TunerService.Tunable {
     private ImageView customImageView;
     
     // Burn-in protection
-    private static final int BURN_IN_PROTECTION_INTERVAL = 60000; // 60 seconds
-    private static final int BURN_IN_PROTECTION_MAX_SHIFT = 10; // 10 pixels
+    private static final int BURN_IN_PROTECTION_INTERVAL = 10000; // 10 seconds
+    private static final int BURN_IN_PROTECTION_MAX_SHIFT = 4; // 4 pixels
     private final Handler mBurnInProtectionHandler = new Handler();
     private int mCurrentShiftX = 0;
     private int mCurrentShiftY = 0;
@@ -98,11 +98,18 @@ public class ClockStyle extends RelativeLayout implements TunerService.Tunable {
     private final Runnable mBurnInProtectionRunnable = new Runnable() {
         @Override
         public void run() {
-            if (customImageView != null && mDozing) {
+            if (mDozing) {
                 mCurrentShiftX = (int) (Math.random() * BURN_IN_PROTECTION_MAX_SHIFT * 2) - BURN_IN_PROTECTION_MAX_SHIFT;
                 mCurrentShiftY = (int) (Math.random() * BURN_IN_PROTECTION_MAX_SHIFT * 2) - BURN_IN_PROTECTION_MAX_SHIFT;
-                customImageView.setTranslationX(mCurrentShiftX);
-                customImageView.setTranslationY(mCurrentShiftY);
+                if (customImageView != null) {
+                    customImageView.setTranslationX(mCurrentShiftX);
+                    customImageView.setTranslationY(mCurrentShiftY);
+                }
+                if (currentClockView != null) {
+                    currentClockView.setTranslationX(mCurrentShiftX);
+                    currentClockView.setTranslationY(mCurrentShiftY);
+                }
+                invalidate();
                 mBurnInProtectionHandler.postDelayed(this, BURN_IN_PROTECTION_INTERVAL);
             }
         }
@@ -161,10 +168,12 @@ public class ClockStyle extends RelativeLayout implements TunerService.Tunable {
     }
 
     private void startBurnInProtection() {
+        if (mClockStyle == 0) return;
         mBurnInProtectionHandler.post(mBurnInProtectionRunnable);
     }
 
     private void stopBurnInProtection() {
+        if (mClockStyle == 0) return;
         mBurnInProtectionHandler.removeCallbacks(mBurnInProtectionRunnable);
         if (customImageView != null) {
             customImageView.setTranslationX(0);
