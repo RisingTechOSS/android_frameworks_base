@@ -57,7 +57,7 @@ public class PixelPropsUtils {
         "BRAND", "google",
         "MANUFACTURER", "Google",
         "DEVICE", "husky",
-        "FINGERPRINT", "google/husky_beta/husky:15/AP31.240517.022/11948202:user/release-keys",
+        "FINGERPRINT", "google/husky_beta/husky:15/AP31.240617.009/12094726:user/release-keys",
         "MODEL", "Pixel 8 Pro",
         "PRODUCT", "husky_beta",
         "DEVICE_INITIAL_SDK_INT", "21",
