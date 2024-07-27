@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The risingOS Android Project
+ * Copyright (C) 2023-2024 The risingOS Android Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.android.systemui.util;
 
 import android.content.Context;
@@ -29,34 +28,32 @@ public class UsernameTextView extends TextView {
     private String mUsername;
     private Context mContext;
     private UserUtils mUserUtils;
+    private Handler mHandler;
+    private Runnable mUpdateRunnable;
 
     public UsernameTextView(Context context) {
         super(context);
-        mContext = context;
+        init(context);
     }
 
     public UsernameTextView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mContext = context;
+        init(context);
     }
 
     public UsernameTextView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        mContext = context;
-    }
-
-    @Override
-    protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
-        init(mContext);
+        init(context);
     }
 
     private void init(Context context) {
+        mContext = context;
         mUserUtils = UserUtils.Companion.getInstance(context);
         mUsername = mUserUtils.getUserName();
         setText(mUsername);
-        final Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
+
+        mHandler = new Handler();
+        mUpdateRunnable = new Runnable() {
             @Override
             public void run() {
                 String newUsername = mUserUtils.getUserName();
@@ -64,8 +61,20 @@ public class UsernameTextView extends TextView {
                     mUsername = newUsername;
                     setText(mUsername);
                 }
-                handler.postDelayed(this, 2000);
+                mHandler.postDelayed(this, 2000);
             }
-        }, 2000);
+        };
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        mHandler.post(mUpdateRunnable);
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        mHandler.removeCallbacks(mUpdateRunnable);
     }
 }
