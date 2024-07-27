@@ -28,6 +28,9 @@ public class RisingServicesStarter {
     private static final String ADAPTIVE_SOUND_ENGINE_SERVICE_CLASS =
             "org.rising.server.AdaptiveSoundEngineService";
 
+    private static final String NETWORK_OPT_SERVICE_CLASS =
+            "org.rising.server.NetworkOptimizerService";
+
     public RisingServicesStarter(SystemServiceManager systemServiceManager) {
         this.mSystemServiceManager = systemServiceManager;
     }
@@ -35,6 +38,7 @@ public class RisingServicesStarter {
     public void startAllServices() {
         startService(QUICKSWITCH_SERVICE_CLASS);
         startService(ADAPTIVE_SOUND_ENGINE_SERVICE_CLASS);
+        startService(NETWORK_OPT_SERVICE_CLASS);
     }
 
     private void startService(String serviceClassName) {
