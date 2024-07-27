@@ -9,9 +9,21 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="@dimen/below_clock_padding_start"
         android:layout_marginTop="@dimen/custom_clock_frame_margin_top">
+
+        <ImageView
+            android:id="@+id/custom_aod_image_view"
+            android:layout_width="@dimen/custom_aod_image_size"
+            android:layout_height="@dimen/custom_aod_image_size"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="20dp"
+            android:scaleType="centerCrop"
+            android:visibility="gone"/>
+
         <ViewStub
             android:id="@+id/clock_view_stub"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_below="@id/custom_aod_image_view"/>
     </RelativeLayout>
 </com.android.systemui.clocks.ClockStyle>
+
