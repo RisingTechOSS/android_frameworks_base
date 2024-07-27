@@ -16,6 +16,9 @@
 -->
 <resources>
 
+    <!-- Custom AOD image -->  
+    <dimen name="custom_aod_image_size">180dp</dimen>
+
     <!-- QS Widgets -->  
     <dimen name="qs_controls_padding_top">260dp</dimen>
     <dimen name="qs_controls_top_margin">16dp</dimen>
