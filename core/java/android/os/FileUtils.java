@@ -1422,7 +1422,7 @@ public final class FileUtils {
             }
         }
 
-        Log.d(TAG, String.format("Rounded bytes from %d to %d", size, val * pow));
+        //Log.d(TAG, String.format("Rounded bytes from %d to %d", size, val * pow));
         return val * pow;
     }
 
