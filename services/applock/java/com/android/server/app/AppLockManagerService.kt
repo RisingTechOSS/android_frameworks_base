@@ -43,6 +43,7 @@ import android.os.Process
 import android.os.RemoteException
 import android.os.SystemClock
 import android.os.UserHandle
+import android.os.UserManager
 import android.util.ArrayMap
 import android.util.ArraySet
 import android.util.Log
@@ -190,7 +191,7 @@ class AppLockManagerService(
                         return@launch
                     }
                 }
-                if (intent?.action == Intent.ACTION_PACKAGE_REMOVED) {
+                if (intent.action == Intent.ACTION_PACKAGE_REMOVED) {
                     mutex.withLock {
                         if (config.shouldProtectApp(packageName)) {
                             logD {
@@ -214,7 +215,7 @@ class AppLockManagerService(
                             }
                         }
                     }
-                } else if (intent?.action == Intent.ACTION_PACKAGE_ADDED) {
+                } else if (intent.action == Intent.ACTION_PACKAGE_ADDED) {
                     logD {
                         "Package $packageName installed, configuring app lock"
                     }
@@ -881,7 +882,7 @@ class AppLockManagerService(
         ).map { it.packageName }
         var changed = false
         logD {
-            "Current packages = $currentPackages"
+            "Current packages = $currentPackages\n" +
             "Valid packages = $validPackages"
         }
         for (i in 0 until currentPackages.size) {
@@ -951,7 +952,8 @@ class AppLockManagerService(
                 return false
             }
             val isManaged = clearAndExecute {
-                userManagerInternal.isUserManaged(userId)
+                val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
+                userManager.isManagedProfile(userId)
             }
             if (isManaged) {
                 logD {
