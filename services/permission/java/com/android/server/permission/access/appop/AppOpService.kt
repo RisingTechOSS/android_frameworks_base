@@ -97,7 +97,7 @@ class AppOpService(private val service: AccessCheckingService) : AppOpsCheckingS
         val appId = UserHandle.getAppId(uid)
         val userId = UserHandle.getUserId(uid)
         val opName = AppOpsManager.opToPublicName(op)
-        var wasChanged = false
+        var wasChanged: Boolean
         service.mutateState {
             wasChanged = with(appIdPolicy) { setAppOpMode(appId, userId, opName, mode) }
         }
@@ -128,7 +128,7 @@ class AppOpService(private val service: AccessCheckingService) : AppOpsCheckingS
     }
 
     override fun removePackage(packageName: String, userId: Int): Boolean {
-        var wasChanged = false
+        var wasChanged: Boolean
         service.mutateState {
             wasChanged = with(packagePolicy) { removeAppOpModes(packageName, userId) }
         }
