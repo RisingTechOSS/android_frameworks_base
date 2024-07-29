@@ -2475,8 +2475,8 @@ class PermissionService(private val service: AccessCheckingService) :
                 intArrayOf(userId)
             }
         userIds.forEach { service.onPackageUninstalled(packageName, appId, it) }
-        val packageState = packageManagerInternal.packageStates[packageName]
-        if (packageState == null) {
+        val pkgState = packageManagerInternal.packageStates[packageName]
+        if (pkgState == null) {
             service.onPackageRemoved(packageName, appId)
         }
     }
