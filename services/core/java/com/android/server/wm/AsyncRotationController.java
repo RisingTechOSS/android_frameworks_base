@@ -22,9 +22,7 @@ import static android.view.WindowManager.LayoutParams.TYPE_NAVIGATION_BAR;
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_TOKEN_TRANSFORM;
 
 import android.annotation.IntDef;
-import android.hardware.power.Mode;
 import android.os.HandlerExecutor;
-import android.os.PowerManagerInternal;
 import android.util.ArrayMap;
 import android.util.Slog;
 import android.view.SurfaceControl;
@@ -34,7 +32,6 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
 import com.android.internal.R;
-import com.android.server.LocalServices;
 
 import java.io.PrintWriter;
 import java.lang.annotation.Retention;
@@ -112,13 +109,13 @@ class AsyncRotationController extends FadeAnimationController implements Consume
     private int mOriginalRotation;
     private final boolean mHasScreenRotationAnimation;
 
-    private final PowerManagerInternal mPowerManagerInternal;
+    private PowerBoostSetter mPowerBoostSetter = null;
 
     AsyncRotationController(DisplayContent displayContent) {
         super(displayContent);
         mService = displayContent.mWmService;
         mOriginalRotation = displayContent.getWindowConfiguration().getRotation();
-        mPowerManagerInternal = LocalServices.getService(PowerManagerInternal.class);
+        mPowerBoostSetter = new PowerBoostSetter();
         final int transitionType =
                 displayContent.mTransitionController.getCollectingTransitionType();
         if (transitionType == WindowManager.TRANSIT_CHANGE) {
@@ -355,7 +352,6 @@ class AsyncRotationController extends FadeAnimationController implements Consume
             finishOp(token);
             if (mTargetWindowTokens.isEmpty()) {
                 onAllCompleted();
-                setActivityBoost(false);
                 return true;
             }
         }
@@ -364,9 +360,9 @@ class AsyncRotationController extends FadeAnimationController implements Consume
         return false;
     }
 
-    protected void setActivityBoost(boolean enable) {
-        if (mPowerManagerInternal != null) {
-            mPowerManagerInternal.setPowerMode(Mode.LAUNCH, enable);
+    protected void setActivityBoost() {
+        if (mPowerBoostSetter != null) {
+            mPowerBoostSetter.boostPower();
         }
     }
 
@@ -375,7 +371,7 @@ class AsyncRotationController extends FadeAnimationController implements Consume
      * be seamlessly rotated later.
      */
     void start() {
-        setActivityBoost(true);
+        setActivityBoost();
         for (int i = mTargetWindowTokens.size() - 1; i >= 0; i--) {
             final WindowToken windowToken = mTargetWindowTokens.keyAt(i);
             final Operation op = mTargetWindowTokens.valueAt(i);
