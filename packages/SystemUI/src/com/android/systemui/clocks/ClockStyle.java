@@ -231,6 +231,7 @@ public class ClockStyle extends RelativeLayout implements TunerService.Tunable {
                 int maxSize = (int) mContext.getResources().getDimension(R.dimen.custom_aod_image_size);
                 Drawable roundedImg = new CircleFramedDrawable(bitmap, maxSize);
                 customImageView.setImageDrawable(roundedImg);
+                bitmap.recycle();
                 customImageView.setVisibility(View.VISIBLE);
                 customImageView.setAlpha(0f);
                 customImageView.animate()
