@@ -23,11 +23,11 @@ import android.util.Log;
 public class AudioEffectsUtils {
 
     private static final int EFFECT_PRIORITY = Integer.MAX_VALUE;
-    private static final short[] BASS_BOOST_STRENGTH = {0, 800, 700, 600, 700};
+    private static final short[] BASS_BOOST_STRENGTH = {0, 900, 700, 600, 700};
     private static final short[] SPATIAL_STRENGTH = {0, 1100, 1150, 1200, 1100};
     private static final short[] REVERB_PRESETS = {
             PresetReverb.PRESET_NONE,
-            PresetReverb.PRESET_PLATE,
+            PresetReverb.PRESET_NONE,
             PresetReverb.PRESET_LARGEHALL,
             PresetReverb.PRESET_PLATE,
             PresetReverb.PRESET_MEDIUMROOM
@@ -39,7 +39,7 @@ public class AudioEffectsUtils {
 
     private static final int[][] LOUDNESS_ENHANCER_SETTINGS = {
         {0},    // Disabled
-        {1000}, // Music
+        {1100}, // Music
         {1200}, // Games
         {1500}, // Theater
         {1100}  // Smart
@@ -47,7 +47,7 @@ public class AudioEffectsUtils {
 
     private static final int[][] ENVIRONMENTAL_REVERB_SETTINGS = {
         {0, -1000},   // Disabled
-        {1200, -300}, // Music
+        {1400, 0}, // Music
         {1700, -100}, // Games
         {2200, 0},    // Theater
         {1400, -200}  // Smart
