@@ -52,6 +52,16 @@
                 app:framePosition="@integer/fade_in_start_frame"
                 android:alpha="0"
                 />
+            <KeyAttribute
+                app:motionTarget="@id/clock"
+                app:framePosition="@integer/fade_out_complete_frame"
+                android:alpha="0"
+                />
+            <KeyAttribute
+                app:motionTarget="@id/clock"
+                app:framePosition="@integer/fade_in_start_frame"
+                android:alpha="0"
+                />
             <KeyPosition
                 app:motionTarget="@id/shade_header_system_icons"
                 app:keyPositionType="deltaRelative"
