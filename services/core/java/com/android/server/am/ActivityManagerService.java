@@ -20764,14 +20764,15 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         public void registerObserver() {
             mContext.getContentResolver().registerContentObserver(
-                    Settings.System.getUriFor(Settings.System.THREE_FINGER_GESTURE),
+                    Settings.System.getUriFor("three_finger_gesture_action"),
                     false, this, UserHandle.USER_ALL);
             update();
         }
 
         private void update() {
-            mIsSwipeToScrenshotEnabled = Settings.System.getIntForUser(mContext.getContentResolver(),
-                    Settings.System.THREE_FINGER_GESTURE, 0, UserHandle.USER_CURRENT) == 1;
+            boolean threeGestureEnabled = Settings.System.getIntForUser(mContext.getContentResolver(),
+                    "three_finger_gesture_action", 0, UserHandle.USER_CURRENT) == 1;
+            mIsSwipeToScrenshotEnabled = threeGestureEnabled;
         }
 
         public void onChange(boolean selfChange) {
