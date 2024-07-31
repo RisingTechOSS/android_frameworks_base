@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2019 The PixelExperience Project
+ *               2023-2024 The risingOS Android Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.android.server.policy;
 
 import android.content.Context;
@@ -33,20 +33,27 @@ public class SwipeToScreenshotListener implements PointerEventListener {
     private static final int THREE_GESTURE_STATE_DETECTED_FALSE = 2;
     private static final int THREE_GESTURE_STATE_DETECTED_TRUE = 3;
     private static final int THREE_GESTURE_STATE_NO_DETECT = 4;
+    private static final int THREE_GESTURE_STATE_LONG_PRESS = 5;
+    private static final long LONG_PRESS_TIMEOUT = 800;
+    private static final float MAX_MOVE_THRESHOLD = 50.0f;
     private boolean mBootCompleted;
     private Context mContext;
     private boolean mDeviceProvisioned = false;
     private float[] mInitMotionY;
+    private float[] mInitMotionX;
     private int[] mPointerIds;
     private int mThreeGestureState = THREE_GESTURE_STATE_NONE;
     private int mThreeGestureThreshold;
     private int mThreshold;
     private final Callbacks mCallbacks;
-    DisplayMetrics mDisplayMetrics;
+    private DisplayMetrics mDisplayMetrics;
+    private long mDownTime;
+    private boolean isLongPressTriggered = false;
 
     public SwipeToScreenshotListener(Context context, Callbacks callbacks) {
         mPointerIds = new int[3];
         mInitMotionY = new float[3];
+        mInitMotionX = new float[3];
         mContext = context;
         mCallbacks = callbacks;
         mDisplayMetrics = mContext.getResources().getDisplayMetrics();
@@ -65,14 +72,17 @@ public class SwipeToScreenshotListener implements PointerEventListener {
                 Settings.Global.DEVICE_PROVISIONED, 0) != 0;
             return;
         }
-        if (event.getAction() == 0) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            mDownTime = event.getDownTime();
             changeThreeGestureState(THREE_GESTURE_STATE_NONE);
+            isLongPressTriggered = false;
         } else if (mThreeGestureState == THREE_GESTURE_STATE_NONE && event.getPointerCount() == 3) {
             if (checkIsStartThreeGesture(event)) {
                 changeThreeGestureState(THREE_GESTURE_STATE_DETECTING);
                 for (int i = 0; i < 3; i++) {
                     mPointerIds[i] = event.getPointerId(i);
                     mInitMotionY[i] = event.getY(i);
+                    mInitMotionX[i] = event.getX(i);
                 }
             } else {
                 changeThreeGestureState(THREE_GESTURE_STATE_NO_DETECT);
@@ -84,7 +94,8 @@ public class SwipeToScreenshotListener implements PointerEventListener {
                 return;
             }
             if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
-                float distance = 0.0f;
+                float distanceY = 0.0f;
+                float distanceX = 0.0f;
                 int i = 0;
                 while (i < 3) {
                     int index = event.findPointerIndex(mPointerIds[i]);
@@ -92,23 +103,42 @@ public class SwipeToScreenshotListener implements PointerEventListener {
                         changeThreeGestureState(THREE_GESTURE_STATE_DETECTED_FALSE);
                         return;
                     } else {
-                        distance += event.getY(index) - mInitMotionY[i];
+                        distanceY += event.getY(index) - mInitMotionY[i];
+                        distanceX += event.getX(index) - mInitMotionX[i];
                         i++;
                     }
                 }
-                if (distance >= ((float) mThreeGestureThreshold)) {
+                if (Math.abs(distanceY) >= ((float) mThreeGestureThreshold) || Math.abs(distanceX) >= ((float) mThreeGestureThreshold)) {
                     changeThreeGestureState(THREE_GESTURE_STATE_DETECTED_TRUE);
                     doAction();
+                    return;
+                }
+                if (!isLongPressTriggered && event.getEventTime() - mDownTime >= LONG_PRESS_TIMEOUT && Math.abs(distanceY) < MAX_MOVE_THRESHOLD && Math.abs(distanceX) < MAX_MOVE_THRESHOLD) {
+                    changeThreeGestureState(THREE_GESTURE_STATE_LONG_PRESS);
+                    doLongPressAction();
+                    return;
                 }
             }
         }
     }
-    
+
     private void doAction() {
         final int swipeGestureAction = Settings.System.getInt(mContext.getContentResolver(),
                 "three_finger_gesture_action", 0);
         if (mCallbacks == null || swipeGestureAction == 0) return;
-        switch (swipeGestureAction) {
+        doActionInternal(swipeGestureAction);
+    }
+
+    private void doLongPressAction() {
+        final int longPressGestureAction = Settings.System.getInt(mContext.getContentResolver(),
+                "three_finger_long_press_action", 0);
+        if (mCallbacks == null || longPressGestureAction == 0) return;
+        doActionInternal(longPressGestureAction);
+        isLongPressTriggered = true;
+    }
+    
+    private void doActionInternal(int action) {
+        switch (action) {
             case 1:
                 mCallbacks.onToggleTorch();
                 break;
@@ -146,7 +176,7 @@ public class SwipeToScreenshotListener implements PointerEventListener {
     }
 
     private void changeThreeGestureState(int state) {
-        if (mThreeGestureState != state){
+        if (mThreeGestureState != state) {
             mThreeGestureState = state;
             boolean shouldEnableProp = mThreeGestureState == THREE_GESTURE_STATE_DETECTED_TRUE ||
                 mThreeGestureState == THREE_GESTURE_STATE_DETECTING;
