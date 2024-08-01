@@ -2327,6 +2327,13 @@ class ContextImpl extends Context {
     private void enforce(
             String permission, int resultOfCheck,
             boolean selfToo, int uid, String message) {
+        if (getPackageManager() != null) {
+            final String callingPackage = getPackageManager().getNameForUid(uid);
+            List<String> launcherPackages = Arrays.asList(getResources().getStringArray(com.android.internal.R.array.config_launcherPackages));
+            if (launcherPackages.contains(callingPackage)) {
+                return;
+            }
+        }
         if (resultOfCheck != PERMISSION_GRANTED) {
             throw new SecurityException(
                     (message != null ? (message + ": ") : "") +
