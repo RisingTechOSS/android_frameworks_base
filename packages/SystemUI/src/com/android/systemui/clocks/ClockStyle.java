@@ -22,6 +22,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Handler;
+import android.os.UserHandle;
 import android.provider.Settings;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -224,6 +225,14 @@ public class ClockStyle extends RelativeLayout implements TunerService.Tunable {
 
     private void updateCustomImageView() {
         if (customImageView == null) return;
+        boolean customAodImageEnabled = Settings.System.getIntForUser(mContext.getContentResolver(), 
+            "custom_aod_image_enabled", 0, UserHandle.USER_CURRENT) != 0;
+        if (!customAodImageEnabled) {
+            if (customImageView.getVisibility() != View.GONE) {
+                customImageView.setVisibility(View.GONE);
+            }
+            return;
+        }
         String imagePath = Settings.System.getString(mContext.getContentResolver(), CUSTOM_AOD_IMAGE_URI_KEY);
         if (imagePath != null && mDozing) {
             try {
@@ -236,7 +245,7 @@ public class ClockStyle extends RelativeLayout implements TunerService.Tunable {
                 customImageView.setAlpha(0f);
                 customImageView.animate()
                     .alpha(1f)
-                    .setDuration(250)
+                    .setDuration(500)
                     .withEndAction(this::startBurnInProtection)
                     .start();
             } catch (Exception e) {
@@ -245,7 +254,7 @@ public class ClockStyle extends RelativeLayout implements TunerService.Tunable {
         } else {
             customImageView.animate()
                 .alpha(0f)
-                .setDuration(250)
+                .setDuration(500)
                 .withEndAction(() -> {
                     customImageView.setVisibility(View.GONE);
                     stopBurnInProtection();
