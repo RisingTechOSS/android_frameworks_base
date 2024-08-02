@@ -23,7 +23,7 @@ import android.util.Log;
 public class AudioEffectsUtils {
 
     private static final int EFFECT_PRIORITY = Integer.MAX_VALUE;
-    private static final short[] BASS_BOOST_STRENGTH = {0, 900, 700, 600, 700};
+    private static final short[] BASS_BOOST_STRENGTH = {0, 800, 650, 550, 650};
     private static final short[] SPATIAL_STRENGTH = {0, 1100, 1150, 1200, 1100};
     private static final short[] REVERB_PRESETS = {
             PresetReverb.PRESET_NONE,
@@ -39,34 +39,42 @@ public class AudioEffectsUtils {
 
     private static final int[][] LOUDNESS_ENHANCER_SETTINGS = {
         {0},    // Disabled
-        {1100}, // Music
-        {1200}, // Games
-        {1500}, // Theater
-        {1100}  // Smart
+        {1000}, // Music
+        {1100}, // Games
+        {1300}, // Theater
+        {1000}  // Smart
     };
 
     private static final int[][] ENVIRONMENTAL_REVERB_SETTINGS = {
         {0, -1000},   // Disabled
-        {1400, 0}, // Music
-        {1700, -100}, // Games
-        {2200, 0},    // Theater
-        {1400, -200}  // Smart
+        {1200, -500}, // Music
+        {1500, -300}, // Games
+        {1800, -200}, // Theater
+        {1300, -600}  // Smart
     };
 
     private static final float[][] EQ_GAINS = {
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},      // Disabled
-        {3, 2, 1, 0, -1, 0, 1, 2, 3, 4},     // Music
-        {4, 3, 2, 1, 0, 1, 2, 3, 4, 5},      // Games
-        {5, 4, 3, 2, 1, 2, 3, 4, 5, 6},      // Theater
-        {2, 1, 0, -1, 0, 1, 2, 3, 2, 1}      // Smart
+        {2.5f, 1.5f, 1.0f, 0, -0.5f, 0, 1.0f, 1.5f, 2.0f, 3.0f},     // Music
+        {3.0f, 2.0f, 1.5f, 0.5f, 0, 0.5f, 1.5f, 2.0f, 2.5f, 3.5f},      // Games
+        {3.5f, 2.5f, 2.0f, 1.0f, 0.5f, 1.0f, 2.0f, 2.5f, 3.0f, 4.0f},      // Theater
+        {2.0f, 1.0f, 0.5f, -0.5f, 0, 0.5f, 1.5f, 2.0f, 1.5f, 1.0f}      // Smart
     };
 
     private static final float[][] MBC_SETTINGS = {
-        {50, 50, 1.0f, -30, 5},  // Disabled
-        {30, 70, 3.0f, -20, 6},  // Music
-        {20, 50, 3.5f, -15, 4},  // Games
-        {40, 90, 4.0f, -10, 8},  // Theater
-        {35, 80, 2.5f, -25, 5}   // Smart
+        {60, 60, 1.0f, -30, 5},  // Disabled
+        {35, 75, 2.5f, -25, 6},  // Music
+        {30, 60, 3.0f, -20, 4},  // Games
+        {45, 85, 3.5f, -15, 8},  // Theater
+        {40, 70, 2.0f, -28, 5}   // Smart
+    };
+
+    private static final float[][] ELC_CURVE = {
+        {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f}, // 85dB SPL (Reference)
+        {1.2f, 1.15f, 1.1f, 1.0f, 0.9f, 0.85f, 0.8f, 0.75f, 0.7f, 0.65f}, // 70dB SPL
+        {1.4f, 1.35f, 1.3f, 1.2f, 1.1f, 1.05f, 1.0f, 0.95f, 0.9f, 0.85f}, // 60dB SPL
+        {1.6f, 1.55f, 1.5f, 1.4f, 1.3f, 1.25f, 1.2f, 1.15f, 1.1f, 1.05f}, // 50dB SPL
+        {1.8f, 1.75f, 1.7f, 1.6f, 1.5f, 1.45f, 1.4f, 1.35f, 1.3f, 1.25f}  // 40dB SPL
     };
 
     private final AudioManager mAudioManager;
@@ -152,26 +160,26 @@ public class AudioEffectsUtils {
     private short getBandLevelForMode(short band) {
         int centerBand = mEqualizer.getNumberOfBands() / 2;
         int millibels = mEqualizer.getBandLevelRange()[1];
-        int targetLevel = 0;
-
+        float elcFactor = ELC_CURVE[mCurrentMode][band];
+        float targetLevelFloat;
         switch (mCurrentMode) {
             case 1: // Music
-                targetLevel = calculateBandLevel(millibels, band, centerBand, -1.4, -1.3, -1.5);
+                targetLevelFloat = calculateBandLevel(millibels, band, centerBand, -1.4f, -1.3f, -1.5f) * elcFactor;
                 break;
             case 2: // Game
-                targetLevel = calculateBandLevel(millibels, band, centerBand, -1.5, -1.4, -1.6);
+                targetLevelFloat = calculateBandLevel(millibels, band, centerBand, -1.5f, -1.4f, -1.6f) * elcFactor;
                 break;
             case 3: // Theater
-                targetLevel = calculateBandLevel(millibels, band, centerBand, -1.6, -1.5, -1.7);
+                targetLevelFloat = calculateBandLevel(millibels, band, centerBand, -1.6f, -1.5f, -1.7f) * elcFactor;
                 break;
             case 4: // Smart
-                targetLevel = calculateBandLevel(millibels, band, centerBand, -1.4, -1.3, -1.4);
+                targetLevelFloat = calculateBandLevel(millibels, band, centerBand, -1.4f, -1.3f, -1.4f) * elcFactor;
                 break;
             default:
-                targetLevel = (int) (millibels * 0.95);
+                targetLevelFloat = millibels * 0.95f * elcFactor;
                 break;
         }
-
+        int targetLevel = (int) Math.max(0, Math.min(targetLevelFloat, millibels));
         return (short) targetLevel;
     }
 
