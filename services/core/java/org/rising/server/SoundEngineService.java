@@ -29,11 +29,11 @@ import android.util.Log;
 
 import com.android.server.SystemService;
 
-public final class AdaptiveSoundEngineService extends SystemService {
+public final class SoundEngineService extends SystemService {
 
     private final AudioManager mAudioManager;
 
-    private static final String TAG = "AdaptiveSoundEngineService";
+    private static final String TAG = "SoundEngineService";
     private static final String AUDIO_EFFECT_MODE = "audio_effect_mode";
     private static final String AUDIO_EFFECT_MODE_ENABLED = "audio_effect_mode_enabled";
     private static final int USER_ALL = UserHandle.USER_ALL;
@@ -46,7 +46,7 @@ public final class AdaptiveSoundEngineService extends SystemService {
 
     private boolean mIsEqRegistered = false;
 
-    public AdaptiveSoundEngineService(Context context) {
+    public SoundEngineService(Context context) {
         super(context);
         mContext = context;
         mAudioEffectsUtils = new AudioEffectsUtils(mContext);

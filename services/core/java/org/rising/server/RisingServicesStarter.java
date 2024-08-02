@@ -25,8 +25,8 @@ public class RisingServicesStarter {
     private static final String QUICKSWITCH_SERVICE_CLASS =
             "org.rising.server.QuickSwitchService";
 
-    private static final String ADAPTIVE_SOUND_ENGINE_SERVICE_CLASS =
-            "org.rising.server.AdaptiveSoundEngineService";
+    private static final String SOUND_ENGINE_SERVICE_CLASS =
+            "org.rising.server.SoundEngineService";
 
     private static final String NETWORK_OPT_SERVICE_CLASS =
             "org.rising.server.NetworkOptimizerService";
@@ -37,7 +37,7 @@ public class RisingServicesStarter {
 
     public void startAllServices() {
         startService(QUICKSWITCH_SERVICE_CLASS);
-        startService(ADAPTIVE_SOUND_ENGINE_SERVICE_CLASS);
+        startService(SOUND_ENGINE_SERVICE_CLASS);
         startService(NETWORK_OPT_SERVICE_CLASS);
     }
 
