@@ -284,10 +284,30 @@ public class PixelPropsUtils {
     }
 
     private static void spoofBuildGms() {
+        boolean allKeysValid = true;
+
+        // First validate all keys have non-null or non-empty values
         for (Map.Entry<String, String> entry : DEFAULT_VALUES.entrySet()) {
             String propKey = PROP_HOOKS + entry.getKey();
             String value = SystemProperties.get(propKey);
-            setPropValue(entry.getKey(), value != null ? value : entry.getValue());
+            if (value == null || value.isEmpty()) {
+                Log.w(TAG, "Missing or empty value for key: " + entry.getKey() + ". Using default values for all keys.");
+                allKeysValid = false;
+                break;
+            }
+        }
+
+        if (allKeysValid) {
+            Log.i(TAG, "All keys loaded from PI hooks are valid. Proceeding with spoofing.");
+            for (Map.Entry<String, String> entry : DEFAULT_VALUES.entrySet()) {
+                String propKey = PROP_HOOKS + entry.getKey();
+                String value = SystemProperties.get(propKey);
+                setPropValue(entry.getKey(), value);
+            }
+        } else {
+            for (Map.Entry<String, String> entry : DEFAULT_VALUES.entrySet()) {
+                setPropValue(entry.getKey(), entry.getValue());
+            }
         }
     }
 
