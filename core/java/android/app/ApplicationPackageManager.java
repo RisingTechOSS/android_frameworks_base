@@ -908,7 +908,8 @@ public class ApplicationPackageManager extends PackageManager {
         boolean isTensorDevice = Arrays.asList(pTensorCodenames).contains(deviceCodename);
 
         if (packageName != null) {
-            if (packageName.equals("com.google.android.googlequicksearchbox")) {
+            if (packageName.equals("com.google.android.googlequicksearchbox") || 
+                packageName.equals("com.google.android.apps.nexuslauncher")) {
                 if (containsAny(name, featuresPixel, featuresPixelOthers, featuresTensor, featuresNexus)) {
                     return true;
                 }
