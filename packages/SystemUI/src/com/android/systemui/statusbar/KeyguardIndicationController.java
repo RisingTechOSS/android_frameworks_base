@@ -122,7 +122,6 @@ import com.android.systemui.util.AlarmTimeout;
 import com.android.systemui.util.concurrency.DelayableExecutor;
 import com.android.systemui.util.wakelock.SettableWakeLock;
 import com.android.systemui.util.wakelock.WakeLock;
-import com.android.systemui.util.SystemUtils;
 
 import java.io.PrintWriter;
 import java.text.NumberFormat;
@@ -224,7 +223,6 @@ public class KeyguardIndicationController {
     private final Set<Integer> mCoExFaceAcquisitionMsgIdsToShow;
     private final FaceHelpMessageDeferral mFaceAcquiredMessageDeferral;
     private boolean mInited;
-    private SystemUtils mSystemUtils;
 
     private boolean mFaceDetectionRunning;
 
@@ -392,7 +390,6 @@ public class KeyguardIndicationController {
                 com.android.internal.R.bool.config_hasWarpCharger);
         mHasVoocCharger = mContext.getResources().getBoolean(
                 com.android.internal.R.bool.config_hasVoocCharger);
-        mSystemUtils = new SystemUtils(mContext);
     }
 
     /** Call this after construction to finish setting up the instance. */
@@ -1441,7 +1438,6 @@ public class KeyguardIndicationController {
             mKeyguardLogger.logRefreshBatteryInfo(isChargingOrFull, mPowerPluggedIn, mBatteryLevel,
                     mBatteryDefender);
             updateDeviceEntryIndication(!wasPluggedIn && mPowerPluggedInWired);
-            mSystemUtils.setAdaptiveChargingStatus(isCharging);
         }
 
         @Override
