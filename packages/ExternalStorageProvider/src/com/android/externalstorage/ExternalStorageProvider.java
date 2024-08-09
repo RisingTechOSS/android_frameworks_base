@@ -327,6 +327,11 @@ public class ExternalStorageProvider extends FileSystemProvider {
     @Override
     protected boolean shouldBlockDirectoryFromTree(@NonNull String documentId)
             throws FileNotFoundException {
+        // Remove the restriction if user really want it.
+        if (Settings.System.getInt(
+                getContext().getContentResolver(), "no_storage_restrict", 0) == 1) {
+            return false;
+        }
         final File dir = getFileForDocId(documentId, false);
         // The file is null or it is not a directory
         if (dir == null || !dir.isDirectory()) {
