@@ -161,7 +161,7 @@ public class PixelPropsUtils {
             return;
         }
         Map<String, String> gamePropsToChange = new HashMap<>();
-        String[] keys = {"BRAND", "DEVICE", "MANUFACTURER", "MODEL"};
+        String[] keys = {"BRAND", "DEVICE", "MANUFACTURER", "MODEL", "FINGERPRINT", "PRODUCT"};
         for (String key : keys) {
             String systemPropertyKey = "persist.sys.gameprops." + packageName + "." + key;
             String value = SystemProperties.get(systemPropertyKey);
