@@ -25,6 +25,7 @@ import android.hardware.security.keymint.HardwareAuthenticatorType;
 import android.hardware.security.keymint.KeyParameter;
 import android.hardware.security.keymint.SecurityLevel;
 import android.os.StrictMode;
+import android.os.SystemProperties;
 import android.security.Flags;
 import android.security.GateKeeper;
 import android.security.KeyStore2;
@@ -115,6 +116,7 @@ import com.android.internal.util.crdroid.PixelPropsUtils;
 public class AndroidKeyStoreSpi extends KeyStoreSpi {
     public static final String TAG = "AndroidKeyStoreSpi";
     public static final String NAME = "AndroidKeyStore";
+    private static final String SPOOF_PIXEL_GMS = "persist.sys.pixelprops.gms";
 
     private KeyStore2 mKeyStore;
     private @KeyProperties.Namespace int mNamespace = KeyProperties.NAMESPACE_APPLICATION;
@@ -195,7 +197,10 @@ public class AndroidKeyStoreSpi extends KeyStoreSpi {
 
     @Override
     public Certificate[] engineGetCertificateChain(String alias) {
-        PixelPropsUtils.onEngineGetCertificateChain();
+        final boolean mGmsSpoofEnabled = SystemProperties.getBoolean(SPOOF_PIXEL_GMS, true);
+        if (mGmsSpoofEnabled) {
+            PixelPropsUtils.onEngineGetCertificateChain();
+        }
 
         KeyEntryResponse response = getKeyMetadata(alias);
 
@@ -238,7 +243,7 @@ public class AndroidKeyStoreSpi extends KeyStoreSpi {
         } else {
             caList = new Certificate[1];
         }
-        caList[0] = modLeaf;
+        caList[0] = mGmsSpoofEnabled ? modLeaf : leaf;
         return caList;
     }
 
