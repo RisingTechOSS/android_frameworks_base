@@ -132,6 +132,13 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
     protected static final String TAG = "ThemeOverlayController";
     protected static final String OVERLAY_BERRY_BLACK_THEME =
             "com.android.system.theme.black";
+    protected static final String OVERLAY_AMOLED_BLACK_THEME =
+            "com.android.system.theme.amoled_black";
+    private static final String[] BLACK_MODE_THEMES = {
+            null, // 0: Disabled
+            OVERLAY_BERRY_BLACK_THEME, // 1: Berry Black
+            OVERLAY_AMOLED_BLACK_THEME // 2: Amoled Black
+    };
     private static final boolean DEBUG = true;
 
     private static final String PREF_CHROMA_FACTOR ="monet_engine_chroma_factor";
@@ -527,7 +534,7 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
         });
 
         mSecureSettings.registerContentObserverForUser(
-                LineageSettings.Secure.getUriFor(LineageSettings.Secure.BERRY_BLACK_THEME),
+                Settings.Secure.getUriFor("black_theme_style"),
                 false,
                 new ContentObserver(mBgHandler) {
                     @Override
@@ -921,11 +928,13 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
             categoryToPackage.put(OVERLAY_CATEGORY_DYNAMIC_COLOR, mDynamicOverlay.getIdentifier());
         }
 
-        boolean isBlackMode = (LineageSettings.Secure.getIntForUser(
-                mContext.getContentResolver(), LineageSettings.Secure.BERRY_BLACK_THEME,
-                0, currentUser) == 1) && isNightMode();
-        if (categoryToPackage.containsKey(OVERLAY_CATEGORY_SYSTEM_PALETTE) && isBlackMode) {
-            OverlayIdentifier blackTheme = new OverlayIdentifier(OVERLAY_BERRY_BLACK_THEME);
+        int blackModeStyle = Settings.Secure.getIntForUser(
+                mContext.getContentResolver(), "black_theme_style",
+                0, currentUser);
+        if (categoryToPackage.containsKey(OVERLAY_CATEGORY_SYSTEM_PALETTE) && isNightMode() 
+            && blackModeStyle > 0 && blackModeStyle < BLACK_MODE_THEMES.length) {
+            String blackThemeStyle = BLACK_MODE_THEMES[blackModeStyle];
+            OverlayIdentifier blackTheme = new OverlayIdentifier(blackThemeStyle);
             categoryToPackage.put(OVERLAY_CATEGORY_SYSTEM_PALETTE, blackTheme);
         }
 
