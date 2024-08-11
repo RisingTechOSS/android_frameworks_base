@@ -156,11 +156,14 @@ class SoundEngineTile @Inject constructor(
     
     private enum class Mode(val modeValue: Int, val iconRes: Int, val labelRes: Int) {
         DISABLED(0, R.drawable.ic_sound_engine_disabled, R.string.sound_engine_mode_disabled_label),
-        SMART(4, R.drawable.ic_sound_engine_smart, R.string.sound_engine_mode_smart_label),
         MUSIC(1, R.drawable.ic_sound_engine_music, R.string.sound_engine_mode_music_label),
+        GAME(2, R.drawable.ic_sound_engine_game, R.string.sound_engine_mode_game_label),
         THEATER(3, R.drawable.ic_sound_engine_theater, R.string.sound_engine_mode_theater_label),
-        GAME(2, R.drawable.ic_sound_engine_game, R.string.sound_engine_mode_game_label);
+        SMART(4, R.drawable.ic_sound_engine_smart, R.string.sound_engine_mode_smart_label);
 
-        fun next(): Mode = values()[(ordinal + 1) % values().size]
+        fun next(): Mode {
+            val nextOrdinal = (ordinal + 1) % values().size
+            return values().find { it.ordinal == nextOrdinal } ?: this
+        }
     }
 }
