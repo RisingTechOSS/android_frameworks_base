@@ -5192,6 +5192,14 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         super.prepareSurfaces();
     }
 
+    void updateSurfacePositionIfNeeded() {
+        if (mWindowFrames.mRelFrame.top == mWindowFrames.mLastRelFrame.top
+                && mWindowFrames.mRelFrame.left == mWindowFrames.mLastRelFrame.left) {
+            return;
+        }
+        updateSurfacePosition(getSyncTransaction());
+    }
+
     @Override
     @VisibleForTesting
     void updateSurfacePosition(Transaction t) {
