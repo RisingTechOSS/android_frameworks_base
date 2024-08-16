@@ -3679,7 +3679,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                             .setSourceCrop(cropBounds)
                             .setCaptureSecureLayers(true)
                             .setAllowProtected(true)
-                            .setHintForSeamlessTransition(isDisplayRotation)
+                            .setHintForSeamlessTransition(true)
                             .build();
             ScreenCapture.ScreenshotHardwareBuffer screenshotBuffer =
                     ScreenCapture.captureLayers(captureArgs);
