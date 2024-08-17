@@ -29,13 +29,10 @@ import com.android.systemui.res.R
 class VolumeSlider(context: Context, attrs: AttributeSet? = null) : VerticalSlider(context, attrs) {
     private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
     private var volumeIcon: ImageView? = null
-    private var isUserInteracting = false
     private val volumeChangeReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == AudioManager.VOLUME_CHANGED_ACTION) {
-                if (!isUserInteracting) {
-                    updateVolumeProgress()
-                }
+                updateVolumeProgress()
             }
         }
     }
@@ -65,14 +62,11 @@ class VolumeSlider(context: Context, attrs: AttributeSet? = null) : VerticalSlid
     
     private fun setupUserInteractionListener() {
         addUserInteractionListener(object : UserInteractionListener {
-            override fun onUserInteractionEnd() {
-                isUserInteracting = false
-            }
+            override fun onUserInteractionEnd() {}
             override fun onLongPress() {
                 toggleMute()
             }
             override fun onUserSwipe() {
-                isUserInteracting = true
                 setVolumeFromProgress()
                 val volHapticsIntensity = Settings.System.getIntForUser(context.getContentResolver(),
                         Settings.System.VOLUME_SLIDER_HAPTICS_INTENSITY, 1, UserHandle.USER_CURRENT)
@@ -82,7 +76,6 @@ class VolumeSlider(context: Context, attrs: AttributeSet? = null) : VerticalSlid
     }
     
     private fun updateVolumeProgress() {
-        if (isUserInteracting) return
         val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
         val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
         val newProgress = (currentVolume * 100 / maxVolume)

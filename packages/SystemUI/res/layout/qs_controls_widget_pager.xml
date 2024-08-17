@@ -12,15 +12,14 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 
-    <!-- media player layout -->
+    <!-- Sliders -->
+    <include layout="@layout/qs_controls_sliders" />
+
+    <!-- Media player layout -->
     <include layout="@layout/qs_controls_media_widgets" />
 
-    <!-- accessibility -->
-    <include layout="@layout/qs_controls_tile_access"
-        android:visibility="gone" />
-
-    <!-- widgets layout -->
-    <include layout="@layout/qs_controls_tile_widgets"
+    <!-- Gallery Photo -->
+    <include layout="@layout/qs_controls_photo_showcase"
         android:visibility="gone" />
 
 </LinearLayout>

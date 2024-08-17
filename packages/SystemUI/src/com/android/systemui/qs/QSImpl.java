@@ -304,7 +304,7 @@ public class QSImpl implements QS, CommandQueue.Callbacks, StatusBarStateControl
                     // The hostview may be faded out in the horizontal layout. Let's make sure to
                     // reset the alpha when switching layouts. This is fine since the animator will
                     // update the alpha if it's not supposed to be 1.0f
-                    mQSPanelController.getMediaHost().getHostView().setAlpha(1.0f);
+                    mQSPanelController.getMediaHost().getHostView().setAlpha(TileUtils.isQsWidgetsEnabled(getContext()) ? 0f : 1.0f);
                     mQSAnimator.requestAnimatorUpdate();
                 });
 
@@ -890,6 +890,7 @@ public class QSImpl implements QS, CommandQueue.Callbacks, StatusBarStateControl
             } else {
                 hostView.setTranslationY(0);
             }
+            hostView.setAlpha(TileUtils.isQsWidgetsEnabled(getContext()) ? 0f : 1f);
         }
     }
 

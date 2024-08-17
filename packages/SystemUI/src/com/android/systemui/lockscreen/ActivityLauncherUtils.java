@@ -55,7 +55,7 @@ public class ActivityLauncherUtils {
         return musicApp != null ? musicApp.activityInfo.packageName : "";
     }
 
-    private void launchAppIfAvailable(Intent launchIntent, @StringRes int appTypeResId) {
+    public void launchAppIfAvailable(Intent launchIntent, @StringRes int appTypeResId) {
         final List<ResolveInfo> apps = mPackageManager.queryIntentActivities(launchIntent, PackageManager.MATCH_DEFAULT_ONLY);
         if (!apps.isEmpty()) {
             mActivityStarter.startActivity(launchIntent, true);

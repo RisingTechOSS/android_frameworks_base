@@ -47,8 +47,10 @@ interface UserInteractionListener {
 open class VerticalSlider(context: Context, attrs: AttributeSet? = null) : CardView(context, attrs) {
 
     private val listeners: MutableList<UserInteractionListener> = mutableListOf()
+    
+    private val horizontalSwipeThreshold = context.resources.getDimensionPixelSize(R.dimen.qs_slider_swipe_threshold_dp)
 
-    private val longPressTimeout = ViewConfiguration.getLongPressTimeout()
+    private val longPressTimeout = 800
     private val longPressHandler = Handler()
     private val longPressRunnable: Runnable = Runnable {
         doLongPressAction()
@@ -99,20 +101,24 @@ open class VerticalSlider(context: Context, attrs: AttributeSet? = null) : CardV
                     lastY = event.y
                     lastProgress = progress
                     requestDisallowInterceptTouchEventFromParentsAndRoot(true)
-                    true
+                    false
                 }
                 MotionEvent.ACTION_MOVE -> {
                     val deltaX = abs(lastX - event.x)
                     val deltaY = abs(lastY - event.y)
-                    if (isLongPress(event, deltaX, deltaY)) {
-                        isLongPressDetected = true
-                        doLongPressAction()
+                    if (deltaX > horizontalSwipeThreshold) {
+                        requestDisallowInterceptTouchEventFromParentsAndRoot(false)
                     } else {
-                        cancelLongPressDetection()
-                        val deltaY = lastY - event.y
-                        val progressDelta = (deltaY * 100 / measuredHeight.toFloat()).toInt()
-                        progress = (lastProgress + progressDelta).coerceIn(0, 100)
-                        notifyListenersUserSwipe()
+                        requestDisallowInterceptTouchEventFromParentsAndRoot(true)
+                        if (isLongPress(event, deltaX, deltaY)) {
+                            isLongPressDetected = true
+                            doLongPressAction()
+                        } else {
+                            cancelLongPressDetection()
+                            val progressDelta = ((lastY - event.y) * 100 / measuredHeight.toFloat()).toInt()
+                            progress = (lastProgress + progressDelta).coerceIn(0, 100)
+                            notifyListenersUserSwipe()
+                        }
                     }
                     true
                 }
@@ -121,13 +127,11 @@ open class VerticalSlider(context: Context, attrs: AttributeSet? = null) : CardV
                     cancelLongPressDetection()
                     true
                 }
-                else -> {
-                    false
-                }
+                else -> false
             }
         }
         backgroundTintList = ColorStateList.valueOf(
-            context.getResources().getColor(if (isNightMode) R.color.qs_controls_container_bg_color_dark 
+            context.getResources().getColor(if (isNightMode) R.color.qs_controls_container_bg_color_dark
             else R.color.qs_controls_container_bg_color_light)
         )
         radius = cornerRadius
@@ -151,6 +155,7 @@ open class VerticalSlider(context: Context, attrs: AttributeSet? = null) : CardV
     private fun doLongPressAction() {
         if (isLongPressDetected && !actionPerformed) {
             listeners.forEach { it.onLongPress() }
+            VibrationUtils.triggerVibration(context, 4)
             actionPerformed = true
             isLongPressDetected = false
         }
@@ -239,9 +244,10 @@ open class VerticalSlider(context: Context, attrs: AttributeSet? = null) : CardV
         return Settings.System.getIntForUser(context.contentResolver, 
             Settings.System.QS_PANEL_STYLE, 0, UserHandle.USER_CURRENT)
     }
-    
+
     fun translucentQsStyle(): Boolean {
-        return qsPaneStyle() == 1 || qsPaneStyle() == 2
+        val translucentStyles = listOf(1, 2, 3)
+        return translucentStyles.contains(qsPaneStyle())
     }
 
     protected open fun updateSliderPaint() {

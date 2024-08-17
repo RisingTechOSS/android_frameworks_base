@@ -16,6 +16,17 @@
 -->
 <resources>
 
+    <!-- QS tile -->
+    <style name="Theme.QS.QuickControls" parent="@style/Theme.MaterialComponents.DayNight">
+        <item name="android:fontFamily">@*android:string/config_bodyFontFamily</item>
+        <item name="android:textSize">@dimen/qs_control_tile_text_size</item>
+    </style>
+
+    <style name="quickControlsOverlay" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">100dp</item>
+    </style>
+
     <!-- Data usage -->
     <style name="TextAppearance.QS.Status.DataUsage">
         <item name="android:textColor">?attr/onSurfaceVariant</item>

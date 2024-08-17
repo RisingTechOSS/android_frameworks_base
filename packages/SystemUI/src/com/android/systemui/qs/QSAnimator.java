@@ -483,16 +483,12 @@ public class QSAnimator implements QSHost.Callback, PagedTileLayout.PageListener
 
         Builder builder = new Builder().setStartDelay(EXPANDED_TILE_DELAY);
         // Fade in the media player as we reach the final position
-        if (mQsWidgetsEnabled) {
-            mQsPanelController.mMediaHost.hostView.setAlpha(0f);
+        if (mQsPanelController.shouldUseHorizontalLayout()
+                && mQsPanelController.mMediaHost.hostView != null) {
+            builder.addFloat(mQsPanelController.mMediaHost.hostView, "alpha", 0, mQsWidgetsEnabled ? 0 : 1);
         } else {
-            if (mQsPanelController.shouldUseHorizontalLayout()
-                    && mQsPanelController.mMediaHost.hostView != null) {
-                builder.addFloat(mQsPanelController.mMediaHost.hostView, "alpha", 0, 1);
-            } else {
-                // In portrait, media view should always be visible
-                mQsPanelController.mMediaHost.hostView.setAlpha(1.0f);
-            }
+            // In portrait, media view should always be visible
+            mQsPanelController.mMediaHost.hostView.setAlpha(mQsWidgetsEnabled ? 0f : 1.0f);
         }
         mAllPagesDelayedAnimator = builder.build();
         translationYBuilder.setInterpolator(mQSExpansionPathInterpolator.getYInterpolator());

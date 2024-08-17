@@ -1,0 +1,32 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/qs_controls_photo_showcase">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/photo_cardview"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/qs_controls_media_tile_height"
+        android:layout_marginStart="@dimen/qs_controls_widgets_container_margin_start"
+        android:layout_marginEnd="@dimen/qs_controls_widgets_container_margin_end"
+        android:layout_marginTop="@dimen/qs_controls_photo_margin_top"
+        android:layout_marginBottom="@dimen/qs_controls_photo_margin_bottom"
+        app:cardBackgroundColor="@color/qs_controls_surface_color"
+        app:cardCornerRadius="@dimen/qs_controls_container_radius"
+        app:cardElevation="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+        <com.android.systemui.qs.PhotoShowcase
+            android:id="@+id/photo_showcase"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="@dimen/qs_widgets_photo_margin"
+            android:focusable="true"
+            android:clickable="true"
+            android:scaleType="centerCrop"/>
+    </androidx.cardview.widget.CardView>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -607,20 +607,18 @@ public class QSPanel extends LinearLayout implements Tunable {
 
     /** Call when orientation has changed and MediaHost needs to be adjusted. */
     private void reAttachMediaHost(ViewGroup hostView, boolean horizontal) {
-        ViewGroup currentParent = (ViewGroup) hostView.getParent();
-        ViewGroup newParent = horizontal ? mHorizontalLinearLayout : this;
+        mMediaHostView = hostView;
         if (TileUtils.isQsWidgetsEnabled(mContext)) {
-            if (currentParent != newParent) {
-                if (currentParent != null) {
-                    currentParent.removeView(hostView);
-                }
+            if (mMediaHostView != null) { 
+                mMediaHostView.setAlpha(0);
             }
             return;
         }
         if (!mUsingMediaPlayer) {
             return;
         }
-        mMediaHostView = hostView;
+        ViewGroup currentParent = (ViewGroup) hostView.getParent();
+        ViewGroup newParent = horizontal ? mHorizontalLinearLayout : this;
         Log.d(getDumpableTag(), "Reattaching media host: " + horizontal
                 + ", current " + currentParent + ", new " + newParent);
         if (currentParent != newParent) {
