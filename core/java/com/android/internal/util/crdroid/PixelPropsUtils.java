@@ -39,6 +39,7 @@ public class PixelPropsUtils {
 
     private static final String TAG = PixelPropsUtils.class.getSimpleName();
     private static final String PROP_HOOKS = "persist.sys.pihooks_";
+    private static final String PROP_HOOKS_MAINLINE = "persist.sys.pihooks_mainline_";
     private static final boolean DEBUG = SystemProperties.getBoolean(PROP_HOOKS + "DEBUG", false);
 
     private static final String SPOOF_PIXEL_GMS = "persist.sys.pixelprops.gms";
@@ -48,7 +49,7 @@ public class PixelPropsUtils {
     private static final String ENABLE_GAME_PROP_OPTIONS = "persist.sys.gameprops.enabled";
     private static final String SPOOF_PIXEL_GOOGLE_APPS = "persist.sys.pixelprops.google";
 
-    private static final Map<String, Object> propsToChangePixel8Pro;
+    private static final Map<String, Object> propsToChangeMainline;
     private static final Map<String, Object> propsToChangePixelXL;
 
     private static final ComponentName GMS_ADD_ACCOUNT_ACTIVITY = ComponentName.unflattenFromString(
@@ -67,13 +68,13 @@ public class PixelPropsUtils {
     );
 
     static {
-        propsToChangePixel8Pro = new HashMap<>();
-        propsToChangePixel8Pro.put("BRAND", "google");
-        propsToChangePixel8Pro.put("MANUFACTURER", "Google");
-        propsToChangePixel8Pro.put("DEVICE", "husky");
-        propsToChangePixel8Pro.put("PRODUCT", "husky");
-        propsToChangePixel8Pro.put("MODEL", "Pixel 8 Pro");
-        propsToChangePixel8Pro.put("FINGERPRINT", "google/husky/husky:14/AP2A.240705.005.A1/11944170:user/release-keys");
+        propsToChangeMainline = new HashMap<>();
+        propsToChangeMainline.put("BRAND", SystemProperties.get(PROP_HOOKS_MAINLINE + "BRAND"));
+        propsToChangeMainline.put("MANUFACTURER", SystemProperties.get(PROP_HOOKS_MAINLINE + "MANUFACTURER"));
+        propsToChangeMainline.put("DEVICE", SystemProperties.get(PROP_HOOKS_MAINLINE + "DEVICE"));
+        propsToChangeMainline.put("PRODUCT", SystemProperties.get(PROP_HOOKS_MAINLINE + "PRODUCT"));
+        propsToChangeMainline.put("MODEL", SystemProperties.get(PROP_HOOKS_MAINLINE + "MODEL"));
+        propsToChangeMainline.put("FINGERPRINT", SystemProperties.get(PROP_HOOKS_MAINLINE + "FINGERPRINT"));
         propsToChangePixelXL = new HashMap<>();
         propsToChangePixelXL.put("BRAND", "google");
         propsToChangePixelXL.put("MANUFACTURER", "Google");
@@ -119,7 +120,7 @@ public class PixelPropsUtils {
         if (Arrays.asList(packagesToChangePixel8Pro).contains(packageName) && !isExcludedProcess) {
             if (SystemProperties.getBoolean(SPOOF_PIXEL_GOOGLE_APPS, true)) {
                 if (!isPixelDevice) {
-                    propsToChange.putAll(propsToChangePixel8Pro);
+                    propsToChange.putAll(propsToChangeMainline);
                 }
             }
         }
@@ -129,7 +130,7 @@ public class PixelPropsUtils {
                 propsToChange.putAll(propsToChangePixelXL);
             } else {
                 if (!isPixelDevice) {
-                    propsToChange.putAll(propsToChangePixel8Pro);
+                    propsToChange.putAll(propsToChangeMainline);
                 }
             }
         }
