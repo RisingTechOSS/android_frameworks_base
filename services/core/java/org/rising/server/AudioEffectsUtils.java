@@ -23,34 +23,27 @@ import android.util.Log;
 public class AudioEffectsUtils {
 
     private static final int EFFECT_PRIORITY = Integer.MAX_VALUE;
-    private static final short[] BASS_BOOST_STRENGTH = {0, 800, 650, 550, 650};
-    private static final short[] SPATIAL_STRENGTH = {0, 1100, 1150, 1200, 1100};
+
+    private static final short[] BASS_BOOST_STRENGTH = {0, 650, 650, 550, 650};
     private static final short[] REVERB_PRESETS = {
             PresetReverb.PRESET_NONE,
-            PresetReverb.PRESET_NONE,
+            PresetReverb.PRESET_SMALLROOM,
             PresetReverb.PRESET_LARGEHALL,
             PresetReverb.PRESET_PLATE,
             PresetReverb.PRESET_MEDIUMROOM
     };
+
     private static final int mVariant = 0;
     private static final int mChannelCount = 1;
     private static final int[] bandVal = {31, 62, 125, 250,  500, 1000, 2000, 4000, 8000, 16000};
     private static final int maxBandCount = bandVal.length;
 
     private static final int[][] LOUDNESS_ENHANCER_SETTINGS = {
-        {0},    // Disabled
-        {1000}, // Music
-        {1100}, // Games
-        {1300}, // Theater
-        {1000}  // Smart
-    };
-
-    private static final int[][] ENVIRONMENTAL_REVERB_SETTINGS = {
-        {0, -1000},   // Disabled
-        {1200, -500}, // Music
-        {1500, -300}, // Games
-        {1800, -200}, // Theater
-        {1300, -600}  // Smart
+        {0},   // Disabled
+        {650}, // Music
+        {650}, // Games
+        {550}, // Theater
+        {650}   // Smart
     };
 
     private static final float[][] EQ_GAINS = {
@@ -70,11 +63,11 @@ public class AudioEffectsUtils {
     };
 
     private static final float[][] ELC_CURVE = {
-        {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f}, // 85dB SPL (Reference)
-        {1.2f, 1.15f, 1.1f, 1.0f, 0.9f, 0.85f, 0.8f, 0.75f, 0.7f, 0.65f}, // 70dB SPL
-        {1.4f, 1.35f, 1.3f, 1.2f, 1.1f, 1.05f, 1.0f, 0.95f, 0.9f, 0.85f}, // 60dB SPL
-        {1.6f, 1.55f, 1.5f, 1.4f, 1.3f, 1.25f, 1.2f, 1.15f, 1.1f, 1.05f}, // 50dB SPL
-        {1.8f, 1.75f, 1.7f, 1.6f, 1.5f, 1.45f, 1.4f, 1.35f, 1.3f, 1.25f}  // 40dB SPL
+        {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f}, // Reference (85dB SPL)
+        {1.1f, 1.05f, 1.0f, 1.0f, 0.95f, 0.95f, 0.9f, 0.9f, 0.85f, 0.85f}, // Music (85dB SPL)
+        {1.2f, 1.15f, 1.1f, 1.1f, 1.05f, 1.0f, 1.0f, 0.95f, 0.9f, 0.9f},  // Games (85dB SPL)
+        {1.3f, 1.25f, 1.2f, 1.15f, 1.1f, 1.1f, 1.05f, 1.0f, 0.95f, 0.95f}, // Theater (85dB SPL)
+        {1.05f, 1.05f, 1.0f, 1.0f, 0.95f, 0.95f, 0.9f, 0.9f, 0.85f, 0.85f}  // Smart (85dB SPL)
     };
 
     private final AudioManager mAudioManager;
@@ -83,9 +76,7 @@ public class AudioEffectsUtils {
     private Equalizer mEqualizer;
     private BassBoost mBassBoost;
     private PresetReverb mPresetReverb;
-    private Virtualizer mVirtualizer;
     private LoudnessEnhancer mLoudnessEnhancer;
-    private EnvironmentalReverb mEnvironmentalReverb;
     private DynamicsProcessing mDynamicsProcessing;
     private DynamicsProcessing.Eq mEq;
     private DynamicsProcessing.Mbc mMbc;
@@ -99,20 +90,15 @@ public class AudioEffectsUtils {
             mEqualizer = new Equalizer(EFFECT_PRIORITY, 0);
             mBassBoost = new BassBoost(EFFECT_PRIORITY, 0);
             mPresetReverb = new PresetReverb(EFFECT_PRIORITY, 0);
-            mVirtualizer = new Virtualizer(EFFECT_PRIORITY, 0);
             mLoudnessEnhancer = new LoudnessEnhancer(0);
-            mEnvironmentalReverb = new EnvironmentalReverb(EFFECT_PRIORITY, 0);
             DynamicsProcessing.Config.Builder builder = new DynamicsProcessing.Config.Builder(mVariant, mChannelCount, true, maxBandCount, true, maxBandCount, true, maxBandCount, true);
             mDynamicsProcessing = new DynamicsProcessing(EFFECT_PRIORITY, 0, builder.build());
             mEq = new DynamicsProcessing.Eq(true, true, maxBandCount);
             mDynamicsProcessing.setEnabled(true);
-
             mEqualizer.setEnabled(true);
             mBassBoost.setEnabled(true);
             mPresetReverb.setEnabled(true);
-            mVirtualizer.setEnabled(true);
             mLoudnessEnhancer.setEnabled(true);
-            mEnvironmentalReverb.setEnabled(true);
             mDynamicsProcessing.setEnabled(true);
         } catch (Exception e) {
             Log.e("AudioEffectsUtils", "Error initializing audio effects", e);
@@ -123,9 +109,7 @@ public class AudioEffectsUtils {
         releaseEffect(mEqualizer);
         releaseEffect(mBassBoost);
         releaseEffect(mPresetReverb);
-        releaseEffect(mVirtualizer);
         releaseEffect(mLoudnessEnhancer);
-        releaseEffect(mEnvironmentalReverb);
         releaseEffect(mDynamicsProcessing);
     }
 
@@ -141,10 +125,7 @@ public class AudioEffectsUtils {
     private void setEffects() {
         setBandLevels();
         setBassBoost();
-        setReverb();
-        setSpatialAudio();
         setLoudnessEnhancer();
-        setEnvironmentalReverb();
         setDynamicsProcessing();
     }
 
@@ -198,26 +179,14 @@ public class AudioEffectsUtils {
         mBassBoost.setStrength(BASS_BOOST_STRENGTH[mCurrentMode]);
     }
 
-    private void setReverb() {
-        if (mPresetReverb == null) return;
-        mPresetReverb.setPreset(REVERB_PRESETS[mCurrentMode]);
-    }
-
-    private void setSpatialAudio() {
-        if (mVirtualizer == null) return;
-        mVirtualizer.setStrength(SPATIAL_STRENGTH[mCurrentMode]);
-        mVirtualizer.forceVirtualizationMode(Virtualizer.VIRTUALIZATION_MODE_AUTO);
-    }
-
     private void setLoudnessEnhancer() {
         if (mLoudnessEnhancer == null) return;
         mLoudnessEnhancer.setTargetGain(LOUDNESS_ENHANCER_SETTINGS[mCurrentMode][0]);
     }
-
-    private void setEnvironmentalReverb() {
-        if (mEnvironmentalReverb == null) return;
-        mEnvironmentalReverb.setDecayTime(ENVIRONMENTAL_REVERB_SETTINGS[mCurrentMode][0]);
-        mEnvironmentalReverb.setRoomLevel((short) ENVIRONMENTAL_REVERB_SETTINGS[mCurrentMode][1]);
+    
+    private void setReverb() {
+        if (mPresetReverb == null) return;
+        mPresetReverb.setPreset(REVERB_PRESETS[mCurrentMode]);
     }
 
     private void setDynamicsProcessing() {
@@ -251,9 +220,13 @@ public class AudioEffectsUtils {
     }
 
     private void releaseEffect(AudioEffect effect) {
-        if (effect != null) {
-            effect.setEnabled(false);
-            effect.release();
+        try {
+            if (effect != null) {
+                effect.setEnabled(false);
+                effect.release();
+            }
+        } catch (Exception e) {
+            Log.e("AudioEffectsUtils", "Error releasing audio effects", e);
         }
     }
 }
