@@ -3440,12 +3440,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
             boolean threeFingerGesture = Settings.System.getIntForUser(resolver,
                     "three_finger_gesture_action", 0, UserHandle.USER_CURRENT) != 0;
-            boolean threeFingerLongPressGesture = Settings.System.getIntForUser(resolver,
-                    "three_finger_long_press_action", 0, UserHandle.USER_CURRENT) != 0;
-            boolean newEnableGesture = threeFingerGesture || threeFingerLongPressGesture;
             if (mSwipeToScreenshot != null) {
-                if (haveEnableGesture != newEnableGesture) {
-                    haveEnableGesture = newEnableGesture;
+                if (haveEnableGesture != threeFingerGesture) {
+                    haveEnableGesture = threeFingerGesture;
                     if (haveEnableGesture) {
                         mWindowManagerFuncs.registerPointerEventListener(mSwipeToScreenshot, DEFAULT_DISPLAY);
                     } else {
