@@ -113,8 +113,7 @@ public class SwipeToScreenshotListener implements PointerEventListener {
                     doAction();
                     return;
                 }
-                if (!isLongPressTriggered && event.getEventTime() - mDownTime >= LONG_PRESS_TIMEOUT && Math.abs(distanceY) 
-                    < MAX_MOVE_THRESHOLD && Math.abs(distanceX) < MAX_MOVE_THRESHOLD) {
+                if (!isLongPressTriggered && event.getEventTime() - mDownTime >= LONG_PRESS_TIMEOUT && Math.abs(distanceY) < MAX_MOVE_THRESHOLD && Math.abs(distanceX) < MAX_MOVE_THRESHOLD) {
                     changeThreeGestureState(THREE_GESTURE_STATE_LONG_PRESS);
                     doLongPressAction();
                     return;
@@ -180,13 +179,11 @@ public class SwipeToScreenshotListener implements PointerEventListener {
         if (mThreeGestureState != state) {
             mThreeGestureState = state;
             boolean shouldEnableProp = mThreeGestureState == THREE_GESTURE_STATE_DETECTED_TRUE ||
-                mThreeGestureState == THREE_GESTURE_STATE_DETECTING 
-                || mThreeGestureState == THREE_GESTURE_STATE_LONG_PRESS;
+                mThreeGestureState == THREE_GESTURE_STATE_DETECTING;
             try {
-                SystemProperties.set("persist.sys.android.screenshot", shouldEnableProp ? "true" : "false");
-                Log.e(TAG, "Settings property to " + shouldEnableProp);
+                SystemProperties.set("sys.android.screenshot", shouldEnableProp ? "true" : "false");
             } catch(Exception e) {
-                Log.e(TAG, "Exception when setting property", e);
+                Log.e(TAG, "Exception when setprop", e);
             }
         }
     }
