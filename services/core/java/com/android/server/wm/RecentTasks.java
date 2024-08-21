@@ -83,6 +83,8 @@ import com.android.server.am.ActivityManagerService;
 
 import com.google.android.collect.Sets;
 
+import lineageos.providers.LineageSettings;
+
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -235,13 +237,17 @@ class RecentTasks {
                     final boolean isAppWindowTouch = FIRST_APPLICATION_WINDOW <= win.mAttrs.type
                             && win.mAttrs.type <= LAST_APPLICATION_WINDOW;
                     if (isAppWindowTouch) {
+                        final boolean isNavbarHidden = LineageSettings.System.getIntForUser(mService.mContext.getContentResolver(),
+                                            LineageSettings.System.NAVIGATION_BAR_HINT, 0, UserHandle.USER_CURRENT) != 0;
                         // If we quickswitch while having gesture pill disabled, navbar height
                         // is 0dp, which means the quickswitch start touch is inside app window
                         // as well. To solve this, we defer resetting the freeze 500ms into the
                         // future and if Launcher3 sends a freeze notice again, this app touch
                         // effectively gets ignored when removeCallbacks() removes this runnable.
-                        mService.mH.removeCallbacks(mResetFreezeTaskListOnTimeoutRunnable);
-                        mService.mH.postDelayed(mResetFreezeTaskListOnTimeoutRunnable, 500);
+                        mService.mH.removeCallbacks(isNavbarHidden ? 
+                            mResetFreezeTaskListOnTimeoutRunnable : mResetFreezeTaskTopOnTimeoutRunnable);
+                        mService.mH.postDelayed(isNavbarHidden ? 
+                            mResetFreezeTaskListOnTimeoutRunnable : mResetFreezeTaskTopOnTimeoutRunnable, 500);
                     }
                 }
             }, null).recycleOnUse());
@@ -250,6 +256,15 @@ class RecentTasks {
 
     private final Runnable mResetFreezeTaskListOnTimeoutRunnable =
             this::resetFreezeTaskListReorderingOnTimeout;
+
+    private final Runnable mResetFreezeTaskTopOnTimeoutRunnable =
+            this::resetFreezeForTopTask;
+
+    private void resetFreezeForTopTask() {
+        final Task stack = mService.getTopDisplayFocusedRootTask();
+        final Task topTask = stack != null ? stack.getTopMostTask() : null;
+        resetFreezeTaskListReordering(topTask);
+    }
 
     @VisibleForTesting
     RecentTasks(ActivityTaskManagerService service, TaskPersister taskPersister) {
