@@ -46,7 +46,7 @@
     <dimen name="qs_controls_tile_top_margin">16dp</dimen>
     <dimen name="qs_controls_tile_top_margin_secondary">0dp</dimen>
     <dimen name="qs_controls_tile_icon_margin_start">0dp</dimen>
-    <dimen name="qs_controls_tile_icon_margin_end">18dp</dimen>
+    <dimen name="qs_controls_tile_icon_margin_end">8dp</dimen>
     <dimen name="qs_controls_center_height">158dp</dimen>
     <dimen name="qs_controls_slider_height">140dp</dimen>
     <dimen name="qs_controls_slider_width">65dp</dimen>

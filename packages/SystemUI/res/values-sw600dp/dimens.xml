@@ -16,6 +16,9 @@
 */
 -->
 <resources>
+    <!-- QS Widgets -->
+    <dimen name="qs_controls_padding_top">298dp</dimen>
+
     <!-- Height of the status bar header bar when on Keyguard.
          On large screens should be the same as the regular status bar. -->
     <dimen name="status_bar_header_height_keyguard">@dimen/status_bar_height</dimen>

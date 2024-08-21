@@ -14,17 +14,17 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp">
+        android:layout_height="wrap_content">
 
         <LinearLayout
             android:id="@+id/qs_controls_tiles"
             android:layout_width="0dp"
-            android:maxWidth="178dp"
             android:layout_height="@dimen/qs_controls_center_height"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/qs_controls_pager"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.5">
             <include
                 android:id="@+id/qs_controls_tile_access"
                 layout="@layout/qs_controls_tile_access" />
@@ -33,11 +33,12 @@
         <androidx.viewpager.widget.ViewPager
             android:id="@+id/qs_controls_pager"
             android:layout_width="0dp"
-            android:maxWidth="178dp"
             android:layout_height="@dimen/qs_controls_center_height"
             app:layout_constraintStart_toEndOf="@id/qs_controls_tiles"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.5">
             <include
                 android:id="@+id/qs_controls_widget_pager"
                 layout="@layout/qs_controls_widget_pager" />
