@@ -64,11 +64,15 @@ public final class ShakeGestureService extends SystemService {
             @Override
             public void onShake() {
                 if (mShakeServiceEnabled) {
-                    doAction();
+                    mShakeCallbacks.onShake();
                 }
             }
         };
         updateSettings();
+        mSettingsObserver.observe();
+        if (mShakeServiceEnabled) {
+            mShakeGestureUtils.registerListener(mShakeListener);
+        }
     }
 
     public static synchronized ShakeGestureService getInstance(Context context, ShakeGesturesCallbacks callback) {
@@ -79,25 +83,11 @@ public final class ShakeGestureService extends SystemService {
     }
 
     public interface ShakeGesturesCallbacks {
-        void onVoiceLaunch();
-        void onLaunchSearch();
-        void onClearAllNotifications();
-        void onMediaKeyDispatch();
-        void onScreenshotTaken();
-        void onToggleRingerModes();
-        void onToggleTorch();
-        void onToggleVolumePanel();
-        void onKillApp();
-        void onTurnScreenOnOrOff();
+        void onShake();
     }
 
     @Override
-    public void onStart() {
-        mSettingsObserver.observe();
-        if (mShakeServiceEnabled) {
-            mShakeGestureUtils.registerListener(mShakeListener);
-        }
-    }
+    public void onStart() {}
 
     private void updateSettings() {
         mShakeGestureAction = Settings.System.getInt(mContext.getContentResolver(),
@@ -110,49 +100,6 @@ public final class ShakeGestureService extends SystemService {
             mShakeGestureUtils.registerListener(mShakeListener);
         } else if (!mShakeServiceEnabled && wasShakeServiceEnabled) {
             mShakeGestureUtils.unregisterListener(mShakeListener);
-        }
-    }
-
-    private void doAction() {
-        doAction(mShakeGestureAction);
-        VibrationUtils.triggerVibration(mContext, 2);
-    }
-
-    private void doAction(int gestureAction) {
-        if (mShakeCallbacks == null || gestureAction == 0) return;
-        switch (gestureAction) {
-            case 1:
-                mShakeCallbacks.onToggleTorch();
-                break;
-            case 2:
-                mShakeCallbacks.onMediaKeyDispatch();
-                break;
-            case 3:
-                mShakeCallbacks.onToggleVolumePanel();
-                break;
-            case 4:
-                mShakeCallbacks.onTurnScreenOnOrOff();
-                break;
-            case 5:
-                mShakeCallbacks.onClearAllNotifications();
-                break;
-            case 6:
-                mShakeCallbacks.onToggleRingerModes();
-                break;
-            case 7:
-                mShakeCallbacks.onScreenshotTaken();
-                break;
-            case 8:
-                mShakeCallbacks.onKillApp();
-                break;
-            case 9:
-                mShakeCallbacks.onVoiceLaunch();
-                break;
-            case 10:
-                mShakeCallbacks.onLaunchSearch();
-                break;
-            default:
-                break;
         }
     }
 
