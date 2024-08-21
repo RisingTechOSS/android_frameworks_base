@@ -24,8 +24,6 @@ import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.WindowManagerPolicyConstants.PointerEventListener;
 
-import com.android.internal.util.android.VibrationUtils;
-
 public class SwipeToScreenshotListener implements PointerEventListener {
     private static final String TAG = "SwipeToScreenshotListener";
     private static final int THREE_GESTURE_STATE_NONE = 0;
@@ -98,51 +96,10 @@ public class SwipeToScreenshotListener implements PointerEventListener {
                 }
                 if (distance >= ((float) mThreeGestureThreshold)) {
                     changeThreeGestureState(THREE_GESTURE_STATE_DETECTED_TRUE);
-                    doAction();
+                    mCallbacks.onSwipeThreeFinger();
                 }
             }
         }
-    }
-    
-    private void doAction() {
-        final int swipeGestureAction = Settings.System.getInt(mContext.getContentResolver(),
-                "three_finger_gesture_action", 0);
-        if (mCallbacks == null || swipeGestureAction == 0) return;
-        switch (swipeGestureAction) {
-            case 1:
-                mCallbacks.onToggleTorch();
-                break;
-            case 2:
-                mCallbacks.onMediaKeyDispatch();
-                break;
-            case 3:
-                mCallbacks.onToggleVolumePanel();
-                break;
-            case 4:
-                mCallbacks.onTurnScreenOnOrOff();
-                break;
-            case 5:
-                mCallbacks.onClearAllNotifications();
-                break;
-            case 6:
-                mCallbacks.onToggleRingerModes();
-                break;
-            case 7:
-                mCallbacks.onScreenshotTaken();
-                break;
-            case 8:
-                mCallbacks.onKillApp();
-                break;
-            case 9:
-                mCallbacks.onVoiceLaunch();
-                break;
-            case 10:
-                mCallbacks.onLaunchSearch();
-                break;
-            default:
-                break;
-        }
-        VibrationUtils.triggerVibration(mContext, 2);
     }
 
     private void changeThreeGestureState(int state) {
@@ -186,15 +143,6 @@ public class SwipeToScreenshotListener implements PointerEventListener {
     }
 
     interface Callbacks {
-        void onVoiceLaunch();
-        void onLaunchSearch();
-        void onClearAllNotifications();
-        void onMediaKeyDispatch();
-        void onScreenshotTaken();
-        void onToggleRingerModes();
-        void onToggleTorch();
-        void onToggleVolumePanel();
-        void onKillApp();
-        void onTurnScreenOnOrOff();
+        void onSwipeThreeFinger();
     }
 }
