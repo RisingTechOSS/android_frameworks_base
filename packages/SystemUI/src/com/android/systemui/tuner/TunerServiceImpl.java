@@ -35,6 +35,7 @@ import android.provider.Settings.Secure;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.ArraySet;
+import android.util.Log;
 
 import androidx.annotation.WorkerThread;
 
@@ -382,8 +383,13 @@ public class TunerServiceImpl extends TunerService {
 
     private void reloadSetting(Uri uri) {
         String key = mListeningUris.get(uri);
+        if (key == null) {
+            Log.e(TAG, "Key for URI is null: " + uri);
+            return;
+        }
         Set<Tunable> tunables = mTunableLookup.get(key);
         if (tunables == null) {
+            Log.e(TAG, "No tunables found for key: " + key);
             return;
         }
         String value = getValue(key);

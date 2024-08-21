@@ -132,7 +132,12 @@ class InputSettingsObserver extends ContentObserver {
 
     @Override
     public void onChange(boolean selfChange, Uri uri) {
-        mObservers.get(uri).accept("setting changed");
+        Consumer<String> observer = mObservers.get(uri);
+        if (observer == null) {
+            Log.e(TAG, "No observer found for URI: " + uri);
+            return;
+        }
+        observer.accept("setting changed");
     }
 
     private boolean getBoolean(String settingName, boolean defaultValue) {
