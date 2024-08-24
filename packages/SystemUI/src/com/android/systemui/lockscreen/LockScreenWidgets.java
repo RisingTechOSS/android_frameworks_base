@@ -498,6 +498,10 @@ public class LockScreenWidgets extends LinearLayout implements TunerService.Tuna
         }
         mConfigurationController.removeCallback(mConfigurationListener);
         mStatusBarStateController.removeCallback(mStatusBarStateListener);
+        if (mController != null) {
+            mController.unregisterCallback(mMediaCallback);
+            mController = null;
+        }
     }
 
     @Override
