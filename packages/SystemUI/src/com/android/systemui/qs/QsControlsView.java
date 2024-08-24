@@ -287,6 +287,10 @@ public class QsControlsView extends FrameLayout {
         mNetworkController.removeCallback(mWifiSignalCallback);
         mNetworkController.removeCallback(mCellSignalCallback);
         mConfigurationController.removeCallback(mConfigurationListener);
+        if (mController != null) {
+            mController.unregisterCallback(mMediaCallback);
+            mController = null;
+        }
     }
 
     private void setClickListeners() {
