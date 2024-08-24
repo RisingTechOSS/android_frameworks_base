@@ -151,7 +151,13 @@ public class MediaArtUtils {
     }
     
     private void setUpLockscreenScrim() {
-        mLsMediaScrim = new FrameLayout(mContext);
+        mLsMediaScrim = new FrameLayout(mContext) {
+            @Override
+            protected void onDetachedFromWindow() {
+                super.onDetachedFromWindow();
+                MediaArtUtils.this.onDetachedFromWindow();
+            }
+        };
         FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         mLsMediaScrim.setLayoutParams(lp);
         setUpMediaFilter();
@@ -425,5 +431,12 @@ public class MediaArtUtils {
             }
         }
         return PlaybackState.STATE_NONE;
+    }
+    
+    public void onDetachedFromWindow() {
+        if (mController != null) {
+            mController.unregisterCallback(mMediaCallback);
+            mController = null;
+        }
     }
 }
