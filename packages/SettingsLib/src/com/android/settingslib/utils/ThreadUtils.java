@@ -17,6 +17,7 @@ package com.android.settingslib.utils;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.os.StrictMode;
 
 import androidx.annotation.NonNull;
 
@@ -26,12 +27,23 @@ import com.google.common.util.concurrent.MoreExecutors;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class ThreadUtils {
 
     private static volatile Thread sMainThread;
     private static volatile Handler sMainThreadHandler;
     private static volatile ListeningExecutorService sListeningService;
+    private static volatile ScheduledExecutorService sScheduledExecutorService;
+
+    @NonNull
+    private static ScheduledExecutorService getScheduledExecutorService() {
+        if (sScheduledExecutorService == null) {
+            sScheduledExecutorService = Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors());
+        }
+        return sScheduledExecutorService;
+    }
 
     /**
      * Returns true if the current thread is the UI thread.
@@ -109,5 +121,23 @@ public class ThreadUtils {
                     Runtime.getRuntime().availableProcessors()));
         }
         return sListeningService;
+    }
+    
+    public static void doExplicitGc() {
+        postOnBackgroundThread(() -> {
+            // Temporarily disable checks so that explicit GC is allowed.
+            final int oldMask = StrictMode.getThreadPolicyMask();
+            StrictMode.setThreadPolicyMask(0);
+            System.gc();
+            System.runFinalization();
+            System.gc();
+            StrictMode.setThreadPolicyMask(oldMask);
+        });
+    }
+    
+    public static void doDelayedExplicitGc() {
+        getScheduledExecutorService().schedule(() -> {
+            doExplicitGc();
+        }, 2500, TimeUnit.MILLISECONDS);
     }
 }

@@ -24,6 +24,7 @@ import android.util.Slog;
 import com.android.internal.policy.IKeyguardService;
 import com.android.internal.policy.IKeyguardStateCallback;
 import com.android.internal.widget.LockPatternUtils;
+import com.android.server.ThreadUtils;
 
 import java.io.PrintWriter;
 
@@ -89,6 +90,9 @@ public class KeyguardStateMonitor extends IKeyguardStateCallback.Stub {
         mIsShowing = showing;
 
         mCallback.onShowingChanged();
+        if (showing) {
+            ThreadUtils.doDelayedExplicitGc();
+        }
     }
 
     @Override // Binder interface

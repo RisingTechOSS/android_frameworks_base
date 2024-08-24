@@ -266,7 +266,6 @@ public class KeyguardViewMediator implements CoreStartable, Dumpable,
     private static final int NOTIFY_STARTED_GOING_TO_SLEEP = 17;
     private static final int SYSTEM_READY = 18;
     private static final int CANCEL_KEYGUARD_EXIT_ANIM = 19;
-    private static final int START_GARBAGE_COLLECTION = 20;
 
     /** Enum for reasons behind updating wakeAndUnlock state. */
     @Retention(RetentionPolicy.SOURCE)
@@ -2359,9 +2358,7 @@ public class KeyguardViewMediator implements CoreStartable, Dumpable,
     private void notifyStartedGoingToSleep() {
         if (DEBUG) Log.d(TAG, "notifyStartedGoingToSleep");
         mHandler.sendEmptyMessage(NOTIFY_STARTED_GOING_TO_SLEEP);
-        mHandler.removeMessages(START_GARBAGE_COLLECTION);
-        Message newMsg = mHandler.obtainMessage(START_GARBAGE_COLLECTION);
-        mHandler.sendMessageDelayed(newMsg, 2500);
+        ThreadUtils.doDelayedExplicitGc();
     }
 
     private void notifyFinishedGoingToSleep() {
@@ -2632,13 +2629,6 @@ public class KeyguardViewMediator implements CoreStartable, Dumpable,
                         handleSystemReady();
                     }
                     break;
-                case START_GARBAGE_COLLECTION:
-                    ThreadUtils.postOnBackgroundThread(() -> {
-                        System.gc();
-                        System.runFinalization();
-                        System.gc();
-                    });
-                    break;
             }
             Log.d(TAG, "KeyguardViewMediator queue processing message: " + message);
         }
@@ -2852,9 +2842,7 @@ public class KeyguardViewMediator implements CoreStartable, Dumpable,
         scheduleNonStrongBiometricIdleTimeout();
 
         // Delay garbage collection until display is shown
-        mHandler.removeMessages(START_GARBAGE_COLLECTION);
-        Message newMsg = mHandler.obtainMessage(START_GARBAGE_COLLECTION);
-        mHandler.sendMessageDelayed(newMsg, 2500);
+        ThreadUtils.doDelayedExplicitGc();
 
         Trace.endSection();
     }
