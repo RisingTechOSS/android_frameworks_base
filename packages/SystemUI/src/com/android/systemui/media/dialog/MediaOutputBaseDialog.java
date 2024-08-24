@@ -452,6 +452,7 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog implements
                     mBroadcastCallback);
             mIsLeBroadcastCallbackRegistered = true;
         }
+        updateMediaController();
     }
 
     @Override
@@ -464,6 +465,10 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog implements
             mIsLeBroadcastCallbackRegistered = false;
         }
         mMediaOutputController.stop();
+        if (mController != null) {
+            mController.unregisterCallback(mMediaCallback);
+            mController = null;
+        }
     }
 
     @VisibleForTesting
