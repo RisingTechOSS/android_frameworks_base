@@ -24,6 +24,7 @@ import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.ServiceSpecificException;
 import android.os.StrictMode;
+import android.os.SystemProperties;
 import android.security.keymaster.KeymasterDefs;
 import android.system.keystore2.Domain;
 import android.system.keystore2.IKeystoreService;
@@ -285,9 +286,12 @@ public class KeyStore2 {
             throws KeyStoreException {
         StrictMode.noteDiskRead();
 
-        KeyEntryResponse response = handleRemoteExceptionWithRetry((service) -> service.getKeyEntry(descriptor));
-
-        return AttestationHooks.onGetKeyEntry(response);
+        KeyEntryResponse response = handleRemoteExceptionWithRetry(service -> service.getKeyEntry(descriptor));
+        if (SystemProperties.getBoolean("persist.sys.pixelprops.gms", true)) {
+            return AttestationHooks.onGetKeyEntry(response);
+        } else {
+            return response;
+        }
     }
 
     /**
