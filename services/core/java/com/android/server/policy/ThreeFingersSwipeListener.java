@@ -19,6 +19,7 @@
 package com.android.server.policy;
 
 import android.content.Context;
+import android.os.SystemProperties;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.WindowManagerPolicyConstants.PointerEventListener;
@@ -63,23 +64,23 @@ public class ThreeFingersSwipeListener implements PointerEventListener {
     public void onPointerEvent(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
             mDownTime = event.getDownTime();
-            mThreeGestureState = THREE_GESTURE_STATE_NONE;
+            changeThreeGestureState(THREE_GESTURE_STATE_NONE);
             isLongPressTriggered = false;
         } else if (mThreeGestureState == THREE_GESTURE_STATE_NONE && event.getPointerCount() == 3) {
             if (checkIsStartThreeGesture(event)) {
-                mThreeGestureState = THREE_GESTURE_STATE_DETECTING;
+                changeThreeGestureState(THREE_GESTURE_STATE_DETECTING);
                 for (int i = 0; i < 3; i++) {
                     mPointerIds[i] = event.getPointerId(i);
                     mInitMotionY[i] = event.getY(i);
                     mInitMotionX[i] = event.getX(i);
                 }
             } else {
-                mThreeGestureState = THREE_GESTURE_STATE_NO_DETECT;
+                changeThreeGestureState(THREE_GESTURE_STATE_NO_DETECT);
             }
         }
         if (mThreeGestureState == THREE_GESTURE_STATE_DETECTING) {
             if (event.getPointerCount() != 3) {
-                mThreeGestureState = THREE_GESTURE_STATE_DETECTED_FALSE;
+                changeThreeGestureState(THREE_GESTURE_STATE_DETECTED_FALSE);
                 return;
             }
             if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
@@ -89,7 +90,7 @@ public class ThreeFingersSwipeListener implements PointerEventListener {
                 while (i < 3) {
                     int index = event.findPointerIndex(mPointerIds[i]);
                     if (index < 0 || index >= 3) {
-                        mThreeGestureState = THREE_GESTURE_STATE_DETECTED_FALSE;
+                        changeThreeGestureState(THREE_GESTURE_STATE_DETECTED_FALSE);
                         return;
                     } else {
                         distanceY += event.getY(index) - mInitMotionY[i];
@@ -99,18 +100,29 @@ public class ThreeFingersSwipeListener implements PointerEventListener {
                 }
                 if (Math.abs(distanceY) >= ((float) mThreeGestureThreshold) 
                         || Math.abs(distanceX) >= ((float) mThreeGestureThreshold)) {
-                    mThreeGestureState = THREE_GESTURE_STATE_DETECTED_TRUE;
+                    changeThreeGestureState(THREE_GESTURE_STATE_DETECTED_TRUE);
                     mCallbacks.onSwipeThreeFingers();
                     return;
                 }
                 if (!isLongPressTriggered && event.getEventTime() - mDownTime 
                         >= LONG_PRESS_TIMEOUT && Math.abs(distanceY) 
                         < MAX_MOVE_THRESHOLD && Math.abs(distanceX) < MAX_MOVE_THRESHOLD) {
-                    mThreeGestureState = THREE_GESTURE_STATE_DETECTED_TRUE;
+                    changeThreeGestureState(THREE_GESTURE_STATE_DETECTED_TRUE);
                     mCallbacks.onLongPressThreeFingers();
                     return;
                 }
             }
+        }
+    }
+    
+    private void changeThreeGestureState(int state) {
+        if (mThreeGestureState != state) {
+            mThreeGestureState = state;
+            boolean shouldEnableProp = mThreeGestureState == THREE_GESTURE_STATE_DETECTED_TRUE ||
+                mThreeGestureState == THREE_GESTURE_STATE_DETECTING;
+            try {
+                SystemProperties.set("persist.sys.android.screenshot", shouldEnableProp ? "true" : "false");
+            } catch(Exception e) {}
         }
     }
 
