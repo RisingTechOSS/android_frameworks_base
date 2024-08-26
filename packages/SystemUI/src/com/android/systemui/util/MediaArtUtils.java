@@ -77,6 +77,7 @@ public class MediaArtUtils {
     private final ScrimController mScrimController;
     private final StatusBarStateController mStatusBarStateController;
     private final QSImpl mQS;
+    private final TunerService mTunerService;
 
     private boolean mLsMediaEnabled;
     private boolean mDozing;
@@ -88,6 +89,7 @@ public class MediaArtUtils {
     private int mLsMediaFilter = 0;
     private int mLsMediaFadeLevel = 40;
     private int mPreviousLsMediaFadeLevel = 40;
+    private MediaMetadata mPreviousMediaMetadata = null;
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
@@ -123,30 +125,34 @@ public class MediaArtUtils {
                 }
             };
 
+    private final KeyguardStateController.Callback mKeyguardStateCallback =
+            new KeyguardStateController.Callback() {
+                @Override
+                public void onKeyguardFadingAwayChanged() {
+                    hideMediaArt();
+                }
+
+                @Override
+                public void onKeyguardGoingAwayChanged() {
+                    hideMediaArt();
+                }
+            };
+
     private MediaArtUtils(Context context) {
         mContext = context;
         mQS = Dependency.get(QSImpl.class);
         mScrimController = Dependency.get(ScrimController.class);
         mStatusBarStateController = Dependency.get(StatusBarStateController.class);
         mConfigurationController = Dependency.get(ConfigurationController.class);
-        mStatusBarStateController.addCallback(mStatusBarStateListener);
-        mStatusBarStateListener.onDozingChanged(mStatusBarStateController.isDozing());
-        Dependency.get(TunerService.class).addTunable(mTunable, 
-            LS_MEDIA_ART_ENABLED, LS_MEDIA_ART_FILTER, LS_MEDIA_ART_FADE_LEVEL);
-        setUpLockscreenScrim();
-        mConfigurationController.addCallback(mConfigurationListener);
         mKeyguardStateController = Dependency.get(KeyguardStateController.class);
-        mKeyguardStateController.addCallback(new KeyguardStateController.Callback() {
-            @Override
-            public void onKeyguardFadingAwayChanged() {
-                hideMediaArt();
-            }
-
-            @Override
-            public void onKeyguardGoingAwayChanged() {
-                hideMediaArt();
-            }
-        });
+        mTunerService = Dependency.get(TunerService.class);
+        setUpLockscreenScrim();
+        mStatusBarStateController.addCallback(mStatusBarStateListener);
+        mConfigurationController.addCallback(mConfigurationListener);
+        mKeyguardStateController.addCallback(mKeyguardStateCallback);
+        mStatusBarStateListener.onDozingChanged(mStatusBarStateController.isDozing());
+        mTunerService.addTunable(mTunable, 
+            LS_MEDIA_ART_ENABLED, LS_MEDIA_ART_FILTER, LS_MEDIA_ART_FADE_LEVEL);
         updateMediaController();
     }
     
@@ -379,6 +385,12 @@ public class MediaArtUtils {
             hideMediaArt();
             return;
         }
+        if (metadata != null && metadata.equals(mPreviousMediaMetadata)) {
+            mLsMediaScrim.post(() -> {
+                updateMediaArtVisibility();
+            });
+            return;
+        }
         Bitmap bitmap = metadata.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART);
         if (bitmap == null) {
             bitmap = metadata.getBitmap(MediaMetadata.METADATA_KEY_ART);
@@ -407,6 +419,7 @@ public class MediaArtUtils {
                     mLsMediaScrim.setBackground(currLayeredDrawable);
                 });
             });
+            mPreviousMediaMetadata = metadata;
         }
         mLsMediaScrim.post(() -> {
             updateMediaArtVisibility();
@@ -434,6 +447,10 @@ public class MediaArtUtils {
     }
     
     public void onDetachedFromWindow() {
+        mStatusBarStateController.removeCallback(mStatusBarStateListener);
+        mConfigurationController.removeCallback(mConfigurationListener);
+        mKeyguardStateController.removeCallback(mKeyguardStateCallback);
+        mTunerService.removeTunable(mTunable);
         if (mController != null) {
             mController.unregisterCallback(mMediaCallback);
             mController = null;
