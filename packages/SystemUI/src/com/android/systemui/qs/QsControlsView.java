@@ -297,6 +297,7 @@ public class QsControlsView extends FrameLayout {
         mBtButton.setOnClickListener(view -> toggleBluetoothState());
         mBtButton.setOnLongClickListener(v -> { showBluetoothDialog(v); return true; });
         mInternetButton.setOnClickListener(view -> showInternetDialog(view));
+        mInternetButton.setOnLongClickListener(v -> { mActivityLauncherUtils.startIntent(new Intent(Settings.ACTION_WIFI_SETTINGS)); return true; });
         mMediaPlayBtn.setOnClickListener(view -> performMediaAction(MediaAction.TOGGLE_PLAYBACK));
         mMediaPrevBtn.setOnClickListener(view -> performMediaAction(MediaAction.PLAY_PREVIOUS));
         mMediaNextBtn.setOnClickListener(view -> performMediaAction(MediaAction.PLAY_NEXT));

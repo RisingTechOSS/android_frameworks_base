@@ -123,6 +123,11 @@ public class ActivityLauncherUtils {
         if (mActivityStarter == null) return;
 		mActivityStarter.startActivity(new Intent(android.provider.Settings.ACTION_SETTINGS), true /* dismissShade */);
     }
+    
+    public void startIntent(Intent intent) {
+        if (mActivityStarter == null) return;
+        mActivityStarter.startActivity(intent, true /* dismissShade */);
+    }
 
     private void showNoDefaultAppFoundToast(@StringRes int appTypeResId) {
         Toast.makeText(mContext, mContext.getString(appTypeResId) + " not found", Toast.LENGTH_SHORT).show();
