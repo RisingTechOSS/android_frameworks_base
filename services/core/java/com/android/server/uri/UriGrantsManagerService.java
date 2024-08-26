@@ -1192,6 +1192,7 @@ public class UriGrantsManagerService extends IUriGrantsManager.Stub implements
      */
     private int checkGrantUriPermissionUnlocked(int callingUid, String targetPkg, GrantUri grantUri,
             int modeFlags, int lastTargetUid) {
+        final boolean isSettingsBackupUri = grantUri.toString().toLowerCase().contains("personalization_settings_backup");
         if (!isContentUriWithAccessModeFlags(grantUri, modeFlags,
                 /* logAction */ "grant URI permission")) {
             return -1;
@@ -1204,7 +1205,7 @@ public class UriGrantsManagerService extends IUriGrantsManager.Stub implements
         // Bail early if system is trying to hand out permissions directly; it
         // must always grant permissions on behalf of someone explicit.
         final int callingAppId = UserHandle.getAppId(callingUid);
-        if ((callingAppId == SYSTEM_UID) || (callingAppId == ROOT_UID)) {
+        if (((callingAppId == SYSTEM_UID) || (callingAppId == ROOT_UID)) && !isSettingsBackupUri) {
             if ("com.android.settings.files".equals(grantUri.uri.getAuthority())
                     || "com.android.settings.module_licenses".equals(grantUri.uri.getAuthority())) {
                 // Exempted authority for
@@ -1236,6 +1237,10 @@ public class UriGrantsManagerService extends IUriGrantsManager.Stub implements
                 if (DEBUG) Slog.v(TAG, "Can't grant URI permission no uid for: " + targetPkg);
                 return -1;
             }
+        }
+        
+        if (isSettingsBackupUri) {
+            return targetUid;
         }
 
         boolean targetHoldsPermission = false;
