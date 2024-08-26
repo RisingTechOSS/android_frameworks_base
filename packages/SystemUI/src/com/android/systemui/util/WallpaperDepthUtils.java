@@ -60,6 +60,7 @@ public class WallpaperDepthUtils {
     private final ScrimController mScrimController;
     private final StatusBarStateController mStatusBarStateController;
     private final QSImpl mQS;
+    private final TunerService mTunerService;
 
     private boolean mDWallpaperEnabled;
     private int mDWallOpacity = 255;
@@ -88,6 +89,19 @@ public class WallpaperDepthUtils {
                     updateDepthWallpaper();
                 }
             };
+            
+    private final KeyguardStateController.Callback mKeyguardStateCallback =
+            new KeyguardStateController.Callback() {
+                @Override
+                public void onKeyguardFadingAwayChanged() {
+                    hideDepthWallpaper();
+                }
+
+                @Override
+                public void onKeyguardGoingAwayChanged() {
+                    hideDepthWallpaper();
+                }
+            };
 
     private WallpaperDepthUtils(Context context) {
         mContext = context;
@@ -95,25 +109,24 @@ public class WallpaperDepthUtils {
         mScrimController = Dependency.get(ScrimController.class);
         mStatusBarStateController = Dependency.get(StatusBarStateController.class);
         mConfigurationController = Dependency.get(ConfigurationController.class);
+        mKeyguardStateController = Dependency.get(KeyguardStateController.class);
+        mTunerService = Dependency.get(TunerService.class);
+        mTunerService.addTunable(mTunable, WALLPAPER_DEPTH_KEY, 
+            WALLPAPER_DEPTH_ENABLED_KEY, WALLPAPER_DEPTH_OPACITY_KEY, 
+            WALLPAPER_DEPTH_OFFSET_X_KEY, WALLPAPER_DEPTH_OFFSET_Y_KEY);
         mStatusBarStateController.addCallback(mStatusBarStateListener);
         mStatusBarStateListener.onDozingChanged(mStatusBarStateController.isDozing());
-        Dependency.get(TunerService.class).addTunable(mTunable, WALLPAPER_DEPTH_KEY, 
-            WALLPAPER_DEPTH_ENABLED_KEY, WALLPAPER_DEPTH_OPACITY_KEY, WALLPAPER_DEPTH_OFFSET_X_KEY, WALLPAPER_DEPTH_OFFSET_Y_KEY);
-        mLockScreenSubject = new FrameLayout(mContext);
+        mConfigurationController.addCallback(mConfigurationListener);
+        mKeyguardStateController.addCallback(mKeyguardStateCallback);
+        mLockScreenSubject = new FrameLayout(mContext) {
+            @Override
+            protected void onDetachedFromWindow() {
+                super.onDetachedFromWindow();
+                WallpaperDepthUtils.this.onDetachedFromWindow();
+            }
+        };
         FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(-1, -1);
         mLockScreenSubject.setLayoutParams(lp);
-        mConfigurationController.addCallback(mConfigurationListener);
-        mKeyguardStateController = Dependency.get(KeyguardStateController.class);
-        mKeyguardStateController.addCallback(new KeyguardStateController.Callback() {
-            @Override
-            public void onKeyguardFadingAwayChanged() {
-                hideDepthWallpaper();
-            }
-            @Override
-            public void onKeyguardGoingAwayChanged() {
-                hideDepthWallpaper();
-            }
-        });
     }
 
     public static WallpaperDepthUtils getInstance(Context context) {
@@ -296,6 +309,17 @@ public class WallpaperDepthUtils {
                 mWallpaperBitmap.recycle();
                 mWallpaperBitmap = null;
             }
+        }
+    }
+    
+    public void onDetachedFromWindow() {
+        mStatusBarStateController.removeCallback(mStatusBarStateListener);
+        mConfigurationController.removeCallback(mConfigurationListener);
+        mKeyguardStateController.removeCallback(mKeyguardStateCallback);
+        mTunerService.removeTunable(mTunable);
+        if (mWallpaperBitmap != null && !mWallpaperBitmap.isRecycled()) {
+            mWallpaperBitmap.recycle();
+            mWallpaperBitmap = null;
         }
     }
 }
