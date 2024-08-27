@@ -155,6 +155,7 @@ public class LockScreenWidgets extends LinearLayout implements TunerService.Tuna
     private final NetworkController mNetworkController;
     private final StatusBarStateController mStatusBarStateController;
     private final SystemSettings mSystemSettings;
+    private final TunerService mTunerService;
 
     protected final CellSignalCallback mCellSignalCallback = new CellSignalCallback();
     protected final WifiSignalCallback mWifiSignalCallback = new WifiSignalCallback();
@@ -231,7 +232,9 @@ public class LockScreenWidgets extends LinearLayout implements TunerService.Tuna
         mDarkColorActive = mContext.getResources().getColor(R.color.lockscreen_widget_active_color_dark);
         mLightColorActive = mContext.getResources().getColor(R.color.lockscreen_widget_active_color_light);
 
-        Dependency.get(TunerService.class).addTunable(this, LOCKSCREEN_DISPLAY_WIDGETS, LOCKSCREEN_WIDGETS, LOCKSCREEN_WIDGETS_EXTRAS, SOUND_ENGINE_MODE);
+        mTunerService = Dependency.get(TunerService.class);
+        mTunerService.addTunable(this, LOCKSCREEN_DISPLAY_WIDGETS, 
+            LOCKSCREEN_WIDGETS, LOCKSCREEN_WIDGETS_EXTRAS, SOUND_ENGINE_MODE);
         mSystemSettings = Dependency.get(SystemSettings.class);
         mAccessPointController = Dependency.get(AccessPointController.class);
         mBluetoothTileDialogViewModel = Dependency.get(BluetoothTileDialogViewModel.class);
@@ -502,6 +505,8 @@ public class LockScreenWidgets extends LinearLayout implements TunerService.Tuna
             mController.unregisterCallback(mMediaCallback);
             mController = null;
         }
+        mContext.unregisterReceiver(mRingerModeReceiver);
+        mTunerService.removeTunable(this);
     }
 
     @Override
