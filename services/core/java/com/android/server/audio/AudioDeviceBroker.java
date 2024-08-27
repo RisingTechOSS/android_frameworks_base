@@ -401,7 +401,8 @@ public class AudioDeviceBroker {
         }
 
         boolean isBtScoRequested = isBluetoothScoRequested();
-        if (isBtScoRequested && (!wasBtScoRequested || !isBluetoothScoActive())) {
+        if (isBtScoRequested && (!wasBtScoRequested || !isBluetoothScoActive()
+                || !mBtHelper.isBluetoothScoOn())) {
             if (!mBtHelper.startBluetoothSco(scoAudioMode, eventSource)) {
                 Log.w(TAG, "setCommunicationRouteForClient: failure to start BT SCO for uid: "
                         + uid);
