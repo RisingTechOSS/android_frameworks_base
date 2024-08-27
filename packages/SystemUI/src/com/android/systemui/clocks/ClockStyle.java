@@ -73,10 +73,12 @@ public class ClockStyle extends RelativeLayout implements TunerService.Tunable {
     private static final String CLOCK_STYLE = "system:" + CLOCK_STYLE_KEY;
     private static final String CUSTOM_AOD_IMAGE_URI_KEY = "custom_aod_image_uri";
 
-    private ThemeUtils mThemeUtils;
-    private Context mContext;
+    private final ThemeUtils mThemeUtils;
+    private final Context mContext;
+    private final TunerService mTunerService;
+
     private View currentClockView;
-    private int mClockStyle;
+    private int mClockStyle;    
 
     private static final long UPDATE_INTERVAL_MILLIS = 15 * 1000;
     private final Handler mHandler;
@@ -140,7 +142,8 @@ public class ClockStyle extends RelativeLayout implements TunerService.Tunable {
         mContext = context;
         mHandler = Dependency.get(Dependency.MAIN_HANDLER);
         mThemeUtils = new ThemeUtils(context);
-        Dependency.get(TunerService.class).addTunable(this, CLOCK_STYLE);
+        mTunerService = Dependency.get(TunerService.class);
+        mTunerService.addTunable(this, CLOCK_STYLE);
         mStatusBarStateController = Dependency.get(StatusBarStateController.class);
         mStatusBarStateController.addCallback(mStatusBarStateListener);
         mStatusBarStateListener.onDozingChanged(mStatusBarStateController.isDozing());
@@ -165,6 +168,14 @@ public class ClockStyle extends RelativeLayout implements TunerService.Tunable {
         customImageView = findViewById(R.id.custom_aod_image_view);
         updateClockView();
         updateCustomImageView();
+    }
+    
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        mStatusBarStateController.removeCallback(mStatusBarStateListener);
+        mTunerService.removeTunable(this);
+        mBurnInProtectionHandler.removeCallbacks(mBurnInProtectionRunnable);
     }
 
     private void startBurnInProtection() {
