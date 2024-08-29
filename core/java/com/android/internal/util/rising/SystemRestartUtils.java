@@ -47,6 +47,37 @@ public class SystemRestartUtils {
                 .show();
     }
 
+    public static void powerOffSystem(Context context) {
+        new PowerOffSystemTask(context).execute();
+    }
+
+    private static class PowerOffSystemTask extends AsyncTask<Void, Void, Void> {
+        private final WeakReference<Context> mContext;
+
+        PowerOffSystemTask(Context context) {
+            mContext = new WeakReference<>(context);
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            try {
+                IStatusBarService mBarService = IStatusBarService.Stub.asInterface(
+                        ServiceManager.getService(Context.STATUS_BAR_SERVICE));
+                if (mBarService != null) {
+                    try {
+                        Thread.sleep(RESTART_TIMEOUT);
+                        mBarService.shutdown();
+                    } catch (RemoteException | InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+    }
+
     public static void restartSystem(Context context) {
         new RestartSystemTask(context).execute();
     }
