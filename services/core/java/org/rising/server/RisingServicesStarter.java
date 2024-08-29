@@ -33,6 +33,9 @@ public class RisingServicesStarter {
 
     private static final String CHARGING_OPT_SERVICE_CLASS =
             "org.rising.server.AdaptiveChargingService";
+            
+    private static final String STORAGE_CLEANER_SERVICE_CLASS =
+            "org.rising.server.StorageCleanerService";
 
     public RisingServicesStarter(SystemServiceManager systemServiceManager) {
         this.mSystemServiceManager = systemServiceManager;
@@ -43,6 +46,7 @@ public class RisingServicesStarter {
         startService(SOUND_ENGINE_SERVICE_CLASS);
         startService(NETWORK_OPT_SERVICE_CLASS);
         startService(CHARGING_OPT_SERVICE_CLASS);
+        startService(STORAGE_CLEANER_SERVICE_CLASS);
     }
 
     private void startService(String serviceClassName) {
