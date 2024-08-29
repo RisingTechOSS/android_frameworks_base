@@ -76,15 +76,8 @@ static const char APEX_BOOTANIMATION_FILE[] = "/apex/com.android.bootanimation/e
 static const char OEM_SHUTDOWNANIMATION_FILE[] = "/oem/media/shutdownanimation.zip";
 static const char PRODUCT_SHUTDOWNANIMATION_FILE[] = "/product/media/shutdownanimation.zip";
 static const char SYSTEM_SHUTDOWNANIMATION_FILE[] = "/system/media/shutdownanimation.zip";
-
-static const char* const BOOT_ANIMATION_FILES[] = {
-    "/product/media/bootanimation_rising.zip",
-    "/product/media/bootanimation_cyberpunk.zip",
-    "/product/media/bootanimation_google.zip",
-    "/product/media/bootanimation_google_monet.zip",
-    "/product/media/bootanimation_valorant.zip",
-    "/data/misc/bootanim/bootanimation.zip"
-};
+static const char DEFAULT_BOOTANIMATION_FILE[] = "/product/media/bootanimation_rising.zip";
+static const char CUSTOM_BOOTANIMATION_FILE[] = "/data/misc/bootanim/bootanimation.zip";
 
 static constexpr const char* PRODUCT_USERSPACE_REBOOT_ANIMATION_FILE = "/product/media/userspace-reboot.zip";
 static constexpr const char* OEM_USERSPACE_REBOOT_ANIMATION_FILE = "/oem/media/userspace-reboot.zip";
@@ -773,15 +766,8 @@ bool BootAnimation::findBootAnimationFileInternal(const std::vector<std::string>
 
 void BootAnimation::findBootAnimationFile() {
     ATRACE_CALL();
-    char value[PROPERTY_VALUE_MAX];
-    property_get("persist.sys.bootanimation_style", value, "0");
-    const int bootAnimStyle = atoi(value);
-    const char* selectedBootAnimation = 
-        (bootAnimStyle >= 0 && bootAnimStyle < 6) 
-        ? BOOT_ANIMATION_FILES[bootAnimStyle] 
-        : BOOT_ANIMATION_FILES[0];
     static const std::vector<std::string> bootFiles = {
-        std::string(selectedBootAnimation)
+        CUSTOM_BOOTANIMATION_FILE, DEFAULT_BOOTANIMATION_FILE
     };
     static const std::vector<std::string> shutdownFiles = {
         PRODUCT_SHUTDOWNANIMATION_FILE, OEM_SHUTDOWNANIMATION_FILE, SYSTEM_SHUTDOWNANIMATION_FILE, ""
