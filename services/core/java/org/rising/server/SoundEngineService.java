@@ -32,18 +32,18 @@ import com.android.server.SystemService;
 public final class SoundEngineService extends SystemService {
 
     private final AudioManager mAudioManager;
-
     private static final String TAG = "SoundEngineService";
-    private static final String AUDIO_EFFECT_MODE = "audio_effect_mode";
-    private static final String AUDIO_EFFECT_MODE_ENABLED = "audio_effect_mode_enabled";
+
+    private static final String SOUND_ENGINE_LOUDNESS_GAIN = "sound_engine_loudness_gain";
+    private static final String SOUND_ENGINE_BASS_BOOST = "sound_engine_bass_boost";
+    private static final String SOUND_ENGINE_ENABLED = "sound_engine_enabled";
     private static final int USER_ALL = UserHandle.USER_ALL;
 
     private final AudioEffectsUtils mAudioEffectsUtils;
     private final Context mContext;
     private final SettingsObserver mSettingsObserver;
-    
-    private Handler mAudioHandler;
 
+    private Handler mAudioHandler;
     private boolean mIsEqRegistered = false;
 
     public SoundEngineService(Context context) {
@@ -77,16 +77,17 @@ public final class SoundEngineService extends SystemService {
     }
 
     private void updateEffects() {
-        int mode = getSetting(AUDIO_EFFECT_MODE);
-        boolean isEffectsEnabled = mode != 0 
-            && getSetting(AUDIO_EFFECT_MODE_ENABLED) != 0;
-        disableAllEffects();
-        if (mIsEqRegistered || !isEffectsEnabled) return;
+        int gain = getSetting(SOUND_ENGINE_LOUDNESS_GAIN) * 100;
+        int bassBoost = getSetting(SOUND_ENGINE_BASS_BOOST) * 10;
+        if (getSetting(SOUND_ENGINE_ENABLED) != 1) {
+            disableAllEffects();
+            return;
+        }
         if (!mIsEqRegistered) {
             mAudioEffectsUtils.initializeEffects();
+            mIsEqRegistered = true;
         }
-        mAudioEffectsUtils.setEffects(mode);
-        mIsEqRegistered = true;
+        mAudioEffectsUtils.updateEffects(gain, bassBoost);
     }
 
     private void disableAllEffects() {
@@ -99,12 +100,16 @@ public final class SoundEngineService extends SystemService {
         SettingsObserver(Handler handler) {
             super(handler);
         }
+
         void observe() {
             getContentResolver().registerContentObserver(
-                    Settings.System.getUriFor(AUDIO_EFFECT_MODE), false, this, USER_ALL);
+                    Settings.System.getUriFor(SOUND_ENGINE_LOUDNESS_GAIN), false, this, USER_ALL);
             getContentResolver().registerContentObserver(
-                    Settings.System.getUriFor(AUDIO_EFFECT_MODE_ENABLED), false, this, USER_ALL);
+                    Settings.System.getUriFor(SOUND_ENGINE_BASS_BOOST), false, this, USER_ALL);
+            getContentResolver().registerContentObserver(
+                    Settings.System.getUriFor(SOUND_ENGINE_ENABLED), false, this, USER_ALL);
         }
+
         @Override
         public void onChange(boolean selfChange) {
             updateEffects();
