@@ -243,7 +243,8 @@ public class ClockStyle extends RelativeLayout implements TunerService.Tunable {
                 break;
             case CUSTOM_AOD_IMAGE_URI_KEY:
                 mImagePath = newValue;
-                if (!mImagePath.equals(mCurrImagePath)) {
+                if (mImagePath != null && !mImagePath.isEmpty() 
+                    && !mImagePath.equals(mCurrImagePath)) {
                     mCurrImagePath = mImagePath;
                     mImageLoaded = false;
                     loadAodImage();
