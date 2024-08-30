@@ -97,9 +97,6 @@ public class LockScreenWidgets extends LinearLayout implements TunerService.Tuna
 
     private static final String LOCKSCREEN_WIDGETS_EXTRAS =
             "system:lockscreen_widgets_extras";
-            
-    private static final String SOUND_ENGINE_MODE =
-            "system:audio_effect_mode";
 
     private static final int[] MAIN_WIDGETS_VIEW_IDS = {
             R.id.main_kg_item_placeholder1,
@@ -119,11 +116,6 @@ public class LockScreenWidgets extends LinearLayout implements TunerService.Tuna
     public static final int DATA_INACTIVE = R.drawable.ic_mobiledata_off_24;
     public static final int RINGER_ACTIVE = R.drawable.ic_vibration_24;
     public static final int RINGER_INACTIVE = R.drawable.ic_ring_volume_24;
-    public static final int SE_INACTIVE = R.drawable.ic_sound_engine_disabled;
-    public static final int SE_SMART = R.drawable.ic_sound_engine_smart;
-    public static final int SE_GAME = R.drawable.ic_sound_engine_game;
-    public static final int SE_THEATER = R.drawable.ic_sound_engine_theater;
-    public static final int SE_MUSIC = R.drawable.ic_sound_engine_music;
     public static final int TORCH_RES_ACTIVE = R.drawable.ic_flashlight_on;
     public static final int TORCH_RES_INACTIVE = R.drawable.ic_flashlight_off;
     public static final int WIFI_ACTIVE = R.drawable.ic_wifi_24;
@@ -132,11 +124,6 @@ public class LockScreenWidgets extends LinearLayout implements TunerService.Tuna
     public static final int BT_LABEL_INACTIVE = R.string.quick_settings_bluetooth_label;
     public static final int DATA_LABEL_INACTIVE = R.string.quick_settings_data_label;
     public static final int RINGER_LABEL_INACTIVE = R.string.quick_settings_ringer_label;
-    public static final int SE_LABEL_SMART = R.drawable.ic_sound_engine_smart;
-    public static final int SE_LABEL_GAME = R.drawable.ic_sound_engine_game;
-    public static final int SE_LABEL_THEATER = R.drawable.ic_sound_engine_theater;
-    public static final int SE_LABEL_MUSIC = R.drawable.ic_sound_engine_music;
-    public static final int SE_LABEL_INACTIVE = R.string.sound_engine_mode_disabled_label;
     public static final int TORCH_LABEL_ACTIVE = R.string.torch_active;
     public static final int TORCH_LABEL_INACTIVE = R.string.quick_settings_flashlight_label;
     public static final int WIFI_LABEL_INACTIVE = R.string.quick_settings_wifi_label;
@@ -163,8 +150,8 @@ public class LockScreenWidgets extends LinearLayout implements TunerService.Tuna
     private Context mContext;
     private LaunchableImageView mWidget1, mWidget2, mWidget3, mWidget4, mediaButton, torchButton, weatherButton;
     private LaunchableFAB mediaButtonFab, torchButtonFab, weatherButtonFab;
-    private LaunchableFAB wifiButtonFab, dataButtonFab, ringerButtonFab, btButtonFab, soundEngineButtonFab;
-    private LaunchableImageView wifiButton, dataButton, ringerButton, btButton, soundEngineButton;
+    private LaunchableFAB wifiButtonFab, dataButtonFab, ringerButtonFab, btButtonFab;
+    private LaunchableImageView wifiButton, dataButton, ringerButton, btButton;
     private int mDarkColor, mDarkColorActive, mLightColor, mLightColorActive;
 
     private CameraManager mCameraManager;
@@ -189,8 +176,7 @@ public class LockScreenWidgets extends LinearLayout implements TunerService.Tuna
     private boolean mIsInflated = false;
     private GestureDetector mGestureDetector;
     private boolean mIsLongPress = false;
-    
-    private int mAudioMode;
+
     private boolean mShowDisplayWidgets;
     private Runnable mMediaUpdater;
     private Handler mHandler;
@@ -234,7 +220,7 @@ public class LockScreenWidgets extends LinearLayout implements TunerService.Tuna
 
         mTunerService = Dependency.get(TunerService.class);
         mTunerService.addTunable(this, LOCKSCREEN_DISPLAY_WIDGETS, 
-            LOCKSCREEN_WIDGETS, LOCKSCREEN_WIDGETS_EXTRAS, SOUND_ENGINE_MODE);
+            LOCKSCREEN_WIDGETS, LOCKSCREEN_WIDGETS_EXTRAS);
         mSystemSettings = Dependency.get(SystemSettings.class);
         mAccessPointController = Dependency.get(AccessPointController.class);
         mBluetoothTileDialogViewModel = Dependency.get(BluetoothTileDialogViewModel.class);
@@ -545,10 +531,6 @@ public class LockScreenWidgets extends LinearLayout implements TunerService.Tuna
                 }
                 updateWidgetViews();
                 break;
-            case SOUND_ENGINE_MODE:
-                mAudioMode = TunerService.parseInteger(newValue, 0);
-                updateSoundEngineButtonState();
-                break;
             default:
                 break;
         }
@@ -613,7 +595,6 @@ public class LockScreenWidgets extends LinearLayout implements TunerService.Tuna
         }
         updateContainerVisibility();
         updateMediaController();
-        updateSoundEngineButtonState();
     }
 
     private void updateMainWidgetResources(LaunchableFAB efab, boolean active) {
@@ -655,15 +636,6 @@ public class LockScreenWidgets extends LinearLayout implements TunerService.Tuna
                 if (efab != null) {
                     efab.setVisibility(View.GONE);
                 }
-                break;
-            case "sound_engine":
-                if (iv != null) {
-                    soundEngineButton = iv;
-                }
-                if (efab != null) {
-                    soundEngineButtonFab = efab;
-                }
-                setUpWidgetResources(iv, efab, v -> toggleSoundMode(), SE_INACTIVE, SE_LABEL_INACTIVE);
                 break;
             case "wifi":
                 if (iv != null) {
@@ -942,12 +914,6 @@ public class LockScreenWidgets extends LinearLayout implements TunerService.Tuna
         VibrationUtils.triggerVibration(mContext, 2);
     }
 
-    private void toggleSoundMode() {
-        mAudioMode = (mAudioMode + 1) % 5;
-        mSystemSettings.putInt("audio_effect_mode", mAudioMode);
-        updateSoundEngineButtonState();
-    }
-
     private void toggleRingerMode() {
         if (mAudioManager != null) {
             int mode = mAudioManager.getRingerMode();
@@ -1029,29 +995,6 @@ public class LockScreenWidgets extends LinearLayout implements TunerService.Tuna
             updateTileButtonState(ringerButton, ringerButtonFab, isVibrateActive, 
                 RINGER_ACTIVE, RINGER_INACTIVE, inactiveString, inactiveString);
         }
-    }
-    
-    private void updateSoundEngineButtonState() {
-        if (!isWidgetEnabled("sound_engine")) return;
-        if (soundEngineButton == null && soundEngineButtonFab == null) return;
-        String inactiveString = mContext.getResources().getString(SE_LABEL_INACTIVE);
-        String activeString =  inactiveString;
-        int SE_STATE = SE_INACTIVE;
-        if (mAudioMode == 1) {
-            SE_STATE = SE_MUSIC;
-            activeString = mContext.getResources().getString(SE_LABEL_MUSIC);
-        } else if (mAudioMode == 2) {
-            SE_STATE = SE_GAME;
-            activeString = mContext.getResources().getString(SE_LABEL_GAME);
-        } else if (mAudioMode == 3) {
-            SE_STATE = SE_THEATER;
-            activeString = mContext.getResources().getString(SE_LABEL_THEATER);
-        } else if (mAudioMode == 4) {
-            SE_STATE = SE_SMART;
-            activeString = mContext.getResources().getString(SE_LABEL_SMART);
-        }
-        updateTileButtonState(soundEngineButton, soundEngineButtonFab, mAudioMode != 0, 
-            SE_STATE, SE_INACTIVE, activeString, inactiveString);
     }
 
     private void updateMobileDataState(boolean enabled) {
