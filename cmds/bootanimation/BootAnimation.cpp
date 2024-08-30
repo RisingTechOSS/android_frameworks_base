@@ -227,11 +227,38 @@ BootAnimation::~BootAnimation() {
             elapsedRealtime());
 }
 
+bool isDirectoryAccessible(const char* path) {
+    struct stat info;
+    return (stat(path, &info) == 0 && (info.st_mode & S_IFDIR));
+}
+
+void waitForBootAnimDir() {
+    int64_t waitStartTime = elapsedRealtime();
+    const char* bootAnimPath = "/data/misc/bootanim/";
+    const int DIR_WAIT_SLEEP_MS = 100;
+    const int LOG_PER_RETRIES = 10;
+    int retry = 0;
+    while (!isDirectoryAccessible(bootAnimPath)) {
+        retry++;
+        if ((retry % LOG_PER_RETRIES) == 0) {
+            ALOGD("Waiting for %s to be accessible, waited for %" PRId64 " ms",
+                  bootAnimPath, elapsedRealtime() - waitStartTime);
+        }
+        usleep(DIR_WAIT_SLEEP_MS * 1000);
+    }
+
+    int64_t totalWaited = elapsedRealtime() - waitStartTime;
+    if (totalWaited > DIR_WAIT_SLEEP_MS) {
+        ALOGD("Waiting for %s took %" PRId64 " ms", bootAnimPath, totalWaited);
+    }
+}
+
 void BootAnimation::onFirstRef() {
     ATRACE_CALL();
     status_t err = mSession->linkToComposerDeath(this);
     SLOGE_IF(err, "linkToComposerDeath failed (%s) ", strerror(-err));
     if (err == NO_ERROR) {
+        waitForBootAnimDir();
         // Load the animation content -- this can be slow (eg 200ms)
         // called before waitForSurfaceFlinger() in main() to avoid wait
         ALOGD("%sAnimationPreloadTiming start time: %" PRId64 "ms",
