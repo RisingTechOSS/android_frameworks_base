@@ -608,6 +608,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler {
             ArrayList<TransitionInfo.Change> closingTasks = null;
             mOpeningSeparateHome = false;
             TransitionInfo.Change recentsOpening = null;
+            boolean foundRecentsOpening = false;
             boolean foundRecentsClosing = false;
             boolean hasChangingApp = false;
             final TransitionUtil.LeafTaskFilter leafTaskFilter =
@@ -705,6 +706,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler {
                 t.show(recentsOpening.getLeash());
                 t.setAlpha(recentsOpening.getLeash(), 1.f);
                 mState = STATE_NORMAL;
+                foundRecentsOpening = true;
             }
             boolean didMergeThings = false;
             if (closingTasks != null) {
@@ -832,6 +834,10 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler {
                 if (foundRecentsClosing || mRecentsTaskId < 0) {
                     mWillFinishToHome = false;
                     cancel(false /* toHome */, false /* withScreenshots */, "didn't merge");
+                }
+                if (foundRecentsOpening && info.getChanges().size() == 1 && mRecentsTaskId > 0) {
+                    mWillFinishToHome = true;
+                    cancel(true /* toHome */, false /* withScreenshots */, "didn't merge");
                 }
                 return;
             }
