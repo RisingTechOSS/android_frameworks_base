@@ -15,19 +15,12 @@
  */
 package com.android.systemui.clocks;
 
-import android.content.ContentResolver;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Handler;
-import android.os.UserHandle;
-import android.provider.Settings;
 import android.util.AttributeSet;
-import android.util.Log;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,18 +29,15 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextClock;
+import android.widget.Toast;
 
 import com.android.internal.util.crdroid.ThemeUtils;
-
 import com.android.settingslib.drawable.CircleFramedDrawable;
 
 import com.android.systemui.res.R;
 import com.android.systemui.Dependency;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.tuner.TunerService;
-
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 
 public class ClockStyle extends RelativeLayout implements TunerService.Tunable {
 
@@ -71,7 +61,8 @@ public class ClockStyle extends RelativeLayout implements TunerService.Tunable {
     private static final int DEFAULT_STYLE = 0; // Disabled
     private static final String CLOCK_STYLE_KEY = "clock_style";
     private static final String CLOCK_STYLE = "system:" + CLOCK_STYLE_KEY;
-    private static final String CUSTOM_AOD_IMAGE_URI_KEY = "custom_aod_image_uri";
+    private static final String CUSTOM_AOD_IMAGE_URI_KEY = "system:custom_aod_image_uri";
+    private static final String CUSTOM_AOD_IMAGE_ENABLED_KEY = "system:custom_aod_image_enabled";
 
     private final ThemeUtils mThemeUtils;
     private final Context mContext;
@@ -88,8 +79,12 @@ public class ClockStyle extends RelativeLayout implements TunerService.Tunable {
 
     private boolean mDozing;
 
-    private ImageView customImageView;
-    
+    private ImageView mAodImageView;
+    private String mImagePath;
+    private String mCurrImagePath;
+    private boolean mAodImageEnabled;
+    private boolean mImageLoaded = false;
+
     // Burn-in protection
     private static final int BURN_IN_PROTECTION_INTERVAL = 10000; // 10 seconds
     private static final int BURN_IN_PROTECTION_MAX_SHIFT = 4; // 4 pixels
@@ -103,9 +98,9 @@ public class ClockStyle extends RelativeLayout implements TunerService.Tunable {
             if (mDozing) {
                 mCurrentShiftX = (int) (Math.random() * BURN_IN_PROTECTION_MAX_SHIFT * 2) - BURN_IN_PROTECTION_MAX_SHIFT;
                 mCurrentShiftY = (int) (Math.random() * BURN_IN_PROTECTION_MAX_SHIFT * 2) - BURN_IN_PROTECTION_MAX_SHIFT;
-                if (customImageView != null) {
-                    customImageView.setTranslationX(mCurrentShiftX);
-                    customImageView.setTranslationY(mCurrentShiftY);
+                if (mAodImageView != null) {
+                    mAodImageView.setTranslationX(mCurrentShiftX);
+                    mAodImageView.setTranslationY(mCurrentShiftY);
                 }
                 if (currentClockView != null) {
                     currentClockView.setTranslationX(mCurrentShiftX);
@@ -128,7 +123,7 @@ public class ClockStyle extends RelativeLayout implements TunerService.Tunable {
                 return;
             }
             mDozing = dozing;
-            updateCustomImageView();
+            updateAodImageView();
             if (mDozing) {
                 startBurnInProtection();
             } else {
@@ -143,7 +138,7 @@ public class ClockStyle extends RelativeLayout implements TunerService.Tunable {
         mHandler = Dependency.get(Dependency.MAIN_HANDLER);
         mThemeUtils = new ThemeUtils(context);
         mTunerService = Dependency.get(TunerService.class);
-        mTunerService.addTunable(this, CLOCK_STYLE);
+        mTunerService.addTunable(this, CLOCK_STYLE, CUSTOM_AOD_IMAGE_URI_KEY, CUSTOM_AOD_IMAGE_ENABLED_KEY);
         mStatusBarStateController = Dependency.get(StatusBarStateController.class);
         mStatusBarStateController.addCallback(mStatusBarStateListener);
         mStatusBarStateListener.onDozingChanged(mStatusBarStateController.isDozing());
@@ -165,9 +160,9 @@ public class ClockStyle extends RelativeLayout implements TunerService.Tunable {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        customImageView = findViewById(R.id.custom_aod_image_view);
+        mAodImageView = findViewById(R.id.custom_aod_image_view);
         updateClockView();
-        updateCustomImageView();
+        loadAodImage();
     }
     
     @Override
@@ -176,6 +171,10 @@ public class ClockStyle extends RelativeLayout implements TunerService.Tunable {
         mStatusBarStateController.removeCallback(mStatusBarStateListener);
         mTunerService.removeTunable(this);
         mBurnInProtectionHandler.removeCallbacks(mBurnInProtectionRunnable);
+        if (mAodImageView != null) {
+            mAodImageView.animate().cancel();
+            mAodImageView.setImageDrawable(null);
+        }
     }
 
     private void startBurnInProtection() {
@@ -186,9 +185,9 @@ public class ClockStyle extends RelativeLayout implements TunerService.Tunable {
     private void stopBurnInProtection() {
         if (mClockStyle == 0) return;
         mBurnInProtectionHandler.removeCallbacks(mBurnInProtectionRunnable);
-        if (customImageView != null) {
-            customImageView.setTranslationX(0);
-            customImageView.setTranslationY(0);
+        if (mAodImageView != null) {
+            mAodImageView.setTranslationX(0);
+            mAodImageView.setTranslationY(0);
         }
     }
 
@@ -232,45 +231,76 @@ public class ClockStyle extends RelativeLayout implements TunerService.Tunable {
             }
         }
         updateClockOverlays();
+        onTimeChanged();
     }
 
-    private void updateCustomImageView() {
-        if (customImageView == null) return;
-        boolean customAodImageEnabled = Settings.System.getIntForUser(mContext.getContentResolver(), 
-            "custom_aod_image_enabled", 0, UserHandle.USER_CURRENT) != 0;
-        if (!customAodImageEnabled) {
-            if (customImageView.getVisibility() != View.GONE) {
-                customImageView.setVisibility(View.GONE);
-            }
+    @Override
+    public void onTuningChanged(String key, String newValue) {
+        switch (key) {
+            case CLOCK_STYLE:
+                mClockStyle = TunerService.parseInteger(newValue, DEFAULT_STYLE);
+                updateClockView();
+                break;
+            case CUSTOM_AOD_IMAGE_URI_KEY:
+                mImagePath = newValue;
+                if (!mImagePath.equals(mCurrImagePath)) {
+                    mCurrImagePath = mImagePath;
+                    mImageLoaded = false;
+                    loadAodImage();
+                }
+                break;
+            case CUSTOM_AOD_IMAGE_ENABLED_KEY:
+                mAodImageEnabled = TunerService.parseIntegerSwitch(newValue, false);
+                break;
+        }
+    }
+
+    private void updateAodImageView() {
+        if (mAodImageView == null || !mAodImageEnabled) {
+            if (mAodImageView != null) mAodImageView.setVisibility(View.GONE);
             return;
         }
-        String imagePath = Settings.System.getString(mContext.getContentResolver(), CUSTOM_AOD_IMAGE_URI_KEY);
-        if (imagePath != null && mDozing) {
-            try {
-                Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
-                int maxSize = (int) mContext.getResources().getDimension(R.dimen.custom_aod_image_size);
-                Drawable roundedImg = new CircleFramedDrawable(bitmap, maxSize);
-                customImageView.setImageDrawable(roundedImg);
-                bitmap.recycle();
-                customImageView.setVisibility(View.VISIBLE);
-                customImageView.setAlpha(0f);
-                customImageView.animate()
-                    .alpha(1f)
-                    .setDuration(500)
-                    .withEndAction(this::startBurnInProtection)
-                    .start();
-            } catch (Exception e) {
-                Log.e("Custom AOD image", "Error loading image", e);
-            }
+        loadAodImage();
+        if (mDozing) {
+            mAodImageView.setVisibility(View.VISIBLE);
+            mAodImageView.setScaleX(0f);
+            mAodImageView.setScaleY(0f);
+            mAodImageView.animate()
+                .scaleX(1f)
+                .scaleY(1f)
+                .setDuration(500)
+                .withEndAction(this::startBurnInProtection)
+                .start();
         } else {
-            customImageView.animate()
-                .alpha(0f)
+            mAodImageView.animate()
+                .scaleX(0f)
+                .scaleY(0f)
                 .setDuration(500)
                 .withEndAction(() -> {
-                    customImageView.setVisibility(View.GONE);
+                    mAodImageView.setVisibility(View.GONE);
                     stopBurnInProtection();
                 })
                 .start();
+        }
+    }
+
+    private void loadAodImage() {
+        if (mAodImageView == null || mCurrImagePath == null || mCurrImagePath.isEmpty() || mImageLoaded) return;
+        try {
+            Bitmap bitmap = BitmapFactory.decodeFile(mCurrImagePath);
+            if (bitmap != null) {
+                Drawable roundedImg = new CircleFramedDrawable(bitmap, 
+                    (int) mContext.getResources().getDimension(R.dimen.custom_aod_image_size));
+                mAodImageView.setImageDrawable(roundedImg);
+                bitmap.recycle();
+                mImageLoaded = true;
+            } else {
+                mImageLoaded = false;
+                mAodImageView.setVisibility(View.GONE);
+            }
+        } catch (Exception e) {
+            mImageLoaded = false;
+            mAodImageView.setVisibility(View.GONE);
         }
     }
 
@@ -281,13 +311,5 @@ public class ClockStyle extends RelativeLayout implements TunerService.Tunable {
             }
         }
         return false;
-    }
-
-    @Override
-    public void onTuningChanged(String key, String newValue) {
-        if (CLOCK_STYLE.equals(key)) {
-            mClockStyle = TunerService.parseInteger(newValue, 0);
-            updateClockView();
-        }
     }
 }
