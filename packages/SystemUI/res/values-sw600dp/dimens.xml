@@ -16,6 +16,9 @@
 */
 -->
 <resources>
+    <dimen name="volume_row_slider_height">200dp</dimen>
+    <dimen name="volume_row_slider_height_aosp">200dp</dimen>
+
     <!-- QS Widgets -->
     <dimen name="qs_controls_padding_top">298dp</dimen>
 
