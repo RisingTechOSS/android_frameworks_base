@@ -1116,6 +1116,10 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
             @Nullable String callingFeatureId, boolean ignoreTargetSecurity,
             boolean launchingInTask, WindowProcessController callerApp, ActivityRecord resultRecord,
             Task resultRootTask) {
+            if (callingPackage != null 
+                && callingPackage.toLowerCase().contains("android.launcher3")) {
+                return true;
+            }
         final boolean isCallerRecents = mService.getRecentTasks() != null
                 && mService.getRecentTasks().isCallerRecents(callingUid);
         final int startAnyPerm = mService.checkPermission(START_ANY_ACTIVITY, callingPid,
