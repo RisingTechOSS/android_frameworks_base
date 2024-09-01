@@ -29,53 +29,59 @@
     android:clipChildren="false"
     android:clipToPadding="false">
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <TextView
-            android:id="@+id/build"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:paddingStart="4dp"
-            android:paddingEnd="4dp"
-            android:layout_gravity="start|center_vertical"
-            android:clickable="true"
-            android:ellipsize="marquee"
-            android:focusable="true"
-            android:gravity="center_vertical"
-            android:textDirection="locale"
-            android:textAlignment="viewStart"
-            android:singleLine="true"
-            android:textAppearance="@style/TextAppearance.QS.Status.DataUsage"
-            android:drawableStart="@drawable/ic_data_usage_24px"
-            android:drawablePadding="2dp"
-            android:textColor="?android:attr/textColorSecondary"
-            android:visibility="gone" />
+            android:layout_gravity="center_vertical">
 
-        <com.android.systemui.qs.PageIndicator
-            android:id="@+id/footer_page_indicator"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:focusable="true"
-            android:importantForAccessibility="no"
-            android:tint="?attr/shadeActive"
-            android:visibility="gone" />
+            <TextView
+                android:id="@+id/build"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:ellipsize="marquee"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:textDirection="locale"
+                android:textAlignment="viewStart"
+                android:singleLine="true"
+                android:textAppearance="@style/TextAppearance.QS.Status.DataUsage"
+                android:drawableStart="@drawable/ic_data_usage_24px"
+                android:drawablePadding="2dp"
+                android:textColor="?android:attr/textColorSecondary"
+                android:visibility="invisible" />
 
-        <com.android.systemui.statusbar.AlphaOptimizedImageView
-            android:id="@android:id/edit"
-            android:layout_width="@dimen/qs_footer_action_button_size"
-            android:layout_height="@dimen/qs_footer_action_button_size"
-            android:layout_gravity="end|center_vertical"
-            android:background="@drawable/qs_footer_edit_circle"
-            android:clickable="true"
-            android:contentDescription="@string/accessibility_quick_settings_edit"
-            android:focusable="true"
-            android:padding="@dimen/qs_footer_icon_padding"
-            android:src="@*android:drawable/ic_mode_edit"
-            android:tint="?attr/onSurfaceVariant" />
+            <com.android.systemui.qs.PageIndicator
+                android:id="@+id/footer_page_indicator"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_vertical"
+                android:focusable="true"
+                android:importantForAccessibility="no"
+                android:tint="?attr/shadeActive"
+                android:visibility="gone" />
 
-    </FrameLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
+                <com.android.systemui.statusbar.AlphaOptimizedImageView
+                    android:id="@android:id/edit"
+                    android:layout_width="@dimen/qs_footer_action_button_size"
+                    android:layout_height="@dimen/qs_footer_action_button_size"
+                    android:layout_gravity="center_vertical|end"
+                    android:background="@drawable/qs_footer_edit_circle"
+                    android:clickable="true"
+                    android:contentDescription="@string/accessibility_quick_settings_edit"
+                    android:focusable="true"
+                    android:padding="@dimen/qs_footer_icon_padding"
+                    android:src="@*android:drawable/ic_mode_edit"
+                    android:tint="?attr/onSurfaceVariant" />
+            </FrameLayout>
+
+        </LinearLayout>
 
 </com.android.systemui.qs.QSFooterView>
