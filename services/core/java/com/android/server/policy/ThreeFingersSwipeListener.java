@@ -32,7 +32,8 @@ public class ThreeFingersSwipeListener implements PointerEventListener {
     private static final int THREE_GESTURE_STATE_DETECTED_FALSE = 2;
     private static final int THREE_GESTURE_STATE_DETECTED_TRUE = 3;
     private static final int THREE_GESTURE_STATE_NO_DETECT = 4;
-    private static final long LONG_PRESS_TIMEOUT = 800;
+    private static final int THREE_GESTURE_STATE_LONG_PRESS = 5;
+    private static final long LONG_PRESS_TIMEOUT = 400;
     private static final float MAX_MOVE_THRESHOLD = 50.0f;
     private float[] mInitMotionY;
     private float[] mInitMotionX;
@@ -98,17 +99,17 @@ public class ThreeFingersSwipeListener implements PointerEventListener {
                         i++;
                     }
                 }
+                if (!isLongPressTriggered && event.getEventTime() - mDownTime 
+                        >= LONG_PRESS_TIMEOUT && Math.abs(distanceY) 
+                        < MAX_MOVE_THRESHOLD && Math.abs(distanceX) < MAX_MOVE_THRESHOLD) {
+                    changeThreeGestureState(THREE_GESTURE_STATE_LONG_PRESS);
+                    mCallbacks.onLongPressThreeFingers();
+                    return;
+                }
                 if (Math.abs(distanceY) >= ((float) mThreeGestureThreshold) 
                         || Math.abs(distanceX) >= ((float) mThreeGestureThreshold)) {
                     changeThreeGestureState(THREE_GESTURE_STATE_DETECTED_TRUE);
                     mCallbacks.onSwipeThreeFingers();
-                    return;
-                }
-                if (!isLongPressTriggered && event.getEventTime() - mDownTime 
-                        >= LONG_PRESS_TIMEOUT && Math.abs(distanceY) 
-                        < MAX_MOVE_THRESHOLD && Math.abs(distanceX) < MAX_MOVE_THRESHOLD) {
-                    changeThreeGestureState(THREE_GESTURE_STATE_DETECTED_TRUE);
-                    mCallbacks.onLongPressThreeFingers();
                     return;
                 }
             }
@@ -118,8 +119,9 @@ public class ThreeFingersSwipeListener implements PointerEventListener {
     private void changeThreeGestureState(int state) {
         if (mThreeGestureState != state) {
             mThreeGestureState = state;
-            boolean shouldEnableProp = mThreeGestureState == THREE_GESTURE_STATE_DETECTED_TRUE ||
-                mThreeGestureState == THREE_GESTURE_STATE_DETECTING;
+            boolean shouldEnableProp = mThreeGestureState == THREE_GESTURE_STATE_DETECTED_TRUE
+                || mThreeGestureState == THREE_GESTURE_STATE_LONG_PRESS
+                || mThreeGestureState == THREE_GESTURE_STATE_DETECTING;
             try {
                 SystemProperties.set("persist.sys.android.screenshot", shouldEnableProp ? "true" : "false");
             } catch(Exception e) {}
