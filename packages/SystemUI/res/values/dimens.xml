@@ -16,6 +16,9 @@
 */
 -->
 <resources>
+    <!-- QS Header -->
+    <dimen name="qs_header_side_offsets">-50dp</dimen>
+
     <!-- Recommended minimum clickable element dimension -->
     <dimen name="min_clickable_item_size">48dp</dimen>
 

@@ -39,8 +39,8 @@
         android:id="@+id/layout_header"
         android:layout_width="match_parent"
         android:layout_height="@dimen/qs_header_image_height"
-        android:layout_marginLeft="-50dp"
-        android:layout_marginRight="-50dp"
+        android:layout_marginLeft="@dimen/qs_header_side_offsets"
+        android:layout_marginRight="@dimen/qs_header_side_offsets"  
         android:background="#00000000"
         sysui:fel_edge="bottom"
         sysui:fel_size_bottom="@dimen/qs_header_image_fade_size" >
