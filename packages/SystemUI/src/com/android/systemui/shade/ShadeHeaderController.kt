@@ -151,6 +151,25 @@ constructor(
     private var qsBatteryStyle = Settings.System.getIntForUser(
              context.contentResolver, Settings.System.QS_BATTERY_STYLE, -1, UserHandle.USER_CURRENT)
 
+    private val tunable = object : TunerService.Tunable {
+        override fun onTuningChanged(key: String?, value: String?) {
+            when (key) {
+                STATUS_BAR_BATTERY_STYLE -> {
+                    batteryStyle = TunerService.parseInteger(value, 0)
+                    updateQsBatteryStyle()
+                }
+                QS_SHOW_BATTERY_PERCENT -> {
+                    qsBatteryPercent = TunerService.parseInteger(value, 2)
+                    updateQsBatteryStyle()
+                }
+                QS_BATTERY_STYLE -> {
+                    qsBatteryStyle = TunerService.parseInteger(value, -1)
+                    updateQsBatteryStyle()
+                }
+            }
+        }
+    }
+
     private lateinit var iconManager: StatusBarIconController.TintedIconManager
     private lateinit var carrierIconSlots: List<String>
     private lateinit var mShadeCarrierGroupController: ShadeCarrierGroupController
@@ -359,27 +378,11 @@ constructor(
             shadeCarrierGroupControllerBuilder.setShadeCarrierGroup(mShadeCarrierGroup).build()
 
         privacyIconsController.onParentVisible()
-
-        tunerService.addTunable(object : TunerService.Tunable {
-            override fun onTuningChanged(key: String?, value: String?) {
-                qsBatteryStyle = TunerService.parseInteger(value, -1)
-                updateQsBatteryStyle()
-            }
-        }, QS_BATTERY_STYLE)
-
-        tunerService.addTunable(object : TunerService.Tunable {
-            override fun onTuningChanged(key: String?, value: String?) {
-                batteryStyle = TunerService.parseInteger(value, 0)
-                updateQsBatteryStyle()
-            }
-        }, STATUS_BAR_BATTERY_STYLE)
-
-        tunerService.addTunable(object : TunerService.Tunable {
-            override fun onTuningChanged(key: String?, value: String?) {
-                qsBatteryPercent = TunerService.parseInteger(value, 2)
-                updateQsBatteryStyle()
-            }
-        }, QS_SHOW_BATTERY_PERCENT)
+        
+        tunerService.addTunable(tunable, 
+            QS_BATTERY_STYLE, 
+            STATUS_BAR_BATTERY_STYLE, 
+            QS_SHOW_BATTERY_PERCENT)
 
         updateQsBatteryStyle()
     }
@@ -426,6 +429,7 @@ constructor(
         statusBarIconController.removeIconGroup(iconManager)
         nextAlarmController.removeCallback(nextAlarmCallback)
         systemIconsHoverContainer.setOnHoverListener(null)
+        tunerService.removeTunable(tunable)
     }
 
     fun disable(state1: Int, state2: Int, animate: Boolean) {
