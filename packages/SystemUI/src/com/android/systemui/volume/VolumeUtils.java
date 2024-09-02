@@ -52,7 +52,7 @@ public class VolumeUtils implements TunerService.Tunable {
     private AudioManager mAudioManager;
     private Context mContext;
     private Handler mHandler;
-    private TunerService mTunerService;
+    private final TunerService mTunerService;
     
     private int customVolumeStyles = 0;
     private ThemeUtils mThemeUtils;
@@ -78,8 +78,10 @@ public class VolumeUtils implements TunerService.Tunable {
         mMediaPlayer = new MediaPlayer();
         mMediaPlayer.setOnCompletionListener(mp -> stopPlayback());
         mThemeUtils = new ThemeUtils(mContext);
-        Dependency.get(TunerService.class).addTunable(this,
-                CUSTOM_VOLUME_STYLES, VOLUME_SOUND_HAPTICS);
+        mTunerService = Dependency.get(TunerService.class);
+        mTunerService.addTunable(this,
+                CUSTOM_VOLUME_STYLES, 
+                VOLUME_SOUND_HAPTICS);
     }
 
     @Override
@@ -211,5 +213,9 @@ public class VolumeUtils implements TunerService.Tunable {
             mMediaPlayer.stop();
             mMediaPlayer.reset();
         }
+    }
+    
+    public void onDestroy() {
+        mTunerService.removeTunable(this);
     }
 }
