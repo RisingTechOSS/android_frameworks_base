@@ -28,6 +28,7 @@ public class AudioEffectsUtils {
 
     private BassBoost mBassBoost;
     private LoudnessEnhancer mLoudnessEnhancer;
+    private Virtualizer mVirtualizer;
 
     public AudioEffectsUtils(Context context) {
         mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
@@ -37,8 +38,10 @@ public class AudioEffectsUtils {
         try {
             mBassBoost = new BassBoost(EFFECT_PRIORITY, 0);
             mLoudnessEnhancer = new LoudnessEnhancer(0);
+            mVirtualizer = new Virtualizer(EFFECT_PRIORITY, 0);
             mBassBoost.setEnabled(true);
             mLoudnessEnhancer.setEnabled(true);
+            mVirtualizer.setEnabled(true);
         } catch (Exception e) {
             Log.e("AudioEffectsUtils", "Error initializing audio effects", e);
         }
@@ -47,12 +50,14 @@ public class AudioEffectsUtils {
     public void releaseEffects() {
         releaseEffect(mBassBoost);
         releaseEffect(mLoudnessEnhancer);
+        releaseEffect(mVirtualizer);
     }
 
-    public void updateEffects(int loudnessGain, int bassBoostStrength) {
+    public void updateEffects(int loudnessGain, int bassBoostStrength, int surroundLvl) {
         try {
             setBassBoost(bassBoostStrength);
             setLoudnessEnhancer(loudnessGain);
+            setVirtualizerStrength(surroundLvl);
         } catch (Exception e) {
             Log.e("AudioEffectsUtils", "Error updating audio effects", e);
         }
@@ -66,6 +71,11 @@ public class AudioEffectsUtils {
     private void setLoudnessEnhancer(int gain) {
         if (mLoudnessEnhancer == null) return;
         mLoudnessEnhancer.setTargetGain(gain);
+    }
+    
+    private void setVirtualizerStrength(int strength) {
+        if (mVirtualizer == null) return;
+        mVirtualizer.setStrength((short) (strength));
     }
 
     private void releaseEffect(AudioEffect effect) {

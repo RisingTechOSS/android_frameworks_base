@@ -36,6 +36,7 @@ public final class SoundEngineService extends SystemService {
 
     private static final String SOUND_ENGINE_LOUDNESS_GAIN = "sound_engine_loudness_gain";
     private static final String SOUND_ENGINE_BASS_BOOST = "sound_engine_bass_boost";
+    private static final String SOUND_ENGINE_SURROUND = "sound_engine_surround";
     private static final String SOUND_ENGINE_ENABLED = "sound_engine_enabled";
     private static final int USER_ALL = UserHandle.USER_ALL;
 
@@ -79,6 +80,7 @@ public final class SoundEngineService extends SystemService {
     private void updateEffects() {
         int gain = getSetting(SOUND_ENGINE_LOUDNESS_GAIN) * 100;
         int bassBoost = getSetting(SOUND_ENGINE_BASS_BOOST) * 10;
+        int surround = getSetting(SOUND_ENGINE_SURROUND) * 10;
         if (getSetting(SOUND_ENGINE_ENABLED) != 1) {
             disableAllEffects();
             return;
@@ -87,7 +89,7 @@ public final class SoundEngineService extends SystemService {
             mAudioEffectsUtils.initializeEffects();
             mIsEqRegistered = true;
         }
-        mAudioEffectsUtils.updateEffects(gain, bassBoost);
+        mAudioEffectsUtils.updateEffects(gain, bassBoost, surround);
     }
 
     private void disableAllEffects() {
@@ -102,11 +104,14 @@ public final class SoundEngineService extends SystemService {
         }
 
         void observe() {
-            getContentResolver().registerContentObserver(
+            ContentResolver resolver = getContentResolver();
+            resolver.registerContentObserver(
                     Settings.System.getUriFor(SOUND_ENGINE_LOUDNESS_GAIN), false, this, USER_ALL);
-            getContentResolver().registerContentObserver(
+            resolver.registerContentObserver(
                     Settings.System.getUriFor(SOUND_ENGINE_BASS_BOOST), false, this, USER_ALL);
-            getContentResolver().registerContentObserver(
+            resolver.registerContentObserver(
+                    Settings.System.getUriFor(SOUND_ENGINE_SURROUND), false, this, USER_ALL);
+            resolver.registerContentObserver(
                     Settings.System.getUriFor(SOUND_ENGINE_ENABLED), false, this, USER_ALL);
         }
 
