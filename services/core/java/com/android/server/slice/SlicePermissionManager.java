@@ -360,8 +360,12 @@ public class SlicePermissionManager implements DirtyTracker {
     private void handleRemove(PkgUser pkgUser) {
         getFile(SliceClientPermissions.getFileName(pkgUser)).delete();
         getFile(SliceProviderPermissions.getFileName(pkgUser)).delete();
-        mDirty.remove(mCachedClients.remove(pkgUser));
-        mDirty.remove(mCachedProviders.remove(pkgUser));
+        synchronized (mCachedClients) {
+            mDirty.remove(mCachedClients.remove(pkgUser));
+        }
+        synchronized (mCachedProviders) {
+            mDirty.remove(mCachedProviders.remove(pkgUser));
+        }
     }
 
     private final class H extends Handler {
