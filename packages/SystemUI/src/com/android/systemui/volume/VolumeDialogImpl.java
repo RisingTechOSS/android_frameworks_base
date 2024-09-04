@@ -384,6 +384,12 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
     private final VolumeUtils mVolumeUtils;
     private boolean mShowMediaButton = true;
     private boolean mShowVolumePercent = true;
+    
+    private ContentObserver mVolumePanelOnLeftObserver;
+    private ContentObserver mVolumeTimeoutObserver;
+    private ContentObserver mVolumeMediaButtonObserver;
+    private ContentObserver mVolumePercentObserver;
+    private ContentObserver mVolumeHapticsIntensityObserver;
 
     public VolumeDialogImpl(
             Context context,
@@ -450,7 +456,7 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
         }
 
         if (!mShowActiveStreamOnly) {
-            ContentObserver volumePanelOnLeftObserver = new ContentObserver(null) {
+            mVolumePanelOnLeftObserver = new ContentObserver(null) {
                 @Override
                 public void onChange(boolean selfChange) {
                     final boolean volumePanelOnLeft = LineageSettings.Secure.getIntForUser(
@@ -465,11 +471,11 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
             };
             mContext.getContentResolver().registerContentObserver(
                     LineageSettings.Secure.getUriFor(LineageSettings.Secure.VOLUME_PANEL_ON_LEFT),
-                    false, volumePanelOnLeftObserver);
-            volumePanelOnLeftObserver.onChange(true);
+                    false, mVolumePanelOnLeftObserver);
+            mVolumePanelOnLeftObserver.onChange(true);
         }
 
-        ContentObserver volumeTimeoutObserver = new ContentObserver(null) {
+        mVolumeTimeoutObserver = new ContentObserver(null) {
             @Override
             public void onChange(boolean selfChange) {
                 mDialogTimeoutMillis = mSecureSettings.get().getIntForUser(
@@ -479,9 +485,10 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
         };
         mContext.getContentResolver().registerContentObserver(
                 Settings.Secure.getUriFor(Settings.Secure.VOLUME_DIALOG_DISMISS_TIMEOUT),
-                false, volumeTimeoutObserver);
-        volumeTimeoutObserver.onChange(true);
-        ContentObserver volumeMediaButtonObserver = new ContentObserver(null) {
+                false, mVolumeTimeoutObserver);
+        mVolumeTimeoutObserver.onChange(true);
+
+        mVolumeMediaButtonObserver = new ContentObserver(null) {
             @Override
             public void onChange(boolean selfChange) {
                 mShowMediaButton = mSecureSettings.get().getInt(
@@ -490,9 +497,10 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
         };
         mContext.getContentResolver().registerContentObserver(
                 Settings.Secure.getUriFor("volume_show_media_button"),
-                false, volumeMediaButtonObserver);
-        volumeMediaButtonObserver.onChange(true);
-        ContentObserver volumePercentObserver = new ContentObserver(null) {
+                false, mVolumeMediaButtonObserver);
+        mVolumeMediaButtonObserver.onChange(true);
+
+        mVolumePercentObserver = new ContentObserver(null) {
             @Override
             public void onChange(boolean selfChange) {
                 mShowVolumePercent = mSecureSettings.get().getInt(
@@ -501,10 +509,10 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
         };
         mContext.getContentResolver().registerContentObserver(
                 Settings.Secure.getUriFor("volume_show_volume_percent"),
-                false, volumePercentObserver);
-        volumePercentObserver.onChange(true);
+                false, mVolumePercentObserver);
+        mVolumePercentObserver.onChange(true);
 
-        ContentObserver volumeHapticsIntensityObserver = new ContentObserver(null) {
+        mVolumeHapticsIntensityObserver = new ContentObserver(null) {
             @Override
             public void onChange(boolean selfChange) {
                 mVolHapticsIntensity = Settings.System.getInt(mContext.getContentResolver(),
@@ -513,8 +521,8 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
         };
         mContext.getContentResolver().registerContentObserver(
                 Settings.System.getUriFor(Settings.System.VOLUME_SLIDER_HAPTICS_INTENSITY),
-                false, volumeHapticsIntensityObserver);
-        volumeHapticsIntensityObserver.onChange(true);
+                false, mVolumeHapticsIntensityObserver);
+        mVolumeHapticsIntensityObserver.onChange(true);
 
         initDimens();
 
@@ -582,6 +590,11 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
             mDevicePostureController.removeCallback(mDevicePostureControllerCallback);
         }
         mVolumeUtils.onDestroy();
+        mContext.getContentResolver().unregisterContentObserver(mVolumePanelOnLeftObserver);
+        mContext.getContentResolver().unregisterContentObserver(mVolumeTimeoutObserver);
+        mContext.getContentResolver().unregisterContentObserver(mVolumePercentObserver);
+        mContext.getContentResolver().unregisterContentObserver(mVolumeMediaButtonObserver);
+        mContext.getContentResolver().unregisterContentObserver(mVolumeHapticsIntensityObserver);
     }
 
     @Override
