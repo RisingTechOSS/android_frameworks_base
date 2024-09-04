@@ -232,7 +232,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
     private static final String TAG = "InsetsController";
     private static final int ANIMATION_DURATION_MOVE_IN_MS = 275;
     private static final int ANIMATION_DURATION_MOVE_OUT_MS = 340;
-    private static final int ANIMATION_DURATION_FADE_IN_MS = 500;
+    private static final int ANIMATION_DURATION_FADE_IN_MS = 800;
     private static final int ANIMATION_DURATION_FADE_OUT_MS = 1500;
 
     /** Visible for WindowManagerWrapper */
