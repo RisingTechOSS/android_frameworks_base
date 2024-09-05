@@ -514,7 +514,6 @@ public class QSPanel extends LinearLayout implements Tunable {
         mOnConfigurationChangedListeners.forEach(
                 listener -> listener.onConfigurationChange(newConfig));
         needsDynamicRowsAndColumns();
-        updateControlsLayoutVisibility();
     }
     
     private void updateControlsLayoutVisibility() {
@@ -523,6 +522,7 @@ public class QSPanel extends LinearLayout implements Tunable {
                 == Configuration.ORIENTATION_LANDSCAPE;
             if (mQsControlsLayoutShade != null) {
                 mQsControlsLayoutShade.setVisibility(TileUtils.isQsWidgetsEnabled(mContext) && isLandscape ? View.VISIBLE : View.GONE);
+                ((QsControlsView) mQsControlsLayoutShade).updateResources();
             }
         }
     }
@@ -567,6 +567,7 @@ public class QSPanel extends LinearLayout implements Tunable {
                 mTileLayout.updateSettings();
             }
         }
+        updateControlsLayoutVisibility();
     }
 
     private void switchAllContentToParent(ViewGroup parent, QSTileLayout newLayout) {
