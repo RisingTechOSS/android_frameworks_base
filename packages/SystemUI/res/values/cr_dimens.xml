@@ -29,7 +29,7 @@
     <dimen name="custom_aod_image_size">180dp</dimen>
 
     <!-- QS Widgets -->  
-    <dimen name="qsc_media_controls_margin_top">41dp</dimen>
+    <dimen name="qsc_media_controls_margin_top">32dp</dimen>
     <dimen name="qs_controls_padding_top">248dp</dimen>
     <dimen name="qs_controls_top_margin">16dp</dimen>
     <dimen name="qs_controls_media_tile_height">134dp</dimen>
