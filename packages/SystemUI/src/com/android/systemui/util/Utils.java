@@ -27,6 +27,8 @@ import com.android.systemui.res.R;
 import com.android.systemui.settings.DisplayTracker;
 import com.android.systemui.shared.system.QuickStepContract;
 
+import com.android.systemui.qs.TileUtils;
+
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -113,6 +115,9 @@ public class Utils {
      * On by default, but can be disabled by setting to 0
      */
     public static boolean useMediaResumption(Context context) {
+        if (TileUtils.isQsWidgetsEnabled(context)) {
+            return false;
+        }
         int flag = Settings.Secure.getInt(context.getContentResolver(),
                 Settings.Secure.MEDIA_CONTROLS_RESUME, 1);
         return useQsMediaPlayer(context) && flag > 0;
