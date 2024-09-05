@@ -293,7 +293,7 @@ public class QsControlsView extends FrameLayout {
             mController.unregisterCallback(mMediaCallback);
             mController = null;
         }
-        cleanupAlbumArt();
+        clearMediaMetadata();
     }
 
     private void setClickListeners() {
@@ -327,10 +327,19 @@ public class QsControlsView extends FrameLayout {
         isClearingMetadata = true;
         mMediaMetadata = null;
         cleanupAlbumArt();
-        isClearingMetadata = false;
         if (mMediaPlayBtn != null) {
             mMediaPlayBtn.setImageResource(R.drawable.ic_media_play);
         }
+        if (mPlayerIcon != null) {
+            mPlayerIcon.setImageIcon(null);
+        }
+        if (mMediaTitle != null) {
+            mMediaTitle.setText(mContext.getString(R.string.no_media_playing));
+        }
+        if (mMediaArtist != null) { 
+            mMediaArtist.setText("");
+        }
+        isClearingMetadata = false;
     }
     
     private void updateMediaController() {
@@ -413,17 +422,6 @@ public class QsControlsView extends FrameLayout {
     }
 
     private void updateMediaViews() {
-        if (!isMediaPlaying()) {
-            clearMediaMetadata();
-        }
-        if (mMediaPlayBtn != null) {
-            mMediaPlayBtn.setImageResource(isMediaPlaying() ? R.drawable.ic_media_pause : R.drawable.ic_media_play);
-        }
-        CharSequence title = mMediaMetadata == null ? null : mMediaMetadata.getText(MediaMetadata.METADATA_KEY_TITLE);
-        CharSequence artist = mMediaMetadata == null ? null : mMediaMetadata.getText(MediaMetadata.METADATA_KEY_ARTIST);
-        mMediaTitle.setText(title != null ? title : mContext.getString(R.string.no_media_playing));
-        mMediaArtist.setText(artist != null ? artist : "");
-        mPlayerIcon.setImageIcon(mNotifManager == null ? null : mNotifManager.getMediaIcon());
         final int mediaItemColor = getMediaItemColor();
         for (View view : mMediaPlayerViews) {
             if (view instanceof TextView) {
@@ -432,6 +430,18 @@ public class QsControlsView extends FrameLayout {
                 ((ImageView) view).setImageTintList(ColorStateList.valueOf(mediaItemColor));
             }
         }
+        if (!isMediaPlaying()) {
+            clearMediaMetadata();
+            return;
+        }
+        if (mMediaPlayBtn != null) {
+            mMediaPlayBtn.setImageResource(isMediaPlaying() ? R.drawable.ic_media_pause : R.drawable.ic_media_play);
+        }
+        CharSequence title = mMediaMetadata == null ? null : mMediaMetadata.getText(MediaMetadata.METADATA_KEY_TITLE);
+        CharSequence artist = mMediaMetadata == null ? null : mMediaMetadata.getText(MediaMetadata.METADATA_KEY_ARTIST);
+        mMediaTitle.setText(title != null ? title : mContext.getString(R.string.no_media_playing));
+        mMediaArtist.setText(artist != null ? artist : "");
+        mPlayerIcon.setImageIcon(mNotifManager == null && mNotifManager.getMediaIcon() != null ? null : mNotifManager.getMediaIcon());
     }
 
     private class ProcessArtworkTask extends AsyncTask<Bitmap, Void, Bitmap> {
