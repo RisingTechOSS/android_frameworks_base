@@ -210,12 +210,26 @@ public class VolumeUtils implements TunerService.Tunable {
             mRingtone.stop();
         }
         if (mMediaPlayer != null) {
-            mMediaPlayer.stop();
+            if (mMediaPlayer.isPlaying()) {
+                mMediaPlayer.stop();
+            }
             mMediaPlayer.reset();
         }
     }
-    
+
     public void onDestroy() {
         mTunerService.removeTunable(this);
+        if (mMediaPlayer != null) {
+            if (mMediaPlayer.isPlaying()) {
+                mMediaPlayer.stop();
+            }
+            mMediaPlayer.release();
+            mMediaPlayer = null;
+        }
+        if (mRingtone != null) {
+            mRingtone.stop();
+            mRingtone = null;
+        }
+        mHandler.removeCallbacksAndMessages(null);
     }
 }
