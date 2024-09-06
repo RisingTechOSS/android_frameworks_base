@@ -54,7 +54,7 @@ constructor(
     shadeInteractor: ShadeInteractor,
 ) {
 
-    private val maxIcons = resources.getInteger(R.integer.max_notif_static_icons)
+    private val maxIcons = resources.getInteger(R.integer.max_notifed_allowed_icons)
 
     /** Are changes to the icon container animated? */
     val animationsEnabled: Flow<Boolean> =
