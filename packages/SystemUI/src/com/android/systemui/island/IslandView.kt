@@ -74,7 +74,7 @@ import com.android.settingslib.drawable.CircleFramedDrawable
 import kotlin.math.abs
 import kotlin.text.Regex
 import java.util.concurrent.Executors
-import java.util.concurrent.Executor
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.RejectedExecutionException
 import java.util.Locale
 
@@ -107,7 +107,7 @@ class IslandView : ExtendedFloatingActionButton {
     private var telecomManager: TelecomManager? = null
     private var vibrator: Vibrator? = null
 
-    private val bgExecutor: Executor = Executors.newSingleThreadExecutor()
+    private val bgExecutor: ExecutorService = Executors.newSingleThreadExecutor()
 
     private val taskStackChangeListener = object : TaskStackChangeListener {
         override fun onTaskStackChanged() {
@@ -140,7 +140,9 @@ class IslandView : ExtendedFloatingActionButton {
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
+        cleanUpResources()
         TaskStackChangeListeners.getInstance().unregisterTaskStackListener(taskStackChangeListener)
+        bgExecutor.shutdownNow()
     }
     
     private fun updateForegroundTaskSync() {
