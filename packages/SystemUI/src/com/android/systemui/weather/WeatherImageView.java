@@ -17,9 +17,13 @@ package com.android.systemui.weather;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
+import android.view.View.MeasureSpec;
 import android.widget.ImageView;
 
 public class WeatherImageView extends ImageView {
+    
+    private static final int MAX_SIZE_PX = 64;
 
     private WeatherViewController mWeatherViewController;
 
@@ -46,5 +50,12 @@ public class WeatherImageView extends ImageView {
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         mWeatherViewController.disableUpdates();
+    }
+    
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        int width = Math.min(MAX_SIZE_PX, MeasureSpec.getSize(widthMeasureSpec));
+        int height = Math.min(MAX_SIZE_PX, MeasureSpec.getSize(heightMeasureSpec));
+        setMeasuredDimension(width, height);
     }
 }
