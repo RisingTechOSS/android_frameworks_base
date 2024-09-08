@@ -493,6 +493,7 @@ public class LockScreenWidgets extends LinearLayout implements TunerService.Tuna
         }
         mContext.unregisterReceiver(mRingerModeReceiver);
         mTunerService.removeTunable(this);
+        mHandler.removeCallbacksAndMessages(null);
     }
 
     @Override
