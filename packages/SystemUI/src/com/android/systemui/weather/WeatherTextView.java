@@ -56,5 +56,6 @@ public class WeatherTextView extends TextView {
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         mWeatherViewController.disableUpdates();
+        mWeatherViewController.removeObserver();
     }
 }

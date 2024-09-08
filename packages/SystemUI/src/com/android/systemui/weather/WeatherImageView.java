@@ -50,6 +50,7 @@ public class WeatherImageView extends ImageView {
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         mWeatherViewController.disableUpdates();
+        mWeatherViewController.removeObserver();
     }
     
     @Override

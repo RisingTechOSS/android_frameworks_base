@@ -104,6 +104,12 @@ public class WeatherViewController implements OmniJawsClient.OmniJawsObserver {
             mWeatherClient.removeObserver(this);
         }
     }
+    
+    public void removeObserver() {
+        if (mSettingsObserver != null) {
+            mSettingsObserver.unobserve();
+        }
+    }
 
     @Override
     public void weatherError(int errorReason) {
