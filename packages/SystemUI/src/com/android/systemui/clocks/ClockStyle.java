@@ -72,7 +72,6 @@ public class ClockStyle extends RelativeLayout implements TunerService.Tunable {
     private int mClockStyle;    
 
     private static final long UPDATE_INTERVAL_MILLIS = 15 * 1000;
-    private final Handler mHandler;
     private long lastUpdateTimeMillis = 0;
 
     private final StatusBarStateController mStatusBarStateController;
@@ -135,7 +134,6 @@ public class ClockStyle extends RelativeLayout implements TunerService.Tunable {
     public ClockStyle(Context context, AttributeSet attrs) {
         super(context, attrs);
         mContext = context;
-        mHandler = Dependency.get(Dependency.MAIN_HANDLER);
         mThemeUtils = new ThemeUtils(context);
         mTunerService = Dependency.get(TunerService.class);
         mTunerService.addTunable(this, CLOCK_STYLE, CUSTOM_AOD_IMAGE_URI_KEY, CUSTOM_AOD_IMAGE_ENABLED_KEY);
