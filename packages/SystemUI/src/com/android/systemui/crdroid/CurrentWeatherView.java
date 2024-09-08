@@ -89,6 +89,15 @@ public class CurrentWeatherView extends FrameLayout implements OmniJawsClient.Om
             mSettingsObserver.observe();
         }
     }
+    
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        disableUpdates();
+        if (mSettingsObserver != null) {
+            mSettingsObserver.unobserve();
+        }
+    }
 
     private void setErrorView() {
         mCurrentImage.setImageDrawable(null);
