@@ -601,10 +601,11 @@ public class LockScreenWidgets extends LinearLayout implements TunerService.Tuna
         if (efab == null) return;
         efab.setElevation(0);
         setButtonActiveState(null, efab, false);
+        long visibleWidgetCount = mMainWidgetsList.stream().filter(widget -> !"none".equals(widget)).count();
         ViewGroup.LayoutParams params = efab.getLayoutParams();
         if (params instanceof LinearLayout.LayoutParams) {
             LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) params;
-            if (efab.getVisibility() == View.VISIBLE && mMainWidgetsList.size() == 1) {
+            if (efab.getVisibility() == View.VISIBLE && visibleWidgetCount == 1) {
                 layoutParams.width = getResources().getDimensionPixelSize(R.dimen.kg_widget_main_width);
                 layoutParams.height = getResources().getDimensionPixelSize(R.dimen.kg_widget_main_height);
             } else {

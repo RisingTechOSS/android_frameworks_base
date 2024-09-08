@@ -27,6 +27,7 @@ import com.google.android.material.floatingactionbutton.ExtendedFloatingActionBu
 open class LaunchableFAB : ExtendedFloatingActionButton, LaunchableView {
 
     private val delegate: LaunchableViewDelegate
+    private val MAX_SIZE_PX = 64
 
     constructor(context: Context) : this(context, null)
     
@@ -37,6 +38,7 @@ open class LaunchableFAB : ExtendedFloatingActionButton, LaunchableView {
             this,
             superSetVisibility = { visibility -> super.setVisibility(visibility) }
         )
+        setIconSize(MAX_SIZE_PX)
     }
 
     override fun setShouldBlockVisibilityChanges(block: Boolean) {
