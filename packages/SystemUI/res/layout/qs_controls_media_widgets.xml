@@ -58,6 +58,7 @@
                     android:id="@+id/player_icon"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:adjustViewBounds="true"
                     android:layout_marginStart="8dp"
                     android:maxWidth="24dp"
                     android:maxHeight="24dp"/>
