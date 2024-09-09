@@ -52,7 +52,6 @@ public class StatusBarUtils {
         mRes = mContext.getResources();
 
         mTunerService = Dependency.get(TunerService.class);
-        mTunerService.addTunable(mTunable, LEFT_PADDING, RIGHT_PADDING, TOP_PADDING);
 
         String leftPaddingKey = LEFT_PADDING.substring(7);
         String rightPaddingKey = RIGHT_PADDING.substring(7);
@@ -119,6 +118,14 @@ public class StatusBarUtils {
         if (mListener != null) {
             mListener.onLayoutChanged(mLeftPad, mRightPad, mTopPad);
         }
+    }
+    
+    public void addListeners() {
+        mTunerService.addTunable(mTunable, LEFT_PADDING, RIGHT_PADDING, TOP_PADDING);
+    }
+    
+    public void removeListeners() {
+        mTunerService.removeTunable(mTunable);
     }
 
     private final TunerService.Tunable mTunable = new TunerService.Tunable() {

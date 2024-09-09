@@ -202,6 +202,9 @@ public class PhoneStatusBarView extends FrameLayout implements Callbacks {
         if (mRotationButtonController != null && !hasNavigationBar()) {
             mCommandQueue.addCallback(this);
         }
+        if (mSbUtils != null) {
+            mSbUtils.addListeners();
+        }
     }
 
     @Override
@@ -212,6 +215,9 @@ public class PhoneStatusBarView extends FrameLayout implements Callbacks {
 
         if (mRotationButtonController != null) {
             mCommandQueue.removeCallback(this);
+        }
+        if (mSbUtils != null) {
+            mSbUtils.removeListeners();
         }
     }
 
