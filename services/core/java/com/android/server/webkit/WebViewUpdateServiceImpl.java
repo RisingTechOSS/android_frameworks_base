@@ -528,19 +528,6 @@ class WebViewUpdateServiceImpl implements WebViewUpdateServiceInterface {
     }
 
     private int validityResult(WebViewProviderInfo configInfo, PackageInfo packageInfo) {
-        // Ensure the provider targets this framework release (or a later one).
-        if (!UserPackage.hasCorrectTargetSdkVersion(packageInfo)) {
-            return VALIDITY_INCORRECT_SDK_VERSION;
-        }
-        if (!versionCodeGE(packageInfo.getLongVersionCode(), getMinimumVersionCode())
-                && !mSystemInterface.systemIsDebuggable()) {
-            // Webview providers may be downgraded arbitrarily low, prevent that by enforcing
-            // minimum version code. This check is only enforced for user builds.
-            return VALIDITY_INCORRECT_VERSION_CODE;
-        }
-        if (!providerHasValidSignature(configInfo, packageInfo, mSystemInterface)) {
-            return VALIDITY_INCORRECT_SIGNATURE;
-        }
         if (WebViewFactory.getWebViewLibrary(packageInfo.applicationInfo) == null) {
             return VALIDITY_NO_LIBRARY_FLAG;
         }
