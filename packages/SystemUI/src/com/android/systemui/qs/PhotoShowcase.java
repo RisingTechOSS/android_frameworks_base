@@ -115,5 +115,7 @@ public class PhotoShowcase extends ImageView {
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
+        setImageBitmap(null);
+        setImageDrawable(null);
     }
 }
