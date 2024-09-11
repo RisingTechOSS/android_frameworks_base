@@ -68,7 +68,7 @@ public class VolumePanelDialog extends SystemUIDialog implements LifecycleOwner 
     private static final String TAG = "VolumePanelDialog";
 
     private static final int DURATION_SLICE_BINDING_TIMEOUT_MS = 200;
-    private static final int DEFAULT_SLICE_SIZE = 5;
+    private static final int DEFAULT_SLICE_SIZE = 4;
 
     private final ActivityStarter mActivityStarter;
     private RecyclerView mVolumePanelSlices;
@@ -119,6 +119,8 @@ public class VolumePanelDialog extends SystemUIDialog implements LifecycleOwner 
 
         mVolumePanelSlices = dialogView.findViewById(R.id.volume_panel_parent_layout);
         mVolumePanelSlices.setLayoutManager(new LinearLayoutManager(getContext()));
+        
+        loadAllSlices();
 
         mLifecycleRegistry.setCurrentState(Lifecycle.State.CREATED);
     }
@@ -196,7 +198,6 @@ public class VolumePanelDialog extends SystemUIDialog implements LifecycleOwner 
     @Override
     protected void start() {
         Log.d(TAG, "onStart");
-        loadAllSlices();
         mLifecycleRegistry.setCurrentState(Lifecycle.State.STARTED);
         mLifecycleRegistry.setCurrentState(Lifecycle.State.RESUMED);
     }

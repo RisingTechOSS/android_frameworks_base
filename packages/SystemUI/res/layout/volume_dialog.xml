@@ -142,7 +142,7 @@
                 android:soundEffectsEnabled="false"/>
         </FrameLayout>
 
-        <com.android.systemui.animation.view.LaunchableFrameLayout
+        <FrameLayout
             android:id="@+id/settings_container"
             android:layout_width="@dimen/volume_dialog_caption_size"
             android:layout_height="@dimen/volume_dialog_caption_size"
@@ -165,7 +165,7 @@
                 android:tint="?android:attr/textColorPrimaryInverse"
                 android:layout_gravity="center"
                 android:soundEffectsEnabled="false"/>
-        </com.android.systemui.animation.view.LaunchableFrameLayout>
+        </FrameLayout>
 
         <FrameLayout
             android:id="@+id/odi_captions"
