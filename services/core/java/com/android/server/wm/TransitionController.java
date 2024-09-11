@@ -450,6 +450,19 @@ class TransitionController {
         return false;
     }
 
+    /**
+     * @return {@code true} if one of the playing transition targets contains `wc`.
+     */
+    boolean inPlayingTargets(@NonNull WindowContainer wc) {
+        if (!isPlaying()) {
+            return false;
+        }
+        for (int i = mPlayingTransitions.size() - 1; i >= 0; --i) {
+            if (Transition.containsChangeFor(wc, mPlayingTransitions.get(i).mTargets)) return true;
+        }
+        return false;
+    }
+
     /** Returns {@code true} if the finishing transition contains `wc`. */
     boolean inFinishingTransition(WindowContainer<?> wc) {
         return mFinishingTransition != null && mFinishingTransition.isInTransition(wc);

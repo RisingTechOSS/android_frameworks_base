@@ -3399,6 +3399,12 @@ class Task extends TaskFragment {
             return;
         }
 
+        // When the shell transition is playing, should not change the visibility of the task
+         // to avoid conflicts with the shell transition.
+        if (mTransitionController.inPlayingTargets(this)) {
+            return;
+        }
+
         // We intend to let organizer manage task visibility but it doesn't
         // have enough information until we finish shell transitions.
         // In the mean time we do an easy fix here.
