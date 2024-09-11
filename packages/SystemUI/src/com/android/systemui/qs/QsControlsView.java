@@ -445,6 +445,7 @@ public class QsControlsView extends FrameLayout {
     }
 
     private class ProcessArtworkTask extends AsyncTask<Bitmap, Void, Bitmap> {
+        @Override
         protected Bitmap doInBackground(Bitmap... bitmaps) {
             Bitmap bitmap = bitmaps[0];
             if (bitmap == null || bitmap.isRecycled()) {
@@ -452,23 +453,34 @@ public class QsControlsView extends FrameLayout {
             }
             int width = mMediaAlbumArtBg.getWidth();
             int height = mMediaAlbumArtBg.getHeight();
-            return getScaledRoundedBitmap(bitmap, width, height);
+            Bitmap bitmapCopy = bitmap.copy(bitmap.getConfig(), true);
+            if (bitmapCopy == null || bitmapCopy.isRecycled()) {
+                return null;
+            }
+            return getScaledRoundedBitmap(bitmapCopy, width, height);
         }
+
+        @Override
         protected void onPostExecute(Bitmap result) {
             if (result == null) return;
-            if (mAlbumArtRef == null || mAlbumArtRef.get() != result) {
-                if (mAlbumArtRef != null) {
-                    Bitmap previousBitmap = mAlbumArtRef.get();
-                    if (previousBitmap != null && !previousBitmap.isRecycled()) {
-                        previousBitmap.recycle();
-                    }
+            if (mAlbumArtRef != null) {
+                Bitmap previousBitmap = mAlbumArtRef.get();
+                if (previousBitmap != null && !previousBitmap.isRecycled()) {
+                    previousBitmap.recycle();
                 }
-                mAlbumArtRef = new WeakReference<>(result);
-                final int mediaFadeLevel = mContext.getResources().getInteger(R.integer.media_player_fade);
-                final int fadeFilter = ColorUtils.blendARGB(Color.TRANSPARENT, mNotifManager == null ? Color.BLACK : mNotifManager.getMediaBgColor(), mediaFadeLevel / 100f);
-                mMediaAlbumArtBg.setColorFilter(fadeFilter, PorterDuff.Mode.SRC_ATOP);
-                mMediaAlbumArtBg.setImageBitmap(mAlbumArtRef.get());
             }
+            mAlbumArtRef = new WeakReference<>(result);
+            if (result.isRecycled()) {
+                return;
+            }
+            final int mediaFadeLevel = mContext.getResources().getInteger(R.integer.media_player_fade);
+            final int fadeFilter = ColorUtils.blendARGB(
+                Color.TRANSPARENT, 
+                mNotifManager == null ? Color.BLACK : mNotifManager.getMediaBgColor(), 
+                mediaFadeLevel / 100f
+            );
+            mMediaAlbumArtBg.setColorFilter(fadeFilter, PorterDuff.Mode.SRC_ATOP);
+            mMediaAlbumArtBg.setImageBitmap(result);
         }
     }
 
