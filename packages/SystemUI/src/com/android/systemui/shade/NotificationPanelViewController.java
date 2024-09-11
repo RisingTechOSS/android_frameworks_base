@@ -4774,7 +4774,7 @@ public final class NotificationPanelViewController implements ShadeSurface, Dump
                 case QS_HAPTICS_INTENSITY:
                     mQsHapticsIntensity = TunerService.parseInteger(newValue, 1);
                 case FLING_ANIMATION_DURATION:
-                    mFlingAnimationDuration = TunerService.parseInteger(newValue, 0);
+                    mFlingAnimationDuration = TunerService.parseInteger(newValue, 350);
                     break;
                 default:
                     break;
