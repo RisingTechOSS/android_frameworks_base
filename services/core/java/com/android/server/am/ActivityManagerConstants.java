@@ -44,6 +44,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.PowerExemptionManager;
 import android.os.SystemClock;
+import android.os.SystemProperties;
 import android.provider.DeviceConfig;
 import android.provider.DeviceConfig.OnPropertiesChangedListener;
 import android.provider.DeviceConfig.Properties;
@@ -876,11 +877,11 @@ final class ActivityManagerConstants extends ContentObserver {
             "no_kill_cached_processes_post_boot_completed_duration_millis";
 
     /** @see #mNoKillCachedProcessesUntilBootCompleted */
-    private static final boolean DEFAULT_NO_KILL_CACHED_PROCESSES_UNTIL_BOOT_COMPLETED = true;
+    private static final boolean DEFAULT_NO_KILL_CACHED_PROCESSES_UNTIL_BOOT_COMPLETED = false;
 
     /** @see #mNoKillCachedProcessesPostBootCompletedDurationMillis */
     private static final long
-            DEFAULT_NO_KILL_CACHED_PROCESSES_POST_BOOT_COMPLETED_DURATION_MILLIS = 600_000;
+            DEFAULT_NO_KILL_CACHED_PROCESSES_POST_BOOT_COMPLETED_DURATION_MILLIS = 0;
 
     /**
      * If true, do not kill excessive cached processes proactively, until user-0 is unlocked.
@@ -987,6 +988,14 @@ final class ActivityManagerConstants extends ContentObserver {
 
     private static final Uri FORCE_ENABLE_PSS_PROFILING_URI =
             Settings.Global.getUriFor(Settings.Global.FORCE_ENABLE_PSS_PROFILING);
+
+    private static final String DEVICE_POWER_MODE_KEY = "device_power_mode";
+
+    private static final String MAX_CACHED_PROCESSES_KEY = "max_cached_processes";
+    
+    private static final Uri MAX_CACHED_PROCESSES_URI = Settings.System.getUriFor(MAX_CACHED_PROCESSES_KEY);
+
+    private static final Uri DEVICE_POWER_MODE_URI = Settings.System.getUriFor(DEVICE_POWER_MODE_KEY);
 
     /**
      * The threshold to decide if a given association should be dumped into metrics.
@@ -1414,12 +1423,6 @@ final class ActivityManagerConstants extends ContentObserver {
                 .map(ComponentName::unflattenFromString).collect(Collectors.toSet()));
         mCustomizedMaxCachedProcesses = context.getResources().getInteger(
                 com.android.internal.R.integer.config_customizedMaxCachedProcesses);
-        updateTotalMaxCachedProcesses();
-        CUR_MAX_EMPTY_PROCESSES = computeEmptyProcessLimit(CUR_MAX_CACHED_PROCESSES);
-
-        final int rawMaxEmptyProcesses = computeEmptyProcessLimit(CUR_MAX_CACHED_PROCESSES);
-        CUR_TRIM_EMPTY_PROCESSES = rawMaxEmptyProcesses / 2;
-        CUR_TRIM_CACHED_PROCESSES = (CUR_MAX_CACHED_PROCESSES - rawMaxEmptyProcesses) / 3;
         loadNativeBootDeviceConfigConstants();
         mDefaultDisableAppProfilerPssProfiling = context.getResources().getBoolean(
                 R.bool.config_am_disablePssProfiling);
@@ -1428,21 +1431,6 @@ final class ActivityManagerConstants extends ContentObserver {
         mDefaultPssToRssThresholdModifier = context.getResources().getFloat(
                 com.android.internal.R.dimen.config_am_pssToRssThresholdModifier);
         PSS_TO_RSS_THRESHOLD_MODIFIER = mDefaultPssToRssThresholdModifier;
-    }
-
-    private void updateTotalMaxCachedProcesses() {
-        MemInfoReader memInfoReader = new MemInfoReader();
-        memInfoReader.readMemInfo();
-        long totalMemoryBytes = memInfoReader.getTotalSize();
-        long totalMemoryGB = totalMemoryBytes / (1024L * 1024L * 1024L);
-        int roundedMemoryGB = roundToNearestKnownRamSize(totalMemoryGB);
-        if (roundedMemoryGB <= 4) {
-            CUR_MAX_CACHED_PROCESSES = 32;
-        } else if (roundedMemoryGB > 4 && roundedMemoryGB <= 6) {
-            CUR_MAX_CACHED_PROCESSES = 48;
-        } else {
-            CUR_MAX_CACHED_PROCESSES = 128;
-        }
     }
 
     private int roundToNearestKnownRamSize(long memoryGB) {
@@ -1469,6 +1457,8 @@ final class ActivityManagerConstants extends ContentObserver {
                     false, this);
         }
         mResolver.registerContentObserver(FORCE_ENABLE_PSS_PROFILING_URI, false, this);
+        mResolver.registerContentObserver(DEVICE_POWER_MODE_URI, false, this);
+        mResolver.registerContentObserver(MAX_CACHED_PROCESSES_URI, false, this);
         updateConstants();
         if (mSystemServerAutomaticHeapDumpEnabled) {
             updateEnableAutomaticSystemServerHeapDumps();
@@ -1528,6 +1518,11 @@ final class ActivityManagerConstants extends ContentObserver {
             updateEnableAutomaticSystemServerHeapDumps();
         } else if (FORCE_ENABLE_PSS_PROFILING_URI.equals(uri)) {
             updateForceEnablePssProfiling();
+        } else if (DEVICE_POWER_MODE_URI.equals(uri)
+            || MAX_CACHED_PROCESSES_URI.equals(uri)) {
+            updateMaxCachedProcesses();
+            updateProactiveKillsEnabled();
+            updateMaxPhantomProcesses();
         }
     }
 
@@ -2016,20 +2011,43 @@ final class ActivityManagerConstants extends ContentObserver {
     }
 
     private void updateMaxCachedProcesses() {
-        updateTotalMaxCachedProcesses();
-
+        final String powerMode = Settings.System.getString(mResolver, DEVICE_POWER_MODE_KEY);
+        if (powerMode == null || powerMode.isEmpty()) return;
+        final int maxCachedProcs = Settings.System.getInt(mResolver, MAX_CACHED_PROCESSES_KEY, 32);
+        switch (powerMode) {
+            case "powersave":
+            case "conservative":
+                CUR_MAX_CACHED_PROCESSES = SystemProperties.getInt("persist.sys.max_cached_procs_conservative", 5);
+                break;
+            case "gameboost":
+            case "performance":
+                CUR_MAX_CACHED_PROCESSES = SystemProperties.getInt("persist.sys.max_cached_procs_perf", 8);
+                break;
+            case "default":
+            default:
+                CUR_MAX_CACHED_PROCESSES = maxCachedProcs;
+                break;
+        }
         CUR_MAX_EMPTY_PROCESSES = computeEmptyProcessLimit(CUR_MAX_CACHED_PROCESSES);
-
         final int rawMaxEmptyProcesses = computeEmptyProcessLimit(CUR_MAX_CACHED_PROCESSES);
         CUR_TRIM_EMPTY_PROCESSES = rawMaxEmptyProcesses / 2;
         CUR_TRIM_CACHED_PROCESSES = (CUR_MAX_CACHED_PROCESSES - rawMaxEmptyProcesses) / 3;
     }
 
     private void updateProactiveKillsEnabled() {
-        PROACTIVE_KILLS_ENABLED = DeviceConfig.getBoolean(
-                DeviceConfig.NAMESPACE_ACTIVITY_MANAGER,
-                KEY_PROACTIVE_KILLS_ENABLED,
-                DEFAULT_PROACTIVE_KILLS_ENABLED);
+        final String powerMode = Settings.System.getString(mResolver, DEVICE_POWER_MODE_KEY);
+        switch (powerMode) {
+            case "powersave":
+            case "conservative":
+            case "gameboost":
+            case "performance":
+                PROACTIVE_KILLS_ENABLED = true;
+                break;
+            case "default":
+            default:
+                PROACTIVE_KILLS_ENABLED = false;
+                break;
+        }
     }
 
     private void updateLowSwapThresholdPercent() {
@@ -2087,9 +2105,7 @@ final class ActivityManagerConstants extends ContentObserver {
 
     private void updateMaxPhantomProcesses() {
         final int oldVal = MAX_PHANTOM_PROCESSES;
-        MAX_PHANTOM_PROCESSES = DeviceConfig.getInt(
-                DeviceConfig.NAMESPACE_ACTIVITY_MANAGER, KEY_MAX_PHANTOM_PROCESSES,
-                DEFAULT_MAX_PHANTOM_PROCESSES);
+        MAX_PHANTOM_PROCESSES = CUR_MAX_CACHED_PROCESSES;
         if (oldVal > MAX_PHANTOM_PROCESSES) {
             mService.mHandler.post(mService.mPhantomProcessList::trimPhantomProcessesIfNecessary);
         }
