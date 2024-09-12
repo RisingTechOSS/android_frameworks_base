@@ -595,6 +595,13 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
         mContext.getContentResolver().unregisterContentObserver(mVolumePercentObserver);
         mContext.getContentResolver().unregisterContentObserver(mVolumeMediaButtonObserver);
         mContext.getContentResolver().unregisterContentObserver(mVolumeHapticsIntensityObserver);
+        if (mDialog != null) {
+            mDialog.dismiss();
+            mDialog = null;
+        }
+        if (mMediaOutputDialogFactory != null) {
+            mMediaOutputDialogFactory.dismiss();
+        }
     }
 
     @Override
