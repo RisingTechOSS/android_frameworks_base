@@ -375,11 +375,6 @@ public class OomAdjuster {
     final ProcessList mProcessList;
     final ActivityManagerGlobalLock mProcLock;
 
-    // Min aging threshold in milliseconds to consider a B-service
-    int mMinBServiceAgingTime = 5000;
-    // Threshold for B-services when in memory pressure
-    int mBServiceAppThreshold = 5;
-
     private final int mNumSlots;
     protected final ArrayList<ProcessRecord> mTmpProcessList = new ArrayList<ProcessRecord>();
     protected final ArrayList<ProcessRecord> mTmpProcessList2 = new ArrayList<ProcessRecord>();
@@ -1333,7 +1328,7 @@ public class OomAdjuster {
                             + sr.lastActivity + " packageName = " + sr.packageName
                             + " processName = " + sr.processName);
                     if (SystemClock.uptimeMillis() - sr.lastActivity
-                            < mMinBServiceAgingTime) {
+                            < mConstants.mMinBServiceAgingTime) {
                         if (DEBUG_OOM_ADJ) {
                             Slog.d(TAG,"Not aged enough!!!");
                         }
@@ -1470,7 +1465,7 @@ public class OomAdjuster {
 
         mLastFreeSwapPercent = freeSwapPercent;
 
-        if ((numBServices > mBServiceAppThreshold) && (true == mService.mAppProfiler.allowLowerMemLevelLocked())
+        if ((numBServices > mConstants.mBServiceAppThreshold) && (true == mService.mAppProfiler.allowLowerMemLevelLocked())
                 && (selectedAppRecord != null)) {
             ProcessList.setOomAdj(selectedAppRecord.getPid(), selectedAppRecord.info.uid,
                     ProcessList.CACHED_APP_MAX_ADJ);

@@ -862,7 +862,7 @@ final class ActivityManagerConstants extends ContentObserver {
     // we have no limit on the number of service, visible, foreground, or other such
     // processes and the number of those processes does not count against the cached
     // process limit. This will be initialized in the constructor.
-    public int CUR_MAX_CACHED_PROCESSES;
+    public int CUR_MAX_CACHED_PROCESSES = 32;
 
     // The maximum number of empty app processes we will let sit around.  This will be
     // initialized in the constructor.
@@ -1038,6 +1038,11 @@ final class ActivityManagerConstants extends ContentObserver {
     public static float BINDER_HEAVY_HITTER_AUTO_SAMPLER_THRESHOLD;
     public static boolean PROACTIVE_KILLS_ENABLED = DEFAULT_PROACTIVE_KILLS_ENABLED;
     public static float LOW_SWAP_THRESHOLD_PERCENT = DEFAULT_LOW_SWAP_THRESHOLD_PERCENT;
+    
+    // Min aging threshold in milliseconds to consider a B-service
+    public int mMinBServiceAgingTime = 5000;
+    // Threshold for B-services when in memory pressure
+    public int mBServiceAppThreshold = 5;
 
     /** Timeout for a "short service" FGS, in milliseconds. */
     private static final String KEY_SHORT_FGS_TIMEOUT_DURATION =
@@ -2011,27 +2016,36 @@ final class ActivityManagerConstants extends ContentObserver {
     }
 
     private void updateMaxCachedProcesses() {
-        final String powerMode = Settings.System.getString(mResolver, DEVICE_POWER_MODE_KEY);
-        if (powerMode == null || powerMode.isEmpty()) return;
+        String powerMode = Settings.System.getString(mResolver, DEVICE_POWER_MODE_KEY);
+        if (powerMode == null || powerMode.isEmpty()) {
+            powerMode = "default";
+        }
         final int maxCachedProcs = Settings.System.getInt(mResolver, MAX_CACHED_PROCESSES_KEY, 32);
         switch (powerMode) {
             case "powersave":
+                CUR_MAX_CACHED_PROCESSES = SystemProperties.getInt("persist.sys.max_cached_procs_power_save", 2);
+                mBServiceAppThreshold = 1;
+                break;
             case "conservative":
-                CUR_MAX_CACHED_PROCESSES = SystemProperties.getInt("persist.sys.max_cached_procs_conservative", 5);
+                CUR_MAX_CACHED_PROCESSES = SystemProperties.getInt("persist.sys.max_cached_procs_conservative", 4);
+                mBServiceAppThreshold = 2;
                 break;
             case "gameboost":
             case "performance":
-                CUR_MAX_CACHED_PROCESSES = SystemProperties.getInt("persist.sys.max_cached_procs_perf", 8);
+                CUR_MAX_CACHED_PROCESSES = SystemProperties.getInt("persist.sys.max_cached_procs_perf", 6);
+                mBServiceAppThreshold = 2;
                 break;
             case "default":
             default:
                 CUR_MAX_CACHED_PROCESSES = maxCachedProcs;
+                mBServiceAppThreshold = 5;
                 break;
         }
         CUR_MAX_EMPTY_PROCESSES = computeEmptyProcessLimit(CUR_MAX_CACHED_PROCESSES);
         final int rawMaxEmptyProcesses = computeEmptyProcessLimit(CUR_MAX_CACHED_PROCESSES);
         CUR_TRIM_EMPTY_PROCESSES = rawMaxEmptyProcesses / 2;
         CUR_TRIM_CACHED_PROCESSES = (CUR_MAX_CACHED_PROCESSES - rawMaxEmptyProcesses) / 3;
+        mMinBServiceAgingTime = mBServiceAppThreshold * 1000;
     }
 
     private void updateProactiveKillsEnabled() {

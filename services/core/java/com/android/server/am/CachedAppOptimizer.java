@@ -286,6 +286,9 @@ public final class CachedAppOptimizer {
 
     @VisibleForTesting static final Uri CACHED_APP_FREEZER_ENABLED_URI = Settings.Global.getUriFor(
                 Settings.Global.CACHED_APPS_FREEZER_ENABLED);
+    @VisibleForTesting static final String DEVICE_POWER_MODE_KEY = "device_power_mode";
+    @VisibleForTesting static final Uri DEVICE_POWER_MODE_URI = Settings.System.getUriFor(
+                DEVICE_POWER_MODE_KEY);
 
     @VisibleForTesting
     interface PropertyChangedCallbackForTest {
@@ -443,7 +446,8 @@ public final class CachedAppOptimizer {
 
         @Override
         public void onChange(boolean selfChange, Uri uri) {
-            if (CACHED_APP_FREEZER_ENABLED_URI.equals(uri)) {
+            if (CACHED_APP_FREEZER_ENABLED_URI.equals(uri)
+                || DEVICE_POWER_MODE_URI.equals(uri)) {
                 synchronized (mPhenotypeFlagLock) {
                     updateUseFreezer();
                 }
@@ -693,6 +697,8 @@ public final class CachedAppOptimizer {
                 mOnNativeBootFlagsChangedListener);
         mAm.mContext.getContentResolver().registerContentObserver(
                 CACHED_APP_FREEZER_ENABLED_URI, false, mSettingsObserver);
+        mAm.mContext.getContentResolver().registerContentObserver(
+                DEVICE_POWER_MODE_URI, false, mSettingsObserver);
         synchronized (mPhenotypeFlagLock) {
             updateUseCompaction();
             updateCompactionThrottles();
@@ -1308,12 +1314,23 @@ public final class CachedAppOptimizer {
 
     @GuardedBy("mPhenotypeFlagLock")
     private void updateFreezerDebounceTimeout() {
-        mFreezerDebounceTimeout = DeviceConfig.getLong(
-                DeviceConfig.NAMESPACE_ACTIVITY_MANAGER_NATIVE_BOOT,
-                KEY_FREEZER_DEBOUNCE_TIMEOUT, DEFAULT_FREEZER_DEBOUNCE_TIMEOUT);
-
-        if (mFreezerDebounceTimeout < 0) {
-            mFreezerDebounceTimeout = DEFAULT_FREEZER_DEBOUNCE_TIMEOUT;
+        final String powerMode = Settings.System.getString(mAm.mContext.getContentResolver(), DEVICE_POWER_MODE_KEY);
+        if (powerMode == null || powerMode.isEmpty()) return;
+        switch (powerMode) {
+            case "powersave":
+                mFreezerDebounceTimeout = 500L;
+                break;
+            case "conservative":
+                mFreezerDebounceTimeout = 5_000L;
+                break;
+            case "gameboost":
+            case "performance":
+                mFreezerDebounceTimeout = 1_000L;
+                break;
+            case "default":
+            default:
+                mFreezerDebounceTimeout = 10_000L;
+                break;
         }
         Slog.d(TAG_AM, "Freezer timeout set to " + mFreezerDebounceTimeout);
     }
