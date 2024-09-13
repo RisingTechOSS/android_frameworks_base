@@ -187,7 +187,6 @@ void SkiaDisplayList::reset() {
     mAnimatedImages.clear();
     mChildFunctors.clear();
     mChildNodes.clear();
-    mMutableBitmapShaderImages.clear();
 
     allocator.~LinearAllocator();
     new (&allocator) LinearAllocator();
