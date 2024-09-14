@@ -319,8 +319,8 @@ public class AudioDeviceBroker {
             Log.v(TAG, "setCommunicationDevice, device: " + device + ", uid: " + uid);
         }
 
-        synchronized (mDeviceStateLock) {
-            if (device == null) {
+        if (device == null) {
+            synchronized (mDeviceStateLock) {
                 CommunicationRouteClient client = getCommunicationRouteClientForUid(uid);
                 if (client == null) {
                     return false;
