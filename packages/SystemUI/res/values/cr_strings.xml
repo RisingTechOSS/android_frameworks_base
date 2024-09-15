@@ -29,8 +29,10 @@
     <string name="notification_channel_description">Notifications for battery health</string>
     <string name="notification_title_low_battery">Healthy Charge - Charge device</string>
     <string name="notification_title_high_battery">Healthy Charge - Unplug charger</string>
+    <string name="notification_title_high_battery_protect">Healthy Charge - Charging on hold</string>
     <string name="notification_content_low_battery">For better battery health. Please charge your device now.</string>
     <string name="notification_content_high_battery">Battery charge level has reached the healthy threshold. Please unplug the charger.</string>
+    <string name="notification_content_high_battery_protect">Battery charge level has reached the healthy threshold. Pausing charging to protect the battery.</string>
 
     <!-- Indication on the keyguard that is shown when the device entered adaptive charging state. Should match keyguard_plugged_in_adaptive_charging [CHAR LIMIT=40]-->
     <string name="keyguard_indication_adaptive_charging_time"><xliff:g id="percentage">%2$s</xliff:g> • Adaptive Charging (<xliff:g id="charging_time_left" example="4 hours and 2 minutes">%1$s</xliff:g> until full)</string>
