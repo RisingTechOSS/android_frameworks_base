@@ -16,6 +16,7 @@
 
 package com.android.server;
 
+import android.app.AlarmManager;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
@@ -24,6 +25,7 @@ import android.content.IntentFilter;
 import android.database.ContentObserver;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.PowerManager;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.util.Log;
@@ -54,9 +56,41 @@ public class SmartPowerOffService implements PointerEventListener {
     private boolean mIsServiceEnabled = false;
     private boolean mIsScheduleDelayed = false;
 
+    private AlarmManager mAlarmManager;
+
+    private final Alarm mAlarm = new Alarm();
+
+    private class Alarm implements AlarmManager.OnAlarmListener {
+        @Override
+        public void onAlarm() {
+            wakeupScreen();
+        }
+        public void set(Calendar time) {
+            mAlarmManager.cancel(this);
+            mAlarmManager.setExact(AlarmManager.RTC_WAKEUP, time.getTimeInMillis(), TAG, this, mHandler);
+        }
+        public void set(long timeInMillis) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(timeInMillis);
+            set(calendar);
+        }
+    }
+
     public SmartPowerOffService(Context context) {
         mContext = context;
         mHandler = new Handler(Looper.getMainLooper());
+        mAlarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+    }
+
+    private void wakeupScreen() {
+        PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
+        if (pm != null) {
+            PowerManager.WakeLock wakeLock = pm.newWakeLock(
+                    PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP,
+                    TAG + ":WakeupScreen");
+            wakeLock.acquire(3000);
+            if (DEBUG) Log.d(TAG, "Screen wakeup triggered");
+        }
     }
 
     private void setupSettingsObserver() {
@@ -97,6 +131,7 @@ public class SmartPowerOffService implements PointerEventListener {
                 if (DEBUG) Log.d(TAG, "Screen off detected, removing delay");
                 if (mIsScheduleDelayed) {
                     mDelayEndTimeMillis = System.currentTimeMillis();
+                    mAlarm.set(mDelayEndTimeMillis);
                     shutDownDevice();
                 } else {
                     removeDelay();
@@ -111,6 +146,7 @@ public class SmartPowerOffService implements PointerEventListener {
     private void removeDelay() {
         mPointerEventReceived = false;
         mDelayEndTimeMillis = mPowerOffTimeMillis;
+        mAlarm.set(mDelayEndTimeMillis);
         if (DEBUG) Log.d(TAG, "Delay removed, resetting to user-set power off time");
     }
 
@@ -131,6 +167,7 @@ public class SmartPowerOffService implements PointerEventListener {
                 }
                 mPowerOffTimeMillis = calendar.getTimeInMillis();
                 mDelayEndTimeMillis = mPowerOffTimeMillis;
+                mAlarm.set(calendar.getTimeInMillis());
             }
         }
     }
@@ -164,6 +201,7 @@ public class SmartPowerOffService implements PointerEventListener {
             if (mDelayEndTimeMillis - System.currentTimeMillis() <= ONE_MINUTE_IN_MILLIS) {
                 mDelayEndTimeMillis = System.currentTimeMillis() + DELAY_MILLIS;
                 mIsScheduleDelayed = true;
+                mAlarm.set(mDelayEndTimeMillis);
                 if (DEBUG) Log.d(TAG, "New delay end time: " + mDelayEndTimeMillis);
             }
         } else if (event.getAction() == MotionEvent.ACTION_UP) {
