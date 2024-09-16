@@ -44,7 +44,6 @@ public class RisingServicesStarter {
     public void startAllServices() {
         startService(QUICKSWITCH_SERVICE_CLASS);
         startService(SOUND_ENGINE_SERVICE_CLASS);
-        startService(NETWORK_OPT_SERVICE_CLASS);
         startService(CHARGING_OPT_SERVICE_CLASS);
         startService(STORAGE_CLEANER_SERVICE_CLASS);
     }
