@@ -63,7 +63,7 @@ public class SmartPowerOffService implements PointerEventListener {
     private class Alarm implements AlarmManager.OnAlarmListener {
         @Override
         public void onAlarm() {
-            wakeupScreen();
+            checkShutDownTime();
         }
         public void set(Calendar time) {
             mAlarmManager.cancel(this);
@@ -84,12 +84,20 @@ public class SmartPowerOffService implements PointerEventListener {
 
     private void wakeupScreen() {
         PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
-        if (pm != null) {
-            PowerManager.WakeLock wakeLock = pm.newWakeLock(
-                    PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP,
-                    TAG + ":WakeupScreen");
-            wakeLock.acquire(3000);
-            if (DEBUG) Log.d(TAG, "Screen wakeup triggered");
+        PowerManager.WakeLock wakeLock = null;
+        try {
+            if (pm != null) {
+                wakeLock = pm.newWakeLock(
+                        PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP,
+                        TAG + ":WakeupScreen");
+                wakeLock.acquire(3000);
+                if (DEBUG) Log.d(TAG, "Screen wakeup triggered");
+            }
+        } finally {
+            if (wakeLock != null && wakeLock.isHeld()) {
+                wakeLock.release();
+                if (DEBUG) Log.d(TAG, "Wake lock released");
+            }
         }
     }
 
@@ -212,6 +220,7 @@ public class SmartPowerOffService implements PointerEventListener {
 
     private void shutDownDevice() {
         if (!mIsServiceEnabled || mPointerEventReceived) return;
+        wakeupScreen();
         mHandler.postDelayed(() -> {
             SystemRestartUtils.powerOffSystem(mContext);
             if (DEBUG) Log.d(TAG, "Shutting down the device");
