@@ -19,9 +19,6 @@ package com.android.server;
 import android.app.AlarmManager;
 import android.app.NotificationManager;
 import android.content.Context;
-import android.content.Intent;
-import android.content.BroadcastReceiver;
-import android.content.IntentFilter;
 import android.database.ContentObserver;
 import android.os.Handler;
 import android.os.Looper;
@@ -78,7 +75,7 @@ public class SmartPowerOffService implements PointerEventListener {
 
     public SmartPowerOffService(Context context) {
         mContext = context;
-        mHandler = new Handler(Looper.getMainLooper());
+        mHandler = new Handler();
         mAlarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
     }
 
@@ -124,32 +121,6 @@ public class SmartPowerOffService implements PointerEventListener {
         mIsServiceEnabled = Settings.System.getIntForUser(mContext.getContentResolver(),
                 SMART_POWER_OFF_ENABLED_KEY, 0, UserHandle.USER_CURRENT) != 0;
     }
-
-    private void setupScreenOffReceiver() {
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Intent.ACTION_SCREEN_OFF);
-        filter.addAction(Intent.ACTION_SCREEN_ON);
-        mContext.registerReceiver(mScreenOffReceiver, filter);
-    }
-
-    private final BroadcastReceiver mScreenOffReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (Intent.ACTION_SCREEN_OFF.equals(intent.getAction())) {
-                if (DEBUG) Log.d(TAG, "Screen off detected, removing delay");
-                if (mIsScheduleDelayed) {
-                    mDelayEndTimeMillis = System.currentTimeMillis();
-                    mAlarm.set(mDelayEndTimeMillis);
-                    shutDownDevice();
-                } else {
-                    removeDelay();
-                    mHandler.removeCallbacksAndMessages(null);
-                }
-            } else if (Intent.ACTION_SCREEN_ON.equals(intent.getAction())) {
-                startPeriodicCheck();
-            }
-        }
-    };
 
     private void removeDelay() {
         mPointerEventReceived = false;
@@ -229,7 +200,6 @@ public class SmartPowerOffService implements PointerEventListener {
 
     public void start() {
         setupSettingsObserver();
-        setupScreenOffReceiver();
         startPeriodicCheck();
         if (DEBUG) Log.d(TAG, "SmartPowerOffService started");
     }
@@ -237,7 +207,6 @@ public class SmartPowerOffService implements PointerEventListener {
     public void stop() {
         mHandler.removeCallbacksAndMessages(null);
         mContext.getContentResolver().unregisterContentObserver(mSettingsObserver);
-        mContext.unregisterReceiver(mScreenOffReceiver);
         if (DEBUG) Log.d(TAG, "SmartPowerOffService stopped");
     }
 }
