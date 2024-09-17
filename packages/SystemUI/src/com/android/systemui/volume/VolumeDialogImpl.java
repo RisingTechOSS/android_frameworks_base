@@ -81,6 +81,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
 import android.os.Trace;
+import android.os.UserHandle;
 import android.os.VibrationEffect;
 import android.provider.Settings;
 import android.provider.Settings.Global;
@@ -1532,16 +1533,17 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
     }
 
     private boolean shouldShowAppVolume() {
-        ContentResolver cr = mContext.getContentResolver();
-        int showAppVolume = Settings.System.getInt(cr, Settings.System.SHOW_APP_VOLUME, 0);
-        boolean ret = showAppVolume == 1;
+        boolean showAppVolume = Settings.System.getIntForUser(mContext.getContentResolver(),
+                Settings.System.SHOW_APP_VOLUME,
+                0, UserHandle.USER_CURRENT) == 1;
+        boolean ret = showAppVolume;
         if (ret) {
             ret = false;
             AudioManager audioManager = mController.getAudioManager();
             for (AppVolume av : audioManager.listAppVolumes()) {
                 if (av.isActive()) {
                     ret = true;
-            break;
+                    break;
                 }
             }
         }
