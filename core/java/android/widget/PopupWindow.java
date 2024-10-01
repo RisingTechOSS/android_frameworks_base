@@ -1325,7 +1325,7 @@ public class PopupWindow {
      */
     @UnsupportedAppUsage
     public void showAtLocation(IBinder token, int gravity, int x, int y) {
-        if (isShowing() || mContentView == null || token == null) {
+        if (isShowing() || mContentView == null) {
             return;
         }
 
