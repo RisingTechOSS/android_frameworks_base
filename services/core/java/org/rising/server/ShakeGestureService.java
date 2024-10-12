@@ -46,7 +46,6 @@ public final class ShakeGestureService extends SystemService {
 
     private final SettingsObserver mSettingsObserver;
     private boolean mShakeServiceEnabled = false;
-    private int mShakeGestureAction = 0;
 
     private ShakeGestureUtils.OnShakeListener mShakeListener;
     private Thread mCpuAwakeThread;
@@ -90,12 +89,9 @@ public final class ShakeGestureService extends SystemService {
     public void onStart() {}
 
     private void updateSettings() {
-        mShakeGestureAction = Settings.System.getInt(mContext.getContentResolver(),
-                SHAKE_GESTURES_ACTION, 0);
         boolean wasShakeServiceEnabled = mShakeServiceEnabled;
         mShakeServiceEnabled = Settings.System.getInt(mContext.getContentResolver(),
-                SHAKE_GESTURES_ENABLED, 0) == 1 && mShakeGestureAction != 0;
-
+                SHAKE_GESTURES_ENABLED, 0) == 1;
         if (mShakeServiceEnabled && !wasShakeServiceEnabled) {
             mShakeGestureUtils.registerListener(mShakeListener);
         } else if (!mShakeServiceEnabled && wasShakeServiceEnabled) {
