@@ -119,7 +119,8 @@ public class SmartPowerOffService implements PointerEventListener {
 
     private void updateServiceState() {
         mIsServiceEnabled = Settings.System.getIntForUser(mContext.getContentResolver(),
-                SMART_POWER_OFF_ENABLED_KEY, 0, UserHandle.USER_CURRENT) != 0;
+                SMART_POWER_OFF_ENABLED_KEY, 0, UserHandle.USER_CURRENT) != 0
+                && Settings.System.getString(mContext.getContentResolver(), POWER_OFF_TIME_KEY) != null;
     }
 
     private void removeDelay() {
