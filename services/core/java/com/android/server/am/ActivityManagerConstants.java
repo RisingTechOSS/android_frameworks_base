@@ -2050,7 +2050,8 @@ final class ActivityManagerConstants extends ContentObserver {
 
     private void updateProactiveKillsEnabled() {
         final String powerMode = Settings.System.getString(mResolver, DEVICE_POWER_MODE_KEY);
-        switch (powerMode) {
+        final String currPowerMode = powerMode == null ? "default" : powerMode;
+        switch (currPowerMode) {
             case "powersave":
             case "conservative":
             case "gameboost":
